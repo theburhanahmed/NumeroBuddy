@@ -2,15 +2,6 @@
 # This file defines all services needed for staging deployment
 
 services:
-  # PostgreSQL Database
-  - type: postgres
-    name: numerai-postgres
-    plan: free
-    region: oregon
-    databaseName: numerai
-    user: numerai
-    ipAllowList: []
-
   # Redis Cache
   - type: redis
     name: numerai-redis
