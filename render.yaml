@@ -3,19 +3,13 @@
 
 services:
   # PostgreSQL Database
-  - type: pserv
+  - type: postgres
     name: numerai-postgres
-    env: docker
     plan: free
     region: oregon
-    dockerfilePath: ./Dockerfile.postgres
-    envVars:
-      - key: POSTGRES_DB
-        value: numerai
-      - key: POSTGRES_USER
-        value: numerai
-      - key: POSTGRES_PASSWORD
-        generateValue: true
+    databaseName: numerai
+    user: numerai
+    ipAllowList: []
 
   # Redis Cache
   - type: redis
