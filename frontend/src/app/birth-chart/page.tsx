@@ -3,7 +3,7 @@
  */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { numerologyAPI } from '@/lib/numerology-api';
 import { BirthChart, NumberCardData, NumberType, NumberInterpretation } from '@/types/numerology';
@@ -65,16 +65,7 @@ export default function BirthChartPage() {
   } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
-    fetchBirthChart();
-  }, [user, router]);
-
-  const fetchBirthChart = async () => {
+  const fetchBirthChart = useCallback(async () => {
     try {
       setLoading(true);
       const data = await numerologyAPI.getBirthChart();
@@ -93,7 +84,16 @@ export default function BirthChartPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    fetchBirthChart();
+  }, [user, router, fetchBirthChart]);
 
   const handleCalculateProfile = async () => {
     try {
@@ -176,7 +176,7 @@ export default function BirthChartPage() {
             )}
           </Button>
           <p className="text-sm text-muted-foreground">
-            Make sure you've completed your profile with your birth date first.
+            Make sure you&apos;ve completed your profile with your birth date first.
           </p>
         </div>
       </div>

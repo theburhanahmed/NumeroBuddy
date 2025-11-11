@@ -143,7 +143,7 @@ export function ReadingCard({ reading, isToday = false }: ReadingCardProps) {
               Affirmation:
             </span>
             <p className="text-purple-600 dark:text-purple-300 italic">
-              "{reading.affirmation}"
+              &quot;{reading.affirmation}&quot;
             </p>
           </div>
         </div>

@@ -1,9 +1,6 @@
-/**
- * Daily Reading Page - Display today's reading and history.
- */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { numerologyAPI } from '@/lib/numerology-api';
 import { DailyReading } from '@/types/numerology';
@@ -26,25 +23,7 @@ export default function DailyReadingPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedReading, setSelectedReading] = useState<DailyReading | null>(null);
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
-    fetchTodayReading();
-    fetchReadingHistory();
-  }, [user, router]);
-
-  useEffect(() => {
-    if (isToday(selectedDate)) {
-      setSelectedReading(todayReading);
-    } else {
-      fetchReadingForDate(selectedDate);
-    }
-  }, [selectedDate, todayReading]);
-
-  const fetchTodayReading = async () => {
+  const fetchTodayReading = useCallback(async () => {
     try {
       const data = await numerologyAPI.getDailyReading();
       setTodayReading(data);
@@ -52,24 +31,24 @@ export default function DailyReadingPage() {
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.response?.data?.error || 'Failed to load today\'s reading',
+        description: error.response?.data?.error || 'Failed to load today&apos;s reading',
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const fetchReadingHistory = async () => {
+  const fetchReadingHistory = useCallback(async () => {
     try {
       const data = await numerologyAPI.getReadingHistory(1, 7);
       setReadingHistory(data.results);
     } catch (error: any) {
       console.error('Failed to load reading history:', error);
     }
-  };
+  }, []);
 
-  const fetchReadingForDate = async (date: Date) => {
+  const fetchReadingForDate = useCallback(async (date: Date) => {
     try {
       const dateStr = format(date, 'yyyy-MM-dd');
       const data = await numerologyAPI.getDailyReading(dateStr);
@@ -81,7 +60,25 @@ export default function DailyReadingPage() {
         variant: 'destructive',
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    fetchTodayReading();
+    fetchReadingHistory();
+  }, [user, router, fetchTodayReading, fetchReadingHistory]);
+
+  useEffect(() => {
+    if (isToday(selectedDate)) {
+      setSelectedReading(todayReading);
+    } else {
+      fetchReadingForDate(selectedDate);
+    }
+  }, [selectedDate, todayReading, fetchReadingForDate]);
 
   const handlePreviousDay = () => {
     setSelectedDate((prev) => subDays(prev, 1));
@@ -97,7 +94,13 @@ export default function DailyReadingPage() {
   const handleShare = async () => {
     if (!todayReading) return;
 
-    const shareText = `My numerology reading for today:\n\nPersonal Day Number: ${todayReading.personal_day_number}\nLucky Number: ${todayReading.lucky_number}\nLucky Color: ${todayReading.lucky_color}\n\nAffirmation: "${todayReading.affirmation}"`;
+    const shareText = `My numerology reading for today:
+
+Personal Day Number: ${todayReading.personal_day_number}
+Lucky Number: ${todayReading.lucky_number}
+Lucky Color: ${todayReading.lucky_color}
+
+Affirmation: "${todayReading.affirmation}"`;
 
     if (navigator.share) {
       try {
