@@ -14,9 +14,9 @@ services:
   - type: web
     name: numerai-backend
     env: python
-    plan: starter
+    plan: basic-750  # Updated from starter to basic-750 (flexible plan)
     region: oregon
-    buildCommand: "./build.sh"
+    buildCommand: "./backend/build.sh"  # Updated path to include backend directory
     startCommand: "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 numerai.wsgi:application"
     healthCheckPath: /api/v1/health/
     envVars:
@@ -60,10 +60,10 @@ services:
   - type: worker
     name: numerai-celery-worker
     env: python
-    plan: starter
+    plan: basic-750  # Updated from starter to basic-750 (flexible plan)
     region: oregon
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "celery -A numerai worker -l info"
+    buildCommand: "cd backend && pip install -r requirements.txt"  # Updated to cd into backend first
+    startCommand: "cd backend && celery -A numerai worker -l info"  # Updated to cd into backend first
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -95,10 +95,10 @@ services:
   - type: web
     name: numerai-frontend
     env: node
-    plan: starter
+    plan: basic-750  # Updated from starter to basic-750 (flexible plan)
     region: oregon
-    buildCommand: "npm install && npm run build"
-    startCommand: "npm start"
+    buildCommand: "cd frontend && npm install && npm run build"  # Updated to cd into frontend first
+    startCommand: "cd frontend && npm start"  # Updated to cd into frontend first
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
@@ -109,5 +109,5 @@ databases:
   - name: numerai-postgres
     databaseName: numerai
     user: numerai
-    plan: free
+    plan: basic-750  # Updated from free to basic-750 (flexible plan)
     region: oregon
