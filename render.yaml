@@ -16,8 +16,8 @@ services:
     env: python
     plan: starter
     region: oregon
-    buildCommand: "./backend/build.sh"
-    startCommand: "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 numerai.wsgi:application"
+    buildCommand: "cd backend && ./build.sh"
+    startCommand: "cd backend && gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 numerai.wsgi:application"
     healthCheckPath: /api/v1/health/
     envVars:
       - key: PYTHON_VERSION
