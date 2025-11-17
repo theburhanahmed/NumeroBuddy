@@ -5,7 +5,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.utils import timezone
 from datetime import timedelta
-from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken, NumerologyProfile, DailyReading, AIConversation, AIMessage
+from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken, NumerologyProfile, DailyReading, AIConversation, AIMessage, CompatibilityCheck, Remedy, RemedyTracking, Expert, Consultation, ConsultationReview
 from .utils import generate_otp, send_otp_email
 
 

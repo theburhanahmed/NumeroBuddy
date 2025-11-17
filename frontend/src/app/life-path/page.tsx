@@ -182,7 +182,7 @@ export default function LifePathAnalysisPage() {
               <StarIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Data Available</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                We couldn't find your life path analysis. Please ensure your birth details are complete.
+                We couldn&apos;t find your life path analysis. Please ensure your birth details are complete.
               </p>
               <GlassButton 
                 variant="primary" 

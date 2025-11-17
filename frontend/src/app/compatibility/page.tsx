@@ -80,7 +80,7 @@ export default function CompatibilityCheckerPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Partner's Name
+                      Partner&apos;s Name
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -287,7 +287,7 @@ export default function CompatibilityCheckerPage() {
                   <HeartIcon className="w-12 h-12 text-gray-400 mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Check Compatibility</h3>
                   <p className="text-gray-600 dark:text-gray-400 max-w-md">
-                    Enter your partner's details to analyze your relationship compatibility based on numerology.
+                    Enter your partner&apos;s details to analyze your relationship compatibility based on numerology.
                   </p>
                 </GlassCard>
               )}

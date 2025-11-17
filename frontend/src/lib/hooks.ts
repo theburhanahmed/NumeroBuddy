@@ -195,7 +195,7 @@ export const useConsultations = () => {
 
   useEffect(() => {
     fetchAll();
-  }, []);
+  }, [fetchAll]);
 
   return { 
     upcoming, 

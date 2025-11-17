@@ -705,7 +705,7 @@ function TestimonialCard({
           ))}
         </div>
         <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed flex-grow">
-          "{text}"
+          &quot;{text}&quot;
         </p>
         <p className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           {name}

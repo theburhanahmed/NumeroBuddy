@@ -240,7 +240,7 @@ export default function NumerologyReportPage() {
               <FileTextIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Report Available</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                We couldn't find your numerology report. Please generate a birth chart first.
+                We couldn&apos;t find your numerology report. Please generate a birth chart first.
               </p>
               <GlassButton 
                 variant="primary" 
