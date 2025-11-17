@@ -143,6 +143,4 @@ services:
 databases:
   - name: numerai-postgres
     databaseName: numerai
-    user: numerai
-    plan: starter  # Updated to a valid flexible plan for PostgreSQL databases
     region: oregon
