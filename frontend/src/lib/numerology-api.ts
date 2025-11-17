@@ -96,6 +96,117 @@ export interface AIMessage {
   created_at: string;
 }
 
+// New type definitions for additional features
+export interface LifePathAnalysis {
+  number: number;
+  title: string;
+  description: string;
+  strengths: string[];
+  challenges: string[];
+  career: string[];
+  relationships: string;
+  advice: string;
+}
+
+export interface CompatibilityCheck {
+  id: string;
+  user: string;
+  partner_name: string;
+  partner_birth_date: string;
+  relationship_type: 'romantic' | 'business' | 'friendship' | 'family';
+  compatibility_score: number;
+  strengths: string[];
+  challenges: string[];
+  advice: string;
+  created_at: string;
+}
+
+export interface Remedy {
+  id: string;
+  user: string;
+  remedy_type: 'gemstone' | 'color' | 'ritual' | 'mantra' | 'dietary' | 'exercise';
+  title: string;
+  description: string;
+  recommendation: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RemedyTracking {
+  id: string;
+  user: string;
+  remedy: string;
+  date: string;
+  is_completed: boolean;
+  notes: string;
+  created_at: string;
+}
+
+export interface Expert {
+  id: string;
+  name: string;
+  email: string;
+  specialty: 'relationship' | 'career' | 'spiritual' | 'health' | 'general';
+  experience_years: number;
+  rating: number;
+  bio: string;
+  profile_picture_url?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Consultation {
+  id: string;
+  user: string;
+  expert: string;
+  expert_name: string;
+  expert_specialty: string;
+  consultation_type: 'video' | 'chat' | 'phone';
+  scheduled_at: string;
+  duration_minutes: number;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
+  notes: string;
+  meeting_link?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConsultationReview {
+  id: string;
+  consultation: string;
+  rating: number;
+  review_text: string;
+  is_anonymous: boolean;
+  created_at: string;
+}
+
+export interface PinnacleCycle {
+  number: number;
+  age: string;
+  title: string;
+}
+
+export interface NumerologyReport {
+  full_name: string;
+  birth_date: string;
+  life_path_number: number;
+  life_path_title: string;
+  destiny_number: number;
+  destiny_title: string;
+  soul_urge_number: number;
+  soul_urge_title: string;
+  personality_number: number;
+  personality_title: string;
+  birthday_number: number;
+  birthday_title: string;
+  challenge_number: number;
+  challenge_title: string;
+  pinnacle_cycle: PinnacleCycle[];
+  summary: string;
+}
+
 // API methods
 export const numerologyAPI = {
   /**
@@ -165,6 +276,128 @@ export const numerologyAPI = {
    */
   async getConversationMessages(conversationId: string): Promise<AIMessage[]> {
     const response = await apiClient.get(`/ai/conversations/${conversationId}/messages/`);
+    return response.data;
+  },
+
+  // New API methods for additional features
+
+  /**
+   * Get detailed life path analysis for the user.
+   */
+  async getLifePathAnalysis(): Promise<LifePathAnalysis> {
+    const response = await apiClient.get('/numerology/life-path-analysis/');
+    return response.data;
+  },
+
+  /**
+   * Check compatibility with another person.
+   */
+  async checkCompatibility(data: {
+    partner_name: string;
+    partner_birth_date: string;
+    relationship_type: 'romantic' | 'business' | 'friendship' | 'family';
+  }): Promise<CompatibilityCheck> {
+    const response = await apiClient.post('/numerology/compatibility-check/', data);
+    return response.data;
+  },
+
+  /**
+   * Get user's compatibility check history.
+   */
+  async getCompatibilityHistory(): Promise<CompatibilityCheck[]> {
+    const response = await apiClient.get('/numerology/compatibility-history/');
+    return response.data;
+  },
+
+  /**
+   * Get personalized remedies for the user.
+   */
+  async getPersonalizedRemedies(): Promise<Remedy[]> {
+    const response = await apiClient.get('/numerology/remedies/');
+    return response.data;
+  },
+
+  /**
+   * Track remedy practice.
+   */
+  async trackRemedy(remedyId: string, data: {
+    date: string;
+    is_completed: boolean;
+    notes?: string;
+  }): Promise<RemedyTracking> {
+    const response = await apiClient.post(`/numerology/remedies/${remedyId}/track/`, data);
+    return response.data;
+  },
+
+  /**
+   * Get full numerology report.
+   */
+  async getFullNumerologyReport(): Promise<NumerologyReport> {
+    const response = await apiClient.get('/numerology/full-report/');
+    return response.data;
+  }
+};
+
+// API methods for experts and consultations
+export const expertAPI = {
+  /**
+   * Get list of available experts.
+   */
+  async getExperts(): Promise<Expert[]> {
+    const response = await apiClient.get('/experts/');
+    return response.data;
+  },
+
+  /**
+   * Get details of a specific expert.
+   */
+  async getExpert(expertId: string): Promise<Expert> {
+    const response = await apiClient.get(`/experts/${expertId}/`);
+    return response.data;
+  }
+};
+
+// API methods for consultations
+export const consultationAPI = {
+  /**
+   * Book a consultation with an expert.
+   */
+  async bookConsultation(data: {
+    expert: string;
+    consultation_type: 'video' | 'chat' | 'phone';
+    scheduled_at: string;
+    duration_minutes?: number;
+    notes?: string;
+  }): Promise<Consultation> {
+    const response = await apiClient.post('/consultations/book/', data);
+    return response.data;
+  },
+
+  /**
+   * Get user's upcoming consultations.
+   */
+  async getUpcomingConsultations(): Promise<Consultation[]> {
+    const response = await apiClient.get('/consultations/upcoming/');
+    return response.data;
+  },
+
+  /**
+   * Get user's past consultations.
+   */
+  async getPastConsultations(): Promise<Consultation[]> {
+    const response = await apiClient.get('/consultations/past/');
+    return response.data;
+  },
+
+  /**
+   * Rate a completed consultation.
+   */
+  async rateConsultation(consultationId: string, data: {
+    rating: number;
+    review_text?: string;
+    is_anonymous?: boolean;
+  }): Promise<ConsultationReview> {
+    const response = await apiClient.post(`/consultations/${consultationId}/rate/`, data);
     return response.data;
   }
 };

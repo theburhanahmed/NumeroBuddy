@@ -3,7 +3,7 @@ Django admin configuration for core models.
 """
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken
+from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken, CompatibilityCheck, Remedy, RemedyTracking, Expert, Consultation, ConsultationReview
 
 
 @admin.register(User)
@@ -108,3 +108,111 @@ class DeviceTokenAdmin(admin.ModelAdmin):
     )
     
     readonly_fields = ['registered_at', 'last_used']
+
+
+@admin.register(CompatibilityCheck)
+class CompatibilityCheckAdmin(admin.ModelAdmin):
+    """Admin interface for CompatibilityCheck model."""
+    
+    list_display = ['user', 'partner_name', 'relationship_type', 'compatibility_score', 'created_at']
+    list_filter = ['relationship_type', 'created_at']
+    search_fields = ['user__email', 'user__full_name', 'partner_name']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('User', {'fields': ('user',)}),
+        ('Partner Information', {'fields': ('partner_name', 'partner_birth_date', 'relationship_type')}),
+        ('Compatibility Results', {'fields': ('compatibility_score', 'strengths', 'challenges', 'advice')}),
+        ('Timestamps', {'fields': ('created_at',)}),
+    )
+    
+    readonly_fields = ['created_at']
+
+
+@admin.register(Remedy)
+class RemedyAdmin(admin.ModelAdmin):
+    """Admin interface for Remedy model."""
+    
+    list_display = ['user', 'remedy_type', 'title', 'is_active', 'created_at']
+    list_filter = ['remedy_type', 'is_active', 'created_at']
+    search_fields = ['user__email', 'user__full_name', 'title']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('User', {'fields': ('user',)}),
+        ('Remedy Details', {'fields': ('remedy_type', 'title', 'description', 'recommendation', 'is_active')}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at')}),
+    )
+    
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(RemedyTracking)
+class RemedyTrackingAdmin(admin.ModelAdmin):
+    """Admin interface for RemedyTracking model."""
+    
+    list_display = ['user', 'remedy', 'date', 'is_completed', 'created_at']
+    list_filter = ['is_completed', 'date', 'created_at']
+    search_fields = ['user__email', 'user__full_name', 'remedy__title']
+    ordering = ['-date']
+    
+    fieldsets = (
+        ('User', {'fields': ('user',)}),
+        ('Remedy Tracking', {'fields': ('remedy', 'date', 'is_completed', 'notes')}),
+        ('Timestamps', {'fields': ('created_at',)}),
+    )
+    
+    readonly_fields = ['created_at']
+
+
+@admin.register(Expert)
+class ExpertAdmin(admin.ModelAdmin):
+    """Admin interface for Expert model."""
+    
+    list_display = ['name', 'email', 'specialty', 'experience_years', 'rating', 'is_active', 'created_at']
+    list_filter = ['specialty', 'is_active', 'created_at']
+    search_fields = ['name', 'email']
+    ordering = ['-rating', '-experience_years']
+    
+    fieldsets = (
+        ('Expert Information', {'fields': ('name', 'email', 'specialty', 'experience_years', 'rating', 'bio', 'profile_picture_url', 'is_active')}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at')}),
+    )
+    
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(Consultation)
+class ConsultationAdmin(admin.ModelAdmin):
+    """Admin interface for Consultation model."""
+    
+    list_display = ['user', 'expert', 'consultation_type', 'scheduled_at', 'status', 'created_at']
+    list_filter = ['consultation_type', 'status', 'scheduled_at']
+    search_fields = ['user__email', 'user__full_name', 'expert__name']
+    ordering = ['-scheduled_at']
+    
+    fieldsets = (
+        ('Participants', {'fields': ('user', 'expert')}),
+        ('Consultation Details', {'fields': ('consultation_type', 'scheduled_at', 'duration_minutes', 'status', 'notes', 'meeting_link')}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at')}),
+    )
+    
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(ConsultationReview)
+class ConsultationReviewAdmin(admin.ModelAdmin):
+    """Admin interface for ConsultationReview model."""
+    
+    list_display = ['consultation', 'rating', 'is_anonymous', 'created_at']
+    list_filter = ['rating', 'is_anonymous', 'created_at']
+    search_fields = ['consultation__user__email', 'consultation__expert__name']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Consultation', {'fields': ('consultation',)}),
+        ('Review Details', {'fields': ('rating', 'review_text', 'is_anonymous')}),
+        ('Timestamps', {'fields': ('created_at',)}),
+    )
+    
+    readonly_fields = ['created_at']

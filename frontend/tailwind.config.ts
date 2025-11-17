@@ -72,6 +72,11 @@ const config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      backdropBlur: {
+        'xl': '24px',
+        '2xl': '32px',
+        '3xl': '40px',
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

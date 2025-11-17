@@ -31,6 +31,22 @@ urlpatterns = [
     path('numerology/daily-reading/', views.get_daily_reading, name='daily-reading'),
     path('numerology/reading-history/', views.get_reading_history, name='reading-history'),
     
+    # New numerology endpoints
+    path('numerology/life-path-analysis/', views.get_life_path_analysis, name='life-path-analysis'),
+    path('numerology/compatibility-check/', views.check_compatibility, name='compatibility-check'),
+    path('numerology/compatibility-history/', views.get_compatibility_history, name='compatibility-history'),
+    path('numerology/remedies/', views.get_personalized_remedies, name='personalized-remedies'),
+    path('numerology/remedies/<uuid:remedy_id>/track/', views.track_remedy, name='track-remedy'),
+    path('numerology/full-report/', views.get_full_numerology_report, name='full-numerology-report'),
+    
+    # Expert and consultation endpoints
+    path('experts/', views.get_experts, name='experts'),
+    path('experts/<uuid:expert_id>/', views.get_expert, name='expert-detail'),
+    path('consultations/book/', views.book_consultation, name='book-consultation'),
+    path('consultations/upcoming/', views.get_upcoming_consultations, name='upcoming-consultations'),
+    path('consultations/past/', views.get_past_consultations, name='past-consultations'),
+    path('consultations/<uuid:consultation_id>/rate/', views.rate_consultation, name='rate-consultation'),
+    
     # AI Chat endpoints
     path('ai/chat/', views.ai_chat, name='ai-chat'),
     path('ai/conversations/', views.get_conversations, name='ai-conversations'),

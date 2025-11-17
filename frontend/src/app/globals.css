@@ -57,3 +57,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Glassmorphism effects */
+@layer utilities {
+  .backdrop-blur-xl {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  
+  .backdrop-blur-2xl {
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+  }
+  
+  .backdrop-blur-3xl {
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+  }
+}
+
+/* Scroll margin for anchor links */
+.scroll-mt-24 {
+  scroll-margin-top: 6rem;
+}
+
+/* Gradient text utility */
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+}

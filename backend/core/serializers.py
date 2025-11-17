@@ -305,3 +305,177 @@ class BirthChartSerializer(serializers.Serializer):
     """Serializer for birth chart with interpretations."""
     profile = NumerologyProfileSerializer()
     interpretations = serializers.DictField()
+
+
+# New serializers for additional features
+
+class CompatibilityCheckSerializer(serializers.ModelSerializer):
+    """Serializer for compatibility check."""
+    
+    class Meta:
+        model = CompatibilityCheck
+        fields = [
+            'id',
+            'user',
+            'partner_name',
+            'partner_birth_date',
+            'relationship_type',
+            'compatibility_score',
+            'strengths',
+            'challenges',
+            'advice',
+            'created_at'
+        ]
+        read_only_fields = ['id', 'user', 'created_at']
+
+
+class RemedySerializer(serializers.ModelSerializer):
+    """Serializer for remedy."""
+    
+    class Meta:
+        model = Remedy
+        fields = [
+            'id',
+            'user',
+            'remedy_type',
+            'title',
+            'description',
+            'recommendation',
+            'is_active',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+
+
+class RemedyTrackingSerializer(serializers.ModelSerializer):
+    """Serializer for remedy tracking."""
+    
+    class Meta:
+        model = RemedyTracking
+        fields = [
+            'id',
+            'user',
+            'remedy',
+            'date',
+            'is_completed',
+            'notes',
+            'created_at'
+        ]
+        read_only_fields = ['id', 'user', 'created_at']
+
+
+class ExpertSerializer(serializers.ModelSerializer):
+    """Serializer for expert."""
+    
+    class Meta:
+        model = Expert
+        fields = [
+            'id',
+            'name',
+            'email',
+            'specialty',
+            'experience_years',
+            'rating',
+            'bio',
+            'profile_picture_url',
+            'is_active',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'rating', 'created_at', 'updated_at']
+
+
+class ConsultationSerializer(serializers.ModelSerializer):
+    """Serializer for consultation."""
+    
+    expert_name = serializers.CharField(source='expert.name', read_only=True)
+    expert_specialty = serializers.CharField(source='expert.specialty', read_only=True)
+    
+    class Meta:
+        model = Consultation
+        fields = [
+            'id',
+            'user',
+            'expert',
+            'expert_name',
+            'expert_specialty',
+            'consultation_type',
+            'scheduled_at',
+            'duration_minutes',
+            'status',
+            'notes',
+            'meeting_link',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+
+
+class ConsultationBookingSerializer(serializers.ModelSerializer):
+    """Serializer for consultation booking."""
+    
+    class Meta:
+        model = Consultation
+        fields = [
+            'expert',
+            'consultation_type',
+            'scheduled_at',
+            'duration_minutes',
+            'notes'
+        ]
+
+
+class ConsultationReviewSerializer(serializers.ModelSerializer):
+    """Serializer for consultation review."""
+    
+    class Meta:
+        model = ConsultationReview
+        fields = [
+            'id',
+            'consultation',
+            'rating',
+            'review_text',
+            'is_anonymous',
+            'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class LifePathAnalysisSerializer(serializers.Serializer):
+    """Serializer for life path analysis."""
+    number = serializers.IntegerField()
+    title = serializers.CharField()
+    description = serializers.CharField()
+    strengths = serializers.ListField(child=serializers.CharField())
+    challenges = serializers.ListField(child=serializers.CharField())
+    career = serializers.ListField(child=serializers.CharField())
+    relationships = serializers.CharField()
+    advice = serializers.CharField()
+
+
+class PinnacleCycleSerializer(serializers.Serializer):
+    """Serializer for pinnacle cycle."""
+    number = serializers.IntegerField()
+    age = serializers.CharField()
+    title = serializers.CharField()
+
+
+class NumerologyReportSerializer(serializers.Serializer):
+    """Serializer for full numerology report."""
+    full_name = serializers.CharField()
+    birth_date = serializers.DateField()
+    life_path_number = serializers.IntegerField()
+    life_path_title = serializers.CharField()
+    destiny_number = serializers.IntegerField()
+    destiny_title = serializers.CharField()
+    soul_urge_number = serializers.IntegerField()
+    soul_urge_title = serializers.CharField()
+    personality_number = serializers.IntegerField()
+    personality_title = serializers.CharField()
+    birthday_number = serializers.IntegerField()
+    birthday_title = serializers.CharField()
+    challenge_number = serializers.IntegerField()
+    challenge_title = serializers.CharField()
+    pinnacle_cycle = PinnacleCycleSerializer(many=True)
+    summary = serializers.CharField()

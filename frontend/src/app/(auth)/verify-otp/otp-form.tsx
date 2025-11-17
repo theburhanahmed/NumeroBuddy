@@ -4,10 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { authAPI } from '@/lib/api-client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { 
+  MailIcon,
+  ShieldCheckIcon
+} from 'lucide-react';
+import { GlassCard } from '@/components/glassmorphism/glass-card';
+import { GlassButton } from '@/components/glassmorphism/glass-button';
 import { useToast } from '@/components/ui/use-toast';
 
 interface OTPFormProps {
@@ -36,7 +39,7 @@ export default function OTPForm({ email }: OTPFormProps) {
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'OTP verification failed. Please try again..',
+        description: error.message || 'OTP verification failed. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -64,18 +67,27 @@ export default function OTPForm({ email }: OTPFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Verify Your Account</CardTitle>
-        <CardDescription className="text-center">
-          Enter the 6-digit code sent to {email || 'your email'}
-        </CardDescription>
-      </CardHeader>
+    <GlassCard variant="elevated" className="p-8">
+      <div className="text-center mb-6">
+        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <ShieldCheckIcon className="w-6 h-6 text-white" />
+        </div>
+        <p className="text-gray-600 dark:text-gray-400">
+          Enter the 6-digit code sent to
+        </p>
+        <p className="font-medium text-gray-900 dark:text-white flex items-center justify-center gap-2 mt-1">
+          <MailIcon className="w-4 h-4" />
+          {email || 'your email'}
+        </p>
+      </div>
+      
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <div className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="otp">OTP Code</Label>
-            <Input
+            <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+              OTP Code
+            </label>
+            <input
               id="otp"
               type="text"
               placeholder="123456"
@@ -84,28 +96,51 @@ export default function OTPForm({ email }: OTPFormProps) {
               required
               disabled={loading}
               maxLength={6}
-              className="text-center text-2xl tracking-widest"
+              className="w-full px-3 py-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-center text-2xl tracking-widest"
             />
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
               Code expires in 10 minutes
             </p>
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={loading || otp.length !== 6}>
-            {loading ? 'Verifying...' : 'Verify Account'}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleResendOTP}
-            disabled={resending || !email}
-          >
-            {resending ? 'Resending...' : 'Resend OTP'}
-          </Button>
-        </CardFooter>
+          
+          <div className="space-y-4">
+            <GlassButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full"
+              disabled={loading || otp.length !== 6}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                  Verifying...
+                </div>
+              ) : (
+                "Verify Account"
+              )}
+            </GlassButton>
+            
+            <GlassButton
+              type="button"
+              variant="secondary"
+              size="lg"
+              className="w-full"
+              onClick={handleResendOTP}
+              disabled={resending || !email}
+            >
+              {resending ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-gray-400/30 border-t-gray-600 dark:border-gray-500/30 dark:border-t-gray-300 rounded-full animate-spin mr-2"></div>
+                  Resending...
+                </div>
+              ) : (
+                "Resend OTP"
+              )}
+            </GlassButton>
+          </div>
+        </div>
       </form>
-    </Card>
+    </GlassCard>
   );
 }

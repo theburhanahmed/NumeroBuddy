@@ -371,3 +371,207 @@ class DeviceToken(models.Model):
     
     def __str__(self):
         return f"{self.device_type} device for {self.user}"
+
+
+# New models for additional features
+
+class CompatibilityCheck(models.Model):
+    """Compatibility check between user and another person."""
+    
+    RELATIONSHIP_TYPES = [
+        ('romantic', 'Romantic'),
+        ('business', 'Business'),
+        ('friendship', 'Friendship'),
+        ('family', 'Family'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='compatibility_checks')
+    partner_name = models.CharField(max_length=100)
+    partner_birth_date = models.DateField()
+    relationship_type = models.CharField(max_length=20, choices=RELATIONSHIP_TYPES)
+    compatibility_score = models.IntegerField()  # Percentage score
+    strengths = models.JSONField(default=list)  # List of strengths
+    challenges = models.JSONField(default=list)  # List of challenges
+    advice = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'compatibility_checks'
+        verbose_name = 'Compatibility Check'
+        verbose_name_plural = 'Compatibility Checks'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['relationship_type']),
+        ]
+    
+    def __str__(self):
+        return f"Compatibility check for {self.user} with {self.partner_name}"
+
+
+class Remedy(models.Model):
+    """Personalized remedies for users based on numerology."""
+    
+    REMEDY_TYPES = [
+        ('gemstone', 'Gemstone'),
+        ('color', 'Color'),
+        ('ritual', 'Ritual'),
+        ('mantra', 'Mantra'),
+        ('dietary', 'Dietary'),
+        ('exercise', 'Exercise'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='remedies')
+    remedy_type = models.CharField(max_length=20, choices=REMEDY_TYPES)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    recommendation = models.TextField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'remedies'
+        verbose_name = 'Remedy'
+        verbose_name_plural = 'Remedies'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'remedy_type']),
+            models.Index(fields=['is_active']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} remedy for {self.user}"
+
+
+class RemedyTracking(models.Model):
+    """Tracking of remedy practice by users."""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='remedy_trackings')
+    remedy = models.ForeignKey(Remedy, on_delete=models.CASCADE, related_name='trackings')
+    date = models.DateField()
+    is_completed = models.BooleanField(default=False)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'remedy_trackings'
+        verbose_name = 'Remedy Tracking'
+        verbose_name_plural = 'Remedy Trackings'
+        ordering = ['-date']
+        unique_together = ['user', 'remedy', 'date']
+        indexes = [
+            models.Index(fields=['user', 'date']),
+            models.Index(fields=['remedy', 'date']),
+        ]
+    
+    def __str__(self):
+        return f"Tracking for {self.remedy} on {self.date}"
+
+
+class Expert(models.Model):
+    """Numerology experts for consultations."""
+    
+    EXPERT_SPECIALTIES = [
+        ('relationship', 'Relationship & Compatibility'),
+        ('career', 'Career & Business'),
+        ('spiritual', 'Spiritual Growth'),
+        ('health', 'Health & Wellness'),
+        ('general', 'General Numerology'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    specialty = models.CharField(max_length=20, choices=EXPERT_SPECIALTIES)
+    experience_years = models.IntegerField()
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    bio = models.TextField()
+    profile_picture_url = models.URLField(max_length=500, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'experts'
+        verbose_name = 'Expert'
+        verbose_name_plural = 'Experts'
+        ordering = ['-rating', '-experience_years']
+        indexes = [
+            models.Index(fields=['specialty', 'is_active']),
+            models.Index(fields=['rating']),
+        ]
+    
+    def __str__(self):
+        return f"Expert {self.name} - {self.specialty}"
+
+
+class Consultation(models.Model):
+    """Consultation bookings with experts."""
+    
+    CONSULTATION_TYPES = [
+        ('video', 'Video Call'),
+        ('chat', 'Chat'),
+        ('phone', 'Phone Call'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('rescheduled', 'Rescheduled'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='consultations')
+    expert = models.ForeignKey(Expert, on_delete=models.CASCADE, related_name='consultations')
+    consultation_type = models.CharField(max_length=20, choices=CONSULTATION_TYPES)
+    scheduled_at = models.DateTimeField()
+    duration_minutes = models.IntegerField(default=30)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    notes = models.TextField(blank=True)
+    meeting_link = models.URLField(max_length=500, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'consultations'
+        verbose_name = 'Consultation'
+        verbose_name_plural = 'Consultations'
+        ordering = ['-scheduled_at']
+        indexes = [
+            models.Index(fields=['user', 'scheduled_at']),
+            models.Index(fields=['expert', 'scheduled_at']),
+            models.Index(fields=['status']),
+        ]
+    
+    def __str__(self):
+        return f"Consultation with {self.expert} for {self.user} on {self.scheduled_at}"
+
+
+class ConsultationReview(models.Model):
+    """Reviews for completed consultations."""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    consultation = models.OneToOneField(Consultation, on_delete=models.CASCADE, related_name='review')
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # 1-5 stars
+    review_text = models.TextField()
+    is_anonymous = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'consultation_reviews'
+        verbose_name = 'Consultation Review'
+        verbose_name_plural = 'Consultation Reviews'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['consultation']),
+            models.Index(fields=['rating']),
+        ]
+    
+    def __str__(self):
+        return f"Review for {self.consultation}"

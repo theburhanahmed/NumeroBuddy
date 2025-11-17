@@ -83,3 +83,116 @@ export interface NumberCardData {
   description: string;
   color: 'purple' | 'gold' | 'blue';
 }
+
+// New type definitions for additional features
+
+export interface LifePathAnalysis {
+  number: number;
+  title: string;
+  description: string;
+  strengths: string[];
+  challenges: string[];
+  career: string[];
+  relationships: string;
+  advice: string;
+}
+
+export interface CompatibilityCheck {
+  id: string;
+  user: string;
+  partner_name: string;
+  partner_birth_date: string;
+  relationship_type: 'romantic' | 'business' | 'friendship' | 'family';
+  compatibility_score: number;
+  strengths: string[];
+  challenges: string[];
+  advice: string;
+  created_at: string;
+}
+
+export interface Remedy {
+  id: string;
+  user: string;
+  remedy_type: 'gemstone' | 'color' | 'ritual' | 'mantra' | 'dietary' | 'exercise';
+  title: string;
+  description: string;
+  recommendation: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RemedyTracking {
+  id: string;
+  user: string;
+  remedy: string;
+  date: string;
+  is_completed: boolean;
+  notes: string;
+  created_at: string;
+}
+
+export interface Expert {
+  id: string;
+  name: string;
+  email: string;
+  specialty: 'relationship' | 'career' | 'spiritual' | 'health' | 'general';
+  experience_years: number;
+  rating: number;
+  bio: string;
+  profile_picture_url?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Consultation {
+  id: string;
+  user: string;
+  expert: string;
+  expert_name: string;
+  expert_specialty: string;
+  consultation_type: 'video' | 'chat' | 'phone';
+  scheduled_at: string;
+  duration_minutes: number;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
+  notes: string;
+  meeting_link?: string;
+  created_at: string;
+  updated_at: string;
+  review?: ConsultationReview;
+}
+
+export interface ConsultationReview {
+  id: string;
+  consultation: string;
+  rating: number;
+  review_text: string;
+  is_anonymous: boolean;
+  created_at: string;
+}
+
+export interface PinnacleCycle {
+  number: number;
+  age: string;
+  title: string;
+}
+
+export interface NumerologyReport {
+  full_name: string;
+  birth_date: string;
+  life_path_number: number;
+  life_path_title: string;
+  destiny_number: number;
+  destiny_title: string;
+  soul_urge_number: number;
+  soul_urge_title: string;
+  personality_number: number;
+  personality_title: string;
+  birthday_number: number;
+  birthday_title: string;
+  challenge_number: number;
+  challenge_title: string;
+  pinnacle_cycle: PinnacleCycle[];
+  summary: string;
+}

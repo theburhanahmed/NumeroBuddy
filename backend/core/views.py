@@ -9,14 +9,22 @@ from rest_framework_simplejwt.tokens import RefreshToken as JWTRefreshToken
 from django.utils import timezone
 from django.http import HttpResponse
 from datetime import timedelta, date, datetime
-from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken, NumerologyProfile, DailyReading, AIConversation, AIMessage
+from .models import (
+    User, UserProfile, OTPCode, RefreshToken, DeviceToken, 
+    NumerologyProfile, DailyReading, AIConversation, AIMessage,
+    CompatibilityCheck, Remedy, RemedyTracking, Expert, Consultation, ConsultationReview
+)
 from .serializers import (
     UserRegistrationSerializer, OTPVerificationSerializer, ResendOTPSerializer,
     LoginSerializer, LogoutSerializer, RefreshTokenSerializer,
     PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
     UserProfileSerializer, DeviceTokenSerializer,
     NumerologyProfileSerializer, DailyReadingSerializer, BirthChartSerializer,
-    AIConversationSerializer, AIMessageSerializer, ChatMessageSerializer
+    AIConversationSerializer, AIMessageSerializer, ChatMessageSerializer,
+    CompatibilityCheckSerializer, RemedySerializer, RemedyTrackingSerializer,
+    ExpertSerializer, ConsultationSerializer, ConsultationBookingSerializer,
+    ConsultationReviewSerializer, LifePathAnalysisSerializer, PinnacleCycleSerializer,
+    NumerologyReportSerializer
 )
 from .utils import generate_otp, send_otp_email
 from .numerology import NumerologyCalculator, validate_name, validate_birth_date
@@ -793,3 +801,561 @@ def health_check(request):
         'status': 'healthy',
         'timestamp': timezone.now().isoformat()
     }, status=status.HTTP_200_OK)
+
+
+# New views for additional features
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_life_path_analysis(request):
+    """Get detailed life path analysis for the user."""
+    user = request.user
+    
+    try:
+        profile = NumerologyProfile.objects.get(user=user)
+        life_path_number = profile.life_path_number
+        
+        # Get interpretation for life path number
+        try:
+            interpretation = get_interpretation(life_path_number)
+        except ValueError:
+            return Response({
+                'error': 'Interpretation not available for your life path number'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Return detailed analysis
+        serializer = LifePathAnalysisSerializer({
+            'number': life_path_number,
+            'title': interpretation['title'],
+            'description': interpretation['description'],
+            'strengths': interpretation['strengths'],
+            'challenges': interpretation['challenges'],
+            'career': interpretation['career'],
+            'relationships': interpretation['relationships'],
+            'advice': interpretation['life_purpose']
+        })
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    except NumerologyProfile.DoesNotExist:
+        return Response({
+            'error': 'Please complete your numerology profile first.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def check_compatibility(request):
+    """Check compatibility with another person."""
+    user = request.user
+    partner_name = request.data.get('partner_name')
+    partner_birth_date = request.data.get('partner_birth_date')
+    relationship_type = request.data.get('relationship_type', 'romantic')
+    
+    # Validate input
+    if not partner_name or not partner_birth_date:
+        return Response({
+            'error': 'Partner name and birth date are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Convert birth date string to date object
+        from datetime import datetime
+        partner_birth_date = datetime.strptime(partner_birth_date, '%Y-%m-%d').date()
+    except ValueError:
+        return Response({
+            'error': 'Invalid date format. Use YYYY-MM-DD'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Get user's numerology profile
+        user_profile = NumerologyProfile.objects.get(user=user)
+        
+        # Calculate partner's life path number
+        calculator = NumerologyCalculator()
+        partner_life_path = calculator.calculate_life_path_number(partner_birth_date)
+        user_life_path = user_profile.life_path_number
+        
+        # Simple compatibility algorithm (this is a basic implementation)
+        # In a real application, this would be more sophisticated
+        compatibility_score = 100 - abs(user_life_path - partner_life_path) * 10
+        compatibility_score = max(0, min(100, compatibility_score))  # Clamp between 0-100
+        
+        # Determine strengths and challenges based on numbers
+        strengths = []
+        challenges = []
+        
+        if user_life_path == partner_life_path:
+            strengths.append("Shared life path and understanding")
+        elif abs(user_life_path - partner_life_path) <= 2:
+            strengths.append("Complementary energies")
+        else:
+            challenges.append("Different life approaches")
+        
+        # Add more logic based on specific numbers
+        if user_life_path in [1, 8] and partner_life_path in [2, 7]:
+            strengths.append("Balanced leadership and support")
+        elif user_life_path in [3, 6] and partner_life_path in [3, 6]:
+            strengths.append("Creative and nurturing connection")
+        
+        advice = "Focus on communication and understanding each other's perspectives."
+        
+        # Save compatibility check
+        compatibility_check = CompatibilityCheck.objects.create(
+            user=user,
+            partner_name=partner_name,
+            partner_birth_date=partner_birth_date,
+            relationship_type=relationship_type,
+            compatibility_score=compatibility_score,
+            strengths=strengths,
+            challenges=challenges,
+            advice=advice
+        )
+        
+        # Serialize and return result
+        serializer = CompatibilityCheckSerializer(compatibility_check)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+    except NumerologyProfile.DoesNotExist:
+        return Response({
+            'error': 'Please complete your numerology profile first.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': f'Failed to check compatibility: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_compatibility_history(request):
+    """Get user's compatibility check history."""
+    user = request.user
+    compatibility_checks = CompatibilityCheck.objects.filter(user=user).order_by('-created_at')
+    serializer = CompatibilityCheckSerializer(compatibility_checks, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_personalized_remedies(request):
+    """Get personalized remedies for the user."""
+    user = request.user
+    
+    try:
+        # Get user's numerology profile
+        profile = NumerologyProfile.objects.get(user=user)
+        
+        # Get existing remedies for user
+        existing_remedies = Remedy.objects.filter(user=user, is_active=True)
+        if existing_remedies.exists():
+            serializer = RemedySerializer(existing_remedies, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Generate new remedies based on numerology profile
+        remedies = []
+        
+        # Gemstone remedy
+        gemstone_remedies = {
+            1: {"title": "Ruby for Leadership", "description": "Enhances leadership qualities and confidence", "recommendation": "Wear as a ring on the right hand on Sunday"},
+            2: {"title": "Pearl for Harmony", "description": "Promotes peace and emotional balance", "recommendation": "Wear as a pendant on Monday"},
+            3: {"title": "Yellow Sapphire for Creativity", "description": "Boosts creativity and communication", "recommendation": "Wear as a ring on Thursday"},
+            4: {"title": "Emerald for Stability", "description": "Brings stability and growth", "recommendation": "Wear as a pendant on Wednesday"},
+            5: {"title": "Peridot for Freedom", "description": "Enhances adaptability and freedom", "recommendation": "Wear as a ring on Wednesday"},
+            6: {"title": "Pink Tourmaline for Love", "description": "Attracts love and harmony", "recommendation": "Wear as a pendant on Friday"},
+            7: {"title": "Amethyst for Wisdom", "description": "Enhances intuition and wisdom", "recommendation": "Wear as a ring on Saturday"},
+            8: {"title": "Diamond for Power", "description": "Brings success and abundance", "recommendation": "Wear as a ring on Saturday"},
+            9: {"title": "Bloodstone for Compassion", "description": "Enhances compassion and healing", "recommendation": "Wear as a pendant on Tuesday"},
+            11: {"title": "White Sapphire for Illumination", "description": "Enhances spiritual insight", "recommendation": "Wear as a ring on Sunday"},
+            22: {"title": "Blue Sapphire for Mastery", "description": "Enhances leadership and vision", "recommendation": "Wear as a pendant on Saturday"},
+            33: {"title": "Clear Quartz for Teaching", "description": "Enhances healing and teaching abilities", "recommendation": "Wear as a pendant on Sunday"}
+        }
+        
+        if profile.life_path_number in gemstone_remedies:
+            gemstone_data = gemstone_remedies[profile.life_path_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='gemstone',
+                title=gemstone_data['title'],
+                description=gemstone_data['description'],
+                recommendation=gemstone_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Color remedy
+        color_remedies = {
+            1: {"title": "Red for Energy", "description": "Boosts energy and vitality", "recommendation": "Incorporate red in clothing or home decor on Sundays"},
+            2: {"title": "Silver for Harmony", "description": "Promotes peace and balance", "recommendation": "Incorporate silver in clothing or accessories on Mondays"},
+            3: {"title": "Yellow for Creativity", "description": "Enhances creativity and joy", "recommendation": "Incorporate yellow in clothing or home decor on Thursdays"},
+            4: {"title": "Green for Growth", "description": "Brings stability and growth", "recommendation": "Incorporate green in clothing or home decor on Wednesdays"},
+            5: {"title": "Orange for Freedom", "description": "Enhances adaptability and change", "recommendation": "Incorporate orange in clothing or home decor on Wednesdays"},
+            6: {"title": "Pink for Love", "description": "Attracts love and harmony", "recommendation": "Incorporate pink in clothing or home decor on Fridays"},
+            7: {"title": "Purple for Wisdom", "description": "Enhances intuition and spirituality", "recommendation": "Incorporate purple in clothing or home decor on Saturdays"},
+            8: {"title": "White for Power", "description": "Brings success and clarity", "recommendation": "Incorporate white in clothing or home decor on Saturdays"},
+            9: {"title": "Blue for Compassion", "description": "Enhances compassion and healing", "recommendation": "Incorporate blue in clothing or home decor on Tuesdays"},
+            11: {"title": "White for Illumination", "description": "Enhances spiritual insight", "recommendation": "Incorporate white in clothing or home decor on Sundays"},
+            22: {"title": "Blue for Mastery", "description": "Enhances leadership and vision", "recommendation": "Incorporate blue in clothing or home decor on Saturdays"},
+            33: {"title": "Clear for Teaching", "description": "Enhances healing and teaching abilities", "recommendation": "Incorporate clear/white in clothing or home decor on Sundays"}
+        }
+        
+        if profile.life_path_number in color_remedies:
+            color_data = color_remedies[profile.life_path_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='color',
+                title=color_data['title'],
+                description=color_data['description'],
+                recommendation=color_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Ritual remedy
+        ritual_remedies = {
+            1: {"title": "Morning Affirmations", "description": "Boost confidence and set intentions", "recommendation": "Practice 10 minutes of affirmations each morning"},
+            2: {"title": "Meditation for Peace", "description": "Promote inner harmony", "recommendation": "Practice 15 minutes of meditation daily"},
+            3: {"title": "Creative Expression", "description": "Enhance self-expression", "recommendation": "Engage in creative activities for 30 minutes daily"},
+            4: {"title": "Grounding Exercises", "description": "Build stability", "recommendation": "Practice grounding exercises like walking barefoot for 10 minutes"},
+            5: {"title": "Adventure Time", "description": "Embrace change and freedom", "recommendation": "Try something new once a week"},
+            6: {"title": "Heart Opening", "description": "Cultivate love and compassion", "recommendation": "Practice heart-opening yoga poses 3 times a week"},
+            7: {"title": "Study Time", "description": "Enhance wisdom and knowledge", "recommendation": "Dedicate 30 minutes daily to learning"},
+            8: {"title": "Goal Setting", "description": "Focus on success and abundance", "recommendation": "Review and set goals weekly"},
+            9: {"title": "Service to Others", "description": "Express compassion", "recommendation": "Perform one act of service weekly"},
+            11: {"title": "Spiritual Practice", "description": "Enhance spiritual connection", "recommendation": "Practice spiritual activities daily"},
+            22: {"title": "Vision Planning", "description": "Work on big dreams", "recommendation": "Dedicate time monthly to vision planning"},
+            33: {"title": "Healing Practice", "description": "Develop healing abilities", "recommendation": "Practice healing techniques weekly"}
+        }
+        
+        if profile.life_path_number in ritual_remedies:
+            ritual_data = ritual_remedies[profile.life_path_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='ritual',
+                title=ritual_data['title'],
+                description=ritual_data['description'],
+                recommendation=ritual_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Return created remedies
+        serializer = RemedySerializer(remedies, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+    except NumerologyProfile.DoesNotExist:
+        return Response({
+            'error': 'Please complete your numerology profile first.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': f'Failed to generate remedies: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def track_remedy(request, remedy_id):
+    """Track remedy practice."""
+    user = request.user
+    date_str = request.data.get('date')
+    is_completed = request.data.get('is_completed', False)
+    notes = request.data.get('notes', '')
+    
+    try:
+        # Convert date string to date object
+        from datetime import datetime
+        track_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return Response({
+            'error': 'Invalid date format. Use YYYY-MM-DD'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Get remedy
+        remedy = Remedy.objects.get(id=remedy_id, user=user)
+        
+        # Create or update tracking
+        tracking, created = RemedyTracking.objects.update_or_create(
+            user=user,
+            remedy=remedy,
+            date=track_date,
+            defaults={
+                'is_completed': is_completed,
+                'notes': notes
+            }
+        )
+        
+        serializer = RemedyTrackingSerializer(tracking)
+        return Response(serializer.data, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
+        
+    except Remedy.DoesNotExist:
+        return Response({
+            'error': 'Remedy not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': f'Failed to track remedy: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_experts(request):
+    """Get list of available experts."""
+    experts = Expert.objects.filter(is_active=True).order_by('-rating', '-experience_years')
+    serializer = ExpertSerializer(experts, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_expert(request, expert_id):
+    """Get details of a specific expert."""
+    try:
+        expert = Expert.objects.get(id=expert_id, is_active=True)
+        serializer = ExpertSerializer(expert)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Expert.DoesNotExist:
+        return Response({
+            'error': 'Expert not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def book_consultation(request):
+    """Book a consultation with an expert."""
+    user = request.user
+    expert_id = request.data.get('expert')
+    consultation_type = request.data.get('consultation_type')
+    scheduled_at = request.data.get('scheduled_at')
+    duration_minutes = request.data.get('duration_minutes', 30)
+    notes = request.data.get('notes', '')
+    
+    # Validate input
+    if not expert_id or not consultation_type or not scheduled_at:
+        return Response({
+            'error': 'Expert, consultation type, and scheduled time are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Convert scheduled_at string to datetime object
+        from datetime import datetime
+        scheduled_datetime = datetime.strptime(scheduled_at, '%Y-%m-%dT%H:%M:%S')
+    except ValueError:
+        return Response({
+            'error': 'Invalid date format. Use ISO format: YYYY-MM-DDTHH:MM:SS'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Check if expert exists and is active
+        expert = Expert.objects.get(id=expert_id, is_active=True)
+        
+        # Check if slot is available (basic check - in a real app this would be more sophisticated)
+        existing_consultations = Consultation.objects.filter(
+            expert=expert,
+            scheduled_at__date=scheduled_datetime.date(),
+            scheduled_at__hour=scheduled_datetime.hour,
+            status__in=['pending', 'confirmed']
+        )
+        
+        if existing_consultations.exists():
+            return Response({
+                'error': 'This time slot is not available. Please choose another time.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create consultation
+        consultation = Consultation.objects.create(
+            user=user,
+            expert=expert,
+            consultation_type=consultation_type,
+            scheduled_at=scheduled_datetime,
+            duration_minutes=duration_minutes,
+            notes=notes,
+            status='pending'
+        )
+        
+        serializer = ConsultationSerializer(consultation)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+    except Expert.DoesNotExist:
+        return Response({
+            'error': 'Expert not found or not available'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': f'Failed to book consultation: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_upcoming_consultations(request):
+    """Get user's upcoming consultations."""
+    user = request.user
+    from datetime import datetime
+    upcoming_consultations = Consultation.objects.filter(
+        user=user,
+        scheduled_at__gte=datetime.now(),
+        status__in=['pending', 'confirmed']
+    ).order_by('scheduled_at')
+    
+    serializer = ConsultationSerializer(upcoming_consultations, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_past_consultations(request):
+    """Get user's past consultations."""
+    user = request.user
+    from datetime import datetime
+    past_consultations = Consultation.objects.filter(
+        user=user,
+        scheduled_at__lt=datetime.now()
+    ).order_by('-scheduled_at')
+    
+    serializer = ConsultationSerializer(past_consultations, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def rate_consultation(request, consultation_id):
+    """Rate a completed consultation."""
+    user = request.user
+    rating = request.data.get('rating')
+    review_text = request.data.get('review_text', '')
+    is_anonymous = request.data.get('is_anonymous', False)
+    
+    # Validate rating
+    if not rating or not (1 <= rating <= 5):
+        return Response({
+            'error': 'Rating must be between 1 and 5'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Get consultation
+        consultation = Consultation.objects.get(
+            id=consultation_id,
+            user=user,
+            status='completed'
+        )
+        
+        # Create or update review
+        review, created = ConsultationReview.objects.update_or_create(
+            consultation=consultation,
+            defaults={
+                'rating': rating,
+                'review_text': review_text,
+                'is_anonymous': is_anonymous
+            }
+        )
+        
+        # Update expert rating (simple average calculation)
+        expert_reviews = ConsultationReview.objects.filter(consultation__expert=consultation.expert)
+        total_rating = sum(review.rating for review in expert_reviews)
+        average_rating = total_rating / expert_reviews.count() if expert_reviews.count() > 0 else 0
+        
+        consultation.expert.rating = round(average_rating, 2)
+        consultation.expert.save()
+        
+        serializer = ConsultationReviewSerializer(review)
+        return Response(serializer.data, status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
+        
+    except Consultation.DoesNotExist:
+        return Response({
+            'error': 'Consultation not found or not completed'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': f'Failed to rate consultation: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_full_numerology_report(request):
+    """Get comprehensive numerology report."""
+    user = request.user
+    
+    try:
+        # Get user's numerology profile
+        profile = NumerologyProfile.objects.get(user=user)
+        
+        # Get interpretations for all numbers
+        interpretations = {}
+        numbers = [
+            ('life_path_number', profile.life_path_number),
+            ('destiny_number', profile.destiny_number),
+            ('soul_urge_number', profile.soul_urge_number),
+            ('personality_number', profile.personality_number),
+            ('attitude_number', profile.attitude_number),
+            ('maturity_number', profile.maturity_number),
+            ('balance_number', profile.balance_number),
+            ('personal_year_number', profile.personal_year_number),
+            ('birthday_number', profile.personal_month_number),  # Using month number as birthday number
+        ]
+        
+        for field_name, number in numbers:
+            try:
+                interpretations[field_name] = get_interpretation(number)
+            except ValueError:
+                interpretations[field_name] = None
+        
+        # Calculate pinnacle cycles (simplified implementation)
+        # In a real application, this would be more complex
+        birth_date = user.profile.date_of_birth
+        if birth_date:
+            pinnacle_cycles = []
+            calculator = NumerologyCalculator()
+            
+            # First pinnacle cycle (birth to ~26-35 years)
+            first_pinnacle_end = 36 - calculator._reduce_to_single_digit(birth_date.day)
+            pinnacle_cycles.append({
+                'number': profile.life_path_number,
+                'age': f"0-{first_pinnacle_end}",
+                'title': interpretations.get('life_path_number', {}).get('title', 'Unknown') if interpretations.get('life_path_number') else 'Unknown'
+            })
+            
+            # Second pinnacle cycle
+            second_number = calculator._reduce_to_single_digit(birth_date.month)
+            second_pinnacle_end = first_pinnacle_end + 9
+            pinnacle_cycles.append({
+                'number': second_number,
+                'age': f"{first_pinnacle_end + 1}-{second_pinnacle_end}",
+                'title': interpretations.get('destiny_number', {}).get('title', 'Unknown') if interpretations.get('destiny_number') else 'Unknown'
+            })
+            
+            # Third and fourth pinnacle cycles would be calculated similarly
+        else:
+            pinnacle_cycles = []
+        
+        # Create report data
+        report_data = {
+            'full_name': user.full_name,
+            'birth_date': birth_date,
+            'life_path_number': profile.life_path_number,
+            'life_path_title': interpretations.get('life_path_number', {}).get('title', 'Unknown') if interpretations.get('life_path_number') else 'Unknown',
+            'destiny_number': profile.destiny_number,
+            'destiny_title': interpretations.get('destiny_number', {}).get('title', 'Unknown') if interpretations.get('destiny_number') else 'Unknown',
+            'soul_urge_number': profile.soul_urge_number,
+            'soul_urge_title': interpretations.get('soul_urge_number', {}).get('title', 'Unknown') if interpretations.get('soul_urge_number') else 'Unknown',
+            'personality_number': profile.personality_number,
+            'personality_title': interpretations.get('personality_number', {}).get('title', 'Unknown') if interpretations.get('personality_number') else 'Unknown',
+            'birthday_number': profile.personal_month_number,
+            'birthday_title': interpretations.get('birthday_number', {}).get('title', 'Unknown') if interpretations.get('birthday_number') else 'Unknown',
+            'challenge_number': profile.balance_number,  # Using balance number as challenge number
+            'challenge_title': interpretations.get('challenge_number', {}).get('title', 'Unknown') if interpretations.get('challenge_number') else 'Unknown',
+            'pinnacle_cycle': pinnacle_cycles,
+            'summary': f"Your numerology profile reveals a {interpretations.get('life_path_number', {}).get('title', 'unique individual')} with strong {interpretations.get('destiny_number', {}).get('title', 'potential')}."
+        }
+        
+        serializer = NumerologyReportSerializer(report_data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    except NumerologyProfile.DoesNotExist:
+        return Response({
+            'error': 'Please complete your numerology profile first.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': f'Failed to generate report: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
