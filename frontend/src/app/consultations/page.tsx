@@ -279,7 +279,7 @@ export default function ConsultationsPage() {
                           {[...Array(5)].map((_, i) => (
                             <StarIcon 
                               key={i} 
-                              className={`w-4 h-4 ${i < (consultation.review?.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} 
+                              className={`w-4 h-4 ${i < (consultation.review ? consultation.review.rating : 0) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} 
                             />
                           ))}
                         </div>

@@ -1,7 +1,7 @@
 /**
  * Custom hooks for NumerAI frontend.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   numerologyAPI, 
   expertAPI, 
@@ -22,7 +22,7 @@ export const useLifePathAnalysis = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAnalysis = async () => {
+  const fetchAnalysis = useCallback(async () => {
     try {
       setLoading(true);
       const data = await numerologyAPI.getLifePathAnalysis();
@@ -34,11 +34,11 @@ export const useLifePathAnalysis = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAnalysis();
-  }, []);
+  }, [fetchAnalysis]);
 
   return { analysis, loading, error, refetch: fetchAnalysis };
 };
@@ -49,7 +49,7 @@ export const useCompatibilityChecks = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchChecks = async () => {
+  const fetchChecks = useCallback(async () => {
     try {
       setLoading(true);
       const data = await numerologyAPI.getCompatibilityHistory();
@@ -61,11 +61,11 @@ export const useCompatibilityChecks = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchChecks();
-  }, []);
+  }, [fetchChecks]);
 
   return { checks, loading, error, refetch: fetchChecks };
 };
@@ -76,7 +76,7 @@ export const usePersonalizedRemedies = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRemedies = async () => {
+  const fetchRemedies = useCallback(async () => {
     try {
       setLoading(true);
       const data = await numerologyAPI.getPersonalizedRemedies();
@@ -88,11 +88,11 @@ export const usePersonalizedRemedies = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchRemedies();
-  }, []);
+  }, [fetchRemedies]);
 
   return { remedies, loading, error, refetch: fetchRemedies };
 };
@@ -132,7 +132,7 @@ export const useExperts = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchExperts = async () => {
+  const fetchExperts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await expertAPI.getExperts();
@@ -144,11 +144,11 @@ export const useExperts = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchExperts();
-  }, []);
+  }, [fetchExperts]);
 
   return { experts, loading, error, refetch: fetchExperts };
 };
@@ -160,7 +160,7 @@ export const useConsultations = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUpcoming = async () => {
+  const fetchUpcoming = useCallback(async () => {
     try {
       const data = await consultationAPI.getUpcomingConsultations();
       setUpcoming(data);
@@ -168,9 +168,9 @@ export const useConsultations = () => {
       setError('Failed to fetch upcoming consultations');
       console.error(err);
     }
-  };
+  }, []);
 
-  const fetchPast = async () => {
+  const fetchPast = useCallback(async () => {
     try {
       const data = await consultationAPI.getPastConsultations();
       setPast(data);
@@ -178,9 +178,9 @@ export const useConsultations = () => {
       setError('Failed to fetch past consultations');
       console.error(err);
     }
-  };
+  }, []);
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
       await Promise.all([fetchUpcoming(), fetchPast()]);
@@ -191,7 +191,7 @@ export const useConsultations = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUpcoming, fetchPast]);
 
   useEffect(() => {
     fetchAll();
@@ -270,7 +270,7 @@ export const useNumerologyReport = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     try {
       setLoading(true);
       const data = await numerologyAPI.getFullNumerologyReport();
@@ -282,11 +282,11 @@ export const useNumerologyReport = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchReport();
-  }, []);
+  }, [fetchReport]);
 
   return { report, loading, error, refetch: fetchReport };
 };

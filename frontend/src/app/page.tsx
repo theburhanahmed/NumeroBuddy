@@ -353,7 +353,7 @@ export default function Home() {
             />
             <TestimonialCard 
               name="Michael Chen" 
-              text="The AI numerologist is amazing! It's like having a personal guide available 24/7. Highly recommend!" 
+              text="The AI numerologist is amazing! It&apos;s like having a personal guide available 24/7. Highly recommend!" 
               rating={5} 
               delay={0.3} 
             />

@@ -171,6 +171,7 @@ export interface Consultation {
   meeting_link?: string;
   created_at: string;
   updated_at: string;
+  review?: ConsultationReview;
 }
 
 export interface ConsultationReview {

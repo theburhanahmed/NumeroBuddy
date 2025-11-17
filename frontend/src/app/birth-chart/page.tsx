@@ -1,5 +1,5 @@
 /**
- * Birth Chart Page - Display user's complete numerology profile.
+ * Birth Chart Page - Display user&apos;s complete numerology profile.
  */
 'use client';
 
