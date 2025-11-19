@@ -290,6 +290,109 @@ class NumerologyCalculator:
         total = personal_month + day
         return self._reduce_to_single_digit(total, preserve_master=False)
     
+    def calculate_karmic_debt_number(self, birth_date: date) -> Optional[int]:
+        """
+        Calculate Karmic Debt Number from birth date.
+        Reveals karmic lessons and challenges to overcome.
+        
+        Args:
+            birth_date: Date of birth
+        
+        Returns:
+            Karmic Debt Number (13, 14, 16, 19) or None if no karmic debt
+        """
+        # Karmic debt numbers are derived from specific day/month combinations
+        day = birth_date.day
+        month = birth_date.month
+        year = birth_date.year
+        
+        # Check for karmic debt numbers in day, month, or year
+        karmic_numbers = {13, 14, 16, 19}
+        
+        if day in karmic_numbers:
+            return day
+            
+        if month in karmic_numbers:
+            return month
+            
+        if year in karmic_numbers:
+            return year
+            
+        # Check if any combination reduces to karmic debt number
+        day_reduced = self._reduce_to_single_digit(day, preserve_master=False)
+        month_reduced = self._reduce_to_single_digit(month, preserve_master=False)
+        year_reduced = self._reduce_to_single_digit(year, preserve_master=False)
+        
+        total = day_reduced + month_reduced + year_reduced
+        total_reduced = self._reduce_to_single_digit(total, preserve_master=False)
+        
+        if total_reduced in karmic_numbers:
+            return total_reduced
+            
+        return None
+    
+    def calculate_hidden_passion_number(self, full_name: str) -> int:
+        """
+        Calculate Hidden Passion Number from letters in name.
+        Reveals hidden talents and passions.
+        
+        Args:
+            full_name: Full birth name
+        
+        Returns:
+            Hidden Passion Number (1-9)
+        """
+        # Count frequency of each letter in name
+        name = full_name.upper().replace(" ", "")
+        letter_count = {}
+        
+        for char in name:
+            if char.isalpha():
+                letter_count[char] = letter_count.get(char, 0) + 1
+        
+        # Find letters that appear most frequently (3 or more times)
+        frequent_letters = [char for char, count in letter_count.items() if count >= 3]
+        
+        if not frequent_letters:
+            # If no letters appear 3+ times, use the most frequent letter
+            if letter_count:
+                max_count = max(letter_count.values())
+                frequent_letters = [char for char, count in letter_count.items() if count == max_count]
+            else:
+                # Fallback if no valid letters
+                return 1
+        
+        # Sum values of frequent letters
+        total = sum(self._get_letter_value(char) for char in frequent_letters)
+        return self._reduce_to_single_digit(total, preserve_master=False)
+    
+    def calculate_subconscious_self_number(self, full_name: str) -> int:
+        """
+        Calculate Subconscious Self Number from vowels and consonants.
+        Reveals subconscious motivations and inner self.
+        
+        Args:
+            full_name: Full birth name
+        
+        Returns:
+            Subconscious Self Number (1-9)
+        """
+        # Count vowels and consonants
+        vowels_count = 0
+        consonants_count = 0
+        name = full_name.upper()
+        
+        for char in name:
+            if char.isalpha():
+                if char in self.VOWELS:
+                    vowels_count += 1
+                else:
+                    consonants_count += 1
+        
+        # Sum and reduce
+        total = vowels_count + consonants_count
+        return self._reduce_to_single_digit(total, preserve_master=False)
+    
     def calculate_all(self, full_name: str, birth_date: date) -> Dict[str, int]:
         """
         Calculate all numerology numbers at once.
@@ -304,7 +407,10 @@ class NumerologyCalculator:
         life_path = self.calculate_life_path_number(birth_date)
         destiny = self.calculate_destiny_number(full_name)
         
-        return {
+        # Calculate karmic debt number
+        karmic_debt = self.calculate_karmic_debt_number(birth_date)
+        
+        result = {
             'life_path_number': life_path,
             'destiny_number': destiny,
             'soul_urge_number': self.calculate_soul_urge_number(full_name),
@@ -314,7 +420,15 @@ class NumerologyCalculator:
             'balance_number': self.calculate_balance_number(full_name),
             'personal_year_number': self.calculate_personal_year_number(birth_date),
             'personal_month_number': self.calculate_personal_month_number(birth_date),
+            'hidden_passion_number': self.calculate_hidden_passion_number(full_name),
+            'subconscious_self_number': self.calculate_subconscious_self_number(full_name)
         }
+        
+        # Add karmic debt if present
+        if karmic_debt is not None:
+            result['karmic_debt_number'] = karmic_debt
+            
+        return result
 
 
 def validate_name(name: str) -> bool:

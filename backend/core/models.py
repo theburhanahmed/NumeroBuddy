@@ -177,6 +177,11 @@ class NumerologyProfile(models.Model):
     personal_year_number = models.IntegerField()
     personal_month_number = models.IntegerField()
     
+    # Enhanced numbers for better remedies
+    karmic_debt_number = models.IntegerField(null=True, blank=True)
+    hidden_passion_number = models.IntegerField(null=True, blank=True)
+    subconscious_self_number = models.IntegerField(null=True, blank=True)
+    
     # Calculation metadata
     calculation_system = models.CharField(max_length=20, choices=SYSTEM_CHOICES, default='pythagorean')
     calculated_at = models.DateTimeField(auto_now_add=True)
@@ -575,3 +580,146 @@ class ConsultationReview(models.Model):
     
     def __str__(self):
         return f"Review for {self.consultation}"
+
+
+# New models for multi-person numerology reporting
+
+class Person(models.Model):
+    """Model to store information about people for numerology reports."""
+    
+    RELATIONSHIP_CHOICES = [
+        ('self', 'Self'),
+        ('spouse', 'Spouse'),
+        ('child', 'Child'),
+        ('parent', 'Parent'),
+        ('sibling', 'Sibling'),
+        ('friend', 'Friend'),
+        ('colleague', 'Colleague'),
+        ('partner', 'Business Partner'),
+        ('other', 'Other'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='people')
+    name = models.CharField(max_length=100)
+    birth_date = models.DateField()
+    relationship = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES, default='other')
+    notes = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'people'
+        verbose_name = 'Person'
+        verbose_name_plural = 'People'
+        ordering = ['name']
+        unique_together = ['user', 'name', 'birth_date']
+        indexes = [
+            models.Index(fields=['user', 'is_active']),
+            models.Index(fields=['relationship']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} ({self.birth_date}) for {self.user}"
+
+
+class PersonNumerologyProfile(models.Model):
+    """Calculated numerology profile for a specific person."""
+    
+    SYSTEM_CHOICES = [
+        ('pythagorean', 'Pythagorean'),
+        ('chaldean', 'Chaldean'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    person = models.OneToOneField(Person, on_delete=models.CASCADE, related_name='numerology_profile')
+    
+    # Core numbers
+    life_path_number = models.IntegerField()
+    destiny_number = models.IntegerField()
+    soul_urge_number = models.IntegerField()
+    personality_number = models.IntegerField()
+    attitude_number = models.IntegerField()
+    maturity_number = models.IntegerField()
+    balance_number = models.IntegerField()
+    personal_year_number = models.IntegerField()
+    personal_month_number = models.IntegerField()
+    
+    # Calculation metadata
+    calculation_system = models.CharField(max_length=20, choices=SYSTEM_CHOICES, default='pythagorean')
+    calculated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'person_numerology_profiles'
+        verbose_name = 'Person Numerology Profile'
+        verbose_name_plural = 'Person Numerology Profiles'
+    
+    def __str__(self):
+        return f"Numerology Profile for {self.person.name}"
+
+
+class ReportTemplate(models.Model):
+    """Template for different types of numerology reports."""
+    
+    REPORT_TYPES = [
+        ('basic', 'Basic Birth Chart'),
+        ('detailed', 'Detailed Analysis'),
+        ('compatibility', 'Compatibility Report'),
+        ('career', 'Career Guidance'),
+        ('relationship', 'Relationship Analysis'),
+        ('health', 'Health Insights'),
+        ('finance', 'Financial Forecast'),
+        ('yearly', 'Yearly Forecast'),
+        ('monthly', 'Monthly Guidance'),
+        ('daily', 'Daily Reading'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    report_type = models.CharField(max_length=20, choices=REPORT_TYPES)
+    is_premium = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'report_templates'
+        verbose_name = 'Report Template'
+        verbose_name_plural = 'Report Templates'
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['report_type', 'is_active']),
+            models.Index(fields=['is_premium']),
+        ]
+    
+    def __str__(self):
+        return self.name
+
+
+class GeneratedReport(models.Model):
+    """Store generated reports for later access."""
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='generated_reports')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='reports')
+    template = models.ForeignKey(ReportTemplate, on_delete=models.CASCADE, related_name='reports')
+    title = models.CharField(max_length=200)
+    content = models.JSONField()  # Store report content as JSON
+    generated_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'generated_reports'
+        verbose_name = 'Generated Report'
+        verbose_name_plural = 'Generated Reports'
+        ordering = ['-generated_at']
+        indexes = [
+            models.Index(fields=['user', 'generated_at']),
+            models.Index(fields=['person', 'template']),
+        ]
+    
+    def __str__(self):
+        return f"Report for {self.person.name} - {self.template.name}"

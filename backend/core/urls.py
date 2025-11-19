@@ -39,6 +39,17 @@ urlpatterns = [
     path('numerology/remedies/<uuid:remedy_id>/track/', views.track_remedy, name='track-remedy'),
     path('numerology/full-report/', views.get_full_numerology_report, name='full-numerology-report'),
     
+    # Multi-person numerology endpoints
+    path('people/', views.people_list_create, name='people-list-create'),
+    path('people/<uuid:person_id>/', views.person_detail, name='person-detail'),
+    path('people/<uuid:person_id>/calculate/', views.calculate_person_numerology, name='calculate-person-numerology'),
+    path('people/<uuid:person_id>/profile/', views.get_person_numerology_profile, name='person-numerology-profile'),
+    path('report-templates/', views.report_templates_list, name='report-templates-list'),
+    path('reports/generate/', views.generate_report, name='generate-report'),
+    path('reports/bulk-generate/', views.bulk_generate_reports, name='bulk-generate-reports'),
+    path('reports/', views.get_generated_reports, name='get-generated-reports'),
+    path('reports/<uuid:report_id>/', views.get_generated_report, name='get-generated-report'),
+    
     # Expert and consultation endpoints
     path('experts/', views.get_experts, name='experts'),
     path('experts/<uuid:expert_id>/', views.get_expert, name='expert-detail'),

@@ -1,12 +1,16 @@
 """
 Daily reading content generator for NumerAI.
+Enhanced with personalization based on user numerology profiles.
 """
-from typing import Dict
+from typing import Dict, List
+from datetime import date
 import random
+from .numerology import NumerologyCalculator
+from .interpretations import get_interpretation
 
 
 class DailyReadingGenerator:
-    """Generate daily reading content based on personal day number."""
+    """Generate daily reading content based on personal day number and user profile."""
     
     # Lucky colors for each number
     LUCKY_COLORS = {
@@ -302,6 +306,56 @@ class DailyReadingGenerator:
         ],
     }
     
+    # Personalized activities based on numerology numbers
+    PERSONALIZED_ACTIVITIES = {
+        'life_path': {
+            1: ["Focus on leadership opportunities today", "Start a new initiative that aligns with your goals"],
+            2: ["Seek harmony in your relationships", "Practice active listening with loved ones"],
+            3: ["Express your creativity through writing or art", "Share your ideas with confidence"],
+            4: ["Build structure in your daily routine", "Focus on completing long-term projects"],
+            5: ["Embrace change and new experiences", "Step out of your comfort zone"],
+            6: ["Nurture your relationships", "Create beauty in your environment"],
+            7: ["Spend time in quiet reflection", "Pursue knowledge or spiritual growth"],
+            8: ["Focus on career advancement", "Make strategic financial decisions"],
+            9: ["Serve others through volunteering", "Let go of what no longer serves you"],
+            11: ["Trust your intuitive insights", "Share your spiritual wisdom"],
+            22: ["Work on your grand vision", "Build something that serves humanity"],
+            33: ["Express unconditional love", "Help others heal and grow"]
+        },
+        'destiny': {
+            1: ["Express your unique talents boldly", "Take initiative in creative projects"],
+            2: ["Collaborate on meaningful projects", "Bring people together"],
+            3: ["Share your creative gifts with the world", "Communicate your vision"],
+            4: ["Build lasting systems or structures", "Focus on practical achievements"],
+            5: ["Embrace your adaptable nature", "Explore new ways of self-expression"],
+            6: ["Use your gifts to nurture others", "Create harmony in your community"],
+            7: ["Share your wisdom and insights", "Pursue deeper understanding"],
+            8: ["Express your leadership abilities", "Use your talents for success"],
+            9: ["Serve humanity through your gifts", "Express universal love"],
+            11: ["Share your inspirational insights", "Help others see new possibilities"],
+            22: ["Manifest your grand vision", "Create something that benefits many"],
+            33: ["Teach through compassionate service", "Heal through unconditional love"]
+        }
+    }
+    
+    # Personalized affirmations based on numerology numbers
+    PERSONALIZED_AFFIRMATIONS = {
+        'life_path': {
+            1: ["I lead with confidence and courage", "My vision creates reality"],
+            2: ["I create harmony in all my relationships", "My intuition guides me to peace"],
+            3: ["I express my creativity with joy", "My communication inspires others"],
+            4: ["I build solid foundations for my future", "My discipline creates lasting success"],
+            5: ["I embrace change with enthusiasm", "My adaptability is my strength"],
+            6: ["I nurture love and beauty in my world", "My compassion heals relationships"],
+            7: ["I seek truth and wisdom within", "My inner knowing guides me"],
+            8: ["I attract abundance through my efforts", "My leadership creates prosperity"],
+            9: ["I serve with unconditional love", "My compassion transforms the world"],
+            11: ["I illuminate the path for others", "My intuition connects me to divine wisdom"],
+            22: ["I manifest my vision into reality", "My purpose serves humanity"],
+            33: ["I embody unconditional love", "My service heals and uplifts"]
+        }
+    }
+    
     @classmethod
     def generate_reading(cls, personal_day_number: int) -> Dict[str, str]:
         """
@@ -324,7 +378,7 @@ class DailyReadingGenerator:
         lucky_number = random.choice(lucky_numbers)
         
         return {
-            'lucky_number': lucky_number,
+            'lucky_number': str(lucky_number),
             'lucky_color': random.choice(cls.LUCKY_COLORS[personal_day_number]),
             'auspicious_time': random.choice(cls.AUSPICIOUS_TIMES[personal_day_number]),
             'activity_recommendation': random.choice(cls.ACTIVITIES[personal_day_number]),
@@ -332,3 +386,59 @@ class DailyReadingGenerator:
             'affirmation': random.choice(cls.AFFIRMATIONS[personal_day_number]),
             'actionable_tip': random.choice(cls.TIPS[personal_day_number]),
         }
+    
+    @classmethod
+    def generate_personalized_reading(cls, personal_day_number: int, user_profile: Dict) -> Dict[str, str]:
+        """
+        Generate personalized daily reading content based on user's numerology profile.
+        
+        Args:
+            personal_day_number: Personal day number (1-9)
+            user_profile: Dictionary containing user's numerology numbers
+        
+        Returns:
+            Dictionary with personalized reading content
+        """
+        # Normalize to 1-9
+        if personal_day_number > 9:
+            personal_day_number = personal_day_number % 9
+            if personal_day_number == 0:
+                personal_day_number = 9
+        
+        # Generate lucky number (different from personal day number)
+        lucky_numbers = [n for n in range(1, 10) if n != personal_day_number]
+        lucky_number = random.choice(lucky_numbers)
+        
+        # Get base reading
+        base_reading = cls.generate_reading(personal_day_number)
+        
+        # Personalize based on user profile
+        personalized_elements = {}
+        
+        # Add personalized activity if available
+        life_path = user_profile.get('life_path_number')
+        if life_path and 'life_path' in cls.PERSONALIZED_ACTIVITIES:
+            life_path_activities = cls.PERSONALIZED_ACTIVITIES['life_path'].get(life_path)
+            if life_path_activities:
+                personalized_elements['personalized_activity'] = random.choice(life_path_activities)
+        
+        # Add personalized affirmation if available
+        if life_path and 'life_path' in cls.PERSONALIZED_AFFIRMATIONS:
+            life_path_affirmations = cls.PERSONALIZED_AFFIRMATIONS['life_path'].get(life_path)
+            if life_path_affirmations:
+                personalized_elements['personalized_affirmation'] = random.choice(life_path_affirmations)
+        
+        # Add life path insight
+        if life_path:
+            try:
+                interpretation = get_interpretation(life_path)
+                personalized_elements['life_path_insight'] = f"As a {interpretation['title']}, {random.choice(interpretation['strengths'])} will be particularly beneficial today."
+            except Exception as e:
+                # Log the exception for debugging purposes
+                import logging
+                logging.warning(f"Failed to get interpretation for life path {life_path}: {str(e)}")
+                # Continue without the life path insight
+                pass
+        
+        # Combine base reading with personalized elements
+        return {**base_reading, **personalized_elements}

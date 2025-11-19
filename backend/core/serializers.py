@@ -5,7 +5,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.utils import timezone
 from datetime import timedelta
-from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken, NumerologyProfile, DailyReading, AIConversation, AIMessage, CompatibilityCheck, Remedy, RemedyTracking, Expert, Consultation, ConsultationReview
+from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken, NumerologyProfile, DailyReading, AIConversation, AIMessage, CompatibilityCheck, Remedy, RemedyTracking, Expert, Consultation, ConsultationReview, Person, PersonNumerologyProfile, ReportTemplate, GeneratedReport
 from .utils import generate_otp, send_otp_email
 
 
@@ -18,15 +18,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'phone', 'full_name', 'password', 'confirm_password']
     
-    def validate(self, data):
+    def validate(self, attrs):
         """Validate registration data."""
-        if not data.get('email') and not data.get('phone'):
+        if not attrs.get('email') and not attrs.get('phone'):
             raise serializers.ValidationError("Either email or phone is required")
         
-        if data['password'] != data['confirm_password']:
+        if attrs['password'] != attrs['confirm_password']:
             raise serializers.ValidationError("Passwords do not match")
         
-        return data
+        return attrs
     
     def create(self, validated_data):
         """Create user and send OTP."""
@@ -60,16 +60,16 @@ class OTPVerificationSerializer(serializers.Serializer):
     phone = serializers.CharField(required=False)
     otp = serializers.CharField(max_length=6)
     
-    def validate(self, data):
+    def validate(self, attrs):
         """Validate OTP."""
-        if not data.get('email') and not data.get('phone'):
+        if not attrs.get('email') and not attrs.get('phone'):
             raise serializers.ValidationError("Either email or phone is required")
         
         # Find user
-        if data.get('email'):
-            user = User.objects.filter(email=data['email']).first()
+        if attrs.get('email'):
+            user = User.objects.filter(email=attrs['email']).first()
         else:
-            user = User.objects.filter(phone=data['phone']).first()
+            user = User.objects.filter(phone=attrs['phone']).first()
         
         if not user:
             raise serializers.ValidationError("User not found")
@@ -77,7 +77,7 @@ class OTPVerificationSerializer(serializers.Serializer):
         # Find valid OTP
         otp = OTPCode.objects.filter(
             user=user,
-            code=data['otp'],
+            code=attrs['otp'],
             is_used=False,
             expires_at__gt=timezone.now()
         ).first()
@@ -88,9 +88,9 @@ class OTPVerificationSerializer(serializers.Serializer):
         if otp.attempts >= 3:
             raise serializers.ValidationError("Maximum attempts exceeded")
         
-        data['user'] = user
-        data['otp_obj'] = otp
-        return data
+        attrs['user'] = user
+        attrs['otp_obj'] = otp
+        return attrs
 
 
 class ResendOTPSerializer(serializers.Serializer):
@@ -98,12 +98,12 @@ class ResendOTPSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
     phone = serializers.CharField(required=False)
     
-    def validate(self, data):
+    def validate(self, attrs):
         """Validate resend request."""
-        if not data.get('email') and not data.get('phone'):
+        if not attrs.get('email') and not attrs.get('phone'):
             raise serializers.ValidationError("Either email or phone is required")
         
-        return data
+        return attrs
 
 
 class LoginSerializer(serializers.Serializer):
@@ -112,16 +112,16 @@ class LoginSerializer(serializers.Serializer):
     phone = serializers.CharField(required=False)
     password = serializers.CharField(write_only=True)
     
-    def validate(self, data):
+    def validate(self, attrs):
         """Validate login credentials."""
-        if not data.get('email') and not data.get('phone'):
+        if not attrs.get('email') and not attrs.get('phone'):
             raise serializers.ValidationError("Either email or phone is required")
         
         # Find user
-        if data.get('email'):
-            user = User.objects.filter(email=data['email']).first()
+        if attrs.get('email'):
+            user = User.objects.filter(email=attrs['email']).first()
         else:
-            user = User.objects.filter(phone=data['phone']).first()
+            user = User.objects.filter(phone=attrs['phone']).first()
         
         if not user:
             raise serializers.ValidationError("Invalid credentials")
@@ -131,7 +131,7 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Account is temporarily locked due to multiple failed login attempts")
         
         # Verify password
-        if not user.check_password(data['password']):
+        if not user.check_password(attrs['password']):
             user.increment_failed_login()
             raise serializers.ValidationError("Invalid credentials")
         
@@ -142,8 +142,8 @@ class LoginSerializer(serializers.Serializer):
         # Reset failed attempts
         user.reset_failed_login()
         
-        data['user'] = user
-        return data
+        attrs['user'] = user
+        return attrs
 
 
 class LogoutSerializer(serializers.Serializer):
@@ -168,12 +168,12 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(min_length=8)
     confirm_password = serializers.CharField()
     
-    def validate(self, data):
+    def validate(self, attrs):
         """Validate password reset."""
-        if data['new_password'] != data['confirm_password']:
+        if attrs['new_password'] != attrs['confirm_password']:
             raise serializers.ValidationError("Passwords do not match")
         
-        return data
+        return attrs
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -479,3 +479,82 @@ class NumerologyReportSerializer(serializers.Serializer):
     challenge_title = serializers.CharField()
     pinnacle_cycle = PinnacleCycleSerializer(many=True)
     summary = serializers.CharField()
+
+
+# New serializers for multi-person numerology
+
+class PersonSerializer(serializers.ModelSerializer):
+    """Serializer for person model."""
+    
+    class Meta:
+        model = Person
+        fields = [
+            'id',
+            'name',
+            'birth_date',
+            'relationship',
+            'notes',
+            'is_active',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class PersonNumerologyProfileSerializer(serializers.ModelSerializer):
+    """Serializer for person numerology profile."""
+    
+    class Meta:
+        model = PersonNumerologyProfile
+        fields = [
+            'id',
+            'life_path_number',
+            'destiny_number',
+            'soul_urge_number',
+            'personality_number',
+            'attitude_number',
+            'maturity_number',
+            'balance_number',
+            'personal_year_number',
+            'personal_month_number',
+            'calculation_system',
+            'calculated_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'calculated_at', 'updated_at']
+
+
+class ReportTemplateSerializer(serializers.ModelSerializer):
+    """Serializer for report template."""
+    
+    class Meta:
+        model = ReportTemplate
+        fields = [
+            'id',
+            'name',
+            'description',
+            'report_type',
+            'is_premium',
+            'is_active',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class GeneratedReportSerializer(serializers.ModelSerializer):
+    """Serializer for generated report."""
+    
+    class Meta:
+        model = GeneratedReport
+        fields = [
+            'id',
+            'user',
+            'person',
+            'template',
+            'title',
+            'content',
+            'generated_at',
+            'expires_at'
+        ]
+        read_only_fields = ['id', 'user', 'generated_at']

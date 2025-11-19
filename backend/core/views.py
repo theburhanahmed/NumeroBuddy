@@ -12,7 +12,8 @@ from datetime import timedelta, date, datetime
 from .models import (
     User, UserProfile, OTPCode, RefreshToken, DeviceToken, 
     NumerologyProfile, DailyReading, AIConversation, AIMessage,
-    CompatibilityCheck, Remedy, RemedyTracking, Expert, Consultation, ConsultationReview
+    CompatibilityCheck, Remedy, RemedyTracking, Expert, Consultation, ConsultationReview,
+    Person, PersonNumerologyProfile, ReportTemplate, GeneratedReport
 )
 from .serializers import (
     UserRegistrationSerializer, OTPVerificationSerializer, ResendOTPSerializer,
@@ -24,10 +25,12 @@ from .serializers import (
     CompatibilityCheckSerializer, RemedySerializer, RemedyTrackingSerializer,
     ExpertSerializer, ConsultationSerializer, ConsultationBookingSerializer,
     ConsultationReviewSerializer, LifePathAnalysisSerializer, PinnacleCycleSerializer,
-    NumerologyReportSerializer
+    NumerologyReportSerializer, PersonSerializer, PersonNumerologyProfileSerializer,
+    ReportTemplateSerializer, GeneratedReportSerializer
 )
 from .utils import generate_otp, send_otp_email
 from .numerology import NumerologyCalculator, validate_name, validate_birth_date
+from .compatibility import CompatibilityAnalyzer
 from .interpretations import get_interpretation, get_all_interpretations
 from .reading_generator import DailyReadingGenerator
 from .cache import NumerologyCache
@@ -350,48 +353,70 @@ def register_device_token(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def calculate_numerology_profile(request):
-    """Calculate and save numerology profile for user."""
+    """Calculate and save user's numerology profile."""
     user = request.user
+    full_name = request.data.get('full_name') or user.full_name
+    birth_date_str = request.data.get('birth_date')
+    system = request.data.get('system', 'pythagorean')
     
-    # Check if user has completed profile
-    if not user.profile.date_of_birth:
+    # Validate input
+    if not full_name:
         return Response({
-            'error': 'Please complete your profile with birth date first'
+            'error': 'Full name is required'
         }, status=status.HTTP_400_BAD_REQUEST)
     
-    # Validate birth date
-    if not validate_birth_date(user.profile.date_of_birth):
+    if not birth_date_str:
+        # Try to get birth date from user profile
+        if not user.profile.date_of_birth:
+            return Response({
+                'error': 'Birth date is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        birth_date = user.profile.date_of_birth
+    else:
+        try:
+            birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({
+                'error': 'Invalid date format. Use YYYY-MM-DD'
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Validate name and birth date
+    if not validate_name(full_name):
+        return Response({
+            'error': 'Invalid name format'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not validate_birth_date(birth_date):
         return Response({
             'error': 'Invalid birth date'
         }, status=status.HTTP_400_BAD_REQUEST)
     
-    # Validate name
-    if not validate_name(user.full_name):
-        return Response({
-            'error': 'Invalid name'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Get calculation system from request or use default
-    system = request.data.get('system', 'pythagorean')
-    
     try:
         # Calculate all numbers
         calculator = NumerologyCalculator(system=system)
-        numbers = calculator.calculate_all(user.full_name, user.profile.date_of_birth)
+        numbers = calculator.calculate_all(full_name, birth_date)
         
         # Update or create profile
         profile, created = NumerologyProfile.objects.update_or_create(
             user=user,
             defaults={
-                **numbers,
+                'life_path_number': numbers['life_path_number'],
+                'destiny_number': numbers['destiny_number'],
+                'soul_urge_number': numbers['soul_urge_number'],
+                'personality_number': numbers['personality_number'],
+                'attitude_number': numbers['attitude_number'],
+                'maturity_number': numbers['maturity_number'],
+                'balance_number': numbers['balance_number'],
+                'personal_year_number': numbers['personal_year_number'],
+                'personal_month_number': numbers['personal_month_number'],
+                'karmic_debt_number': numbers.get('karmic_debt_number'),
+                'hidden_passion_number': numbers.get('hidden_passion_number'),
+                'subconscious_self_number': numbers.get('subconscious_self_number'),
                 'calculation_system': system
             }
         )
         
-        # Cache the profile
         serializer = NumerologyProfileSerializer(profile)
-        NumerologyCache.set_profile(str(user.id), serializer.data)
-        
         return Response({
             'message': 'Profile calculated successfully',
             'profile': serializer.data
@@ -469,6 +494,23 @@ def get_birth_chart(request):
         return Response({
             'error': 'Profile not found. Please calculate your profile first.'
         }, status=status.HTTP_404_NOT_FOUND)
+import datetime
+from datetime import date
+
+from django.http import HttpResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
+
+from .models import NumerologyProfile, DailyReading
+from .serializers import DailyReadingSerializer
+from .numerology import NumerologyCalculator
+from .reading_generator import DailyReadingGenerator
+from .cache import NumerologyCache
 
 
 @api_view(['GET'])
@@ -543,14 +585,14 @@ def export_birth_chart_pdf(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_daily_reading(request):
-    """Get daily reading for today or specific date."""
+    """Get daily numerology reading for user."""
     user = request.user
+    reading_date_str = request.query_params.get('date')
     
-    # Get date from query params or use today
-    date_str = request.query_params.get('date')
-    if date_str:
+    # Parse date or use today
+    if reading_date_str:
         try:
-            reading_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            reading_date = datetime.strptime(reading_date_str, '%Y-%m-%d').date()
         except ValueError:
             return Response({
                 'error': 'Invalid date format. Use YYYY-MM-DD'
@@ -558,31 +600,47 @@ def get_daily_reading(request):
     else:
         reading_date = date.today()
     
-    # Check if user has birth date
-    if not user.profile.date_of_birth:
-        return Response({
-            'error': 'Please complete your profile with birth date first'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
     # Check cache first
     cached_reading = NumerologyCache.get_daily_reading(str(user.id), str(reading_date))
     if cached_reading:
         return Response(cached_reading, status=status.HTTP_200_OK)
     
-    # Check database
-    reading = DailyReading.objects.filter(user=user, reading_date=reading_date).first()
-    
-    if not reading:
-        # Generate new reading
+    try:
+        # Get or create daily reading
         try:
+            reading = DailyReading.objects.get(user=user, reading_date=reading_date)
+        except DailyReading.DoesNotExist:
+            # Validate user has profile with birth date
+            if not user.profile.date_of_birth:
+                return Response({
+                    'error': 'Please complete your profile with birth date first'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Calculate personal day number
             calculator = NumerologyCalculator()
             personal_day_number = calculator.calculate_personal_day_number(
                 user.profile.date_of_birth,
                 reading_date
             )
             
-            generator = DailyReadingGenerator()
-            reading_content = generator.generate_reading(personal_day_number)
+            # Get user's numerology profile for personalization
+            try:
+                numerology_profile = NumerologyProfile.objects.get(user=user)
+                user_profile = {
+                    'life_path_number': numerology_profile.life_path_number,
+                    'destiny_number': numerology_profile.destiny_number,
+                    'soul_urge_number': numerology_profile.soul_urge_number,
+                    'personality_number': numerology_profile.personality_number,
+                    'personal_year_number': numerology_profile.personal_year_number,
+                }
+                
+                # Generate personalized reading
+                generator = DailyReadingGenerator()
+                reading_content = generator.generate_personalized_reading(personal_day_number, user_profile)
+            except NumerologyProfile.DoesNotExist:
+                # Fall back to basic reading if no numerology profile
+                generator = DailyReadingGenerator()
+                reading_content = generator.generate_reading(personal_day_number)
             
             reading = DailyReading.objects.create(
                 user=user,
@@ -594,6 +652,10 @@ def get_daily_reading(request):
             return Response({
                 'error': f'Failed to generate reading: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        return Response({
+            'error': f'Failed to get reading: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     serializer = DailyReadingSerializer(reading)
     
@@ -690,22 +752,47 @@ def ai_chat(request):
             soul_urge = numerology_profile.soul_urge_number
             personality = numerology_profile.personality_number
             personal_year = numerology_profile.personal_year_number
+            
+            # Get additional numerology numbers for richer context
+            karmic_debt = getattr(numerology_profile, 'karmic_debt_number', None)
+            hidden_passion = getattr(numerology_profile, 'hidden_passion_number', None)
         except NumerologyProfile.DoesNotExist:
             return Response({
                 'error': 'Please complete your numerology profile first.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Prepare system prompt
+        # Get recent conversation history for context
+        recent_messages = AIMessage.objects.filter(
+            conversation=conversation
+        ).order_by('-created_at')[:5]  # Last 5 messages
+        
+        conversation_history = ""
+        for msg in reversed(recent_messages):
+            role = "You" if msg.role == "user" else "Numerologist"
+            conversation_history += f"{role}: {msg.content}\n"
+        
+        # Prepare system prompt with enhanced context
         system_prompt = f"""
         You are an expert numerologist with 20+ years of experience. You are helping {user.full_name} understand their numerology profile.
-
+        
         User's Numerology Profile:
-        - Life Path Number: {life_path}
-        - Destiny Number: {destiny}
-        - Soul Urge Number: {soul_urge}
-        - Personality Number: {personality}
-        - Personal Year Number: {personal_year}
-
+        - Life Path Number: {life_path} - Represents your life's purpose and path
+        - Destiny Number: {destiny} - Reveals your talents and life's mission
+        - Soul Urge Number: {soul_urge} - Shows your inner motivations and desires
+        - Personality Number: {personality} - How others perceive you
+        - Personal Year Number: {personal_year} - Current year's theme and energy
+        
+        """
+        
+        # Add karmic debt information if present
+        if karmic_debt:
+            system_prompt += f"- Karmic Debt Number: {karmic_debt} - Lessons and challenges to overcome\n"
+        
+        # Add hidden passion information if present
+        if hidden_passion:
+            system_prompt += f"- Hidden Passion Number: {hidden_passion} - Untapped talents and interests\n"
+        
+        system_prompt += """
         Guidelines:
         1. Always reference the user's specific numbers in your responses
         2. Provide actionable advice, not just descriptions
@@ -714,7 +801,12 @@ def ai_chat(request):
         5. Suggest 2-3 follow-up questions at the end
         6. Never make medical, legal, or financial advice
         7. If unsure, acknowledge limitations and suggest consulting a human expert
-        """
+        8. Reference conversation history when relevant to provide continuity
+        9. Adapt your communication style based on the user's numbers (e.g., be direct for 1s, diplomatic for 2s)
+        10. Connect different numbers to show how they interact in the user's life
+        
+        Conversation History:
+        """ + conversation_history
         
         # Call OpenAI API
         response = openai.chat.completions.create(
@@ -743,12 +835,15 @@ def ai_chat(request):
         conversation.message_count = conversation.message_count + 2  # user + assistant
         conversation.save()
         
-        # Get suggested follow-ups (simple approach - extract last 3 lines)
+        # Extract suggested follow-ups from response
         follow_ups = []
         lines = ai_response.strip().split('\n')
-        for line in lines[-3:]:
+        for line in lines[-5:]:  # Check last 5 lines for follow-up questions
+            line = line.strip()
             if line.startswith('- ') or line.startswith('1. ') or line.startswith('2. ') or line.startswith('3. '):
-                follow_ups.append(line.strip('- ').strip('123. '))
+                follow_ups.append(line.strip('- ').strip('123. ').strip())
+            elif '?' in line and len(line) < 100:  # Likely a question
+                follow_ups.append(line.strip())
         
         return Response({
             'conversation_id': str(conversation.id),
@@ -845,7 +940,7 @@ def get_life_path_analysis(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def check_compatibility(request):
-    """Check compatibility with another person."""
+    """Check compatibility with another person using enhanced algorithm."""
     user = request.user
     partner_name = request.data.get('partner_name')
     partner_birth_date = request.data.get('partner_birth_date')
@@ -870,34 +965,36 @@ def check_compatibility(request):
         # Get user's numerology profile
         user_profile = NumerologyProfile.objects.get(user=user)
         
-        # Calculate partner's life path number
-        calculator = NumerologyCalculator()
-        partner_life_path = calculator.calculate_life_path_number(partner_birth_date)
-        user_life_path = user_profile.life_path_number
+        # Get user's full name from profile
+        user_full_name = user.full_name or ""
+        if not user_full_name:
+            return Response({
+                'error': 'User full name is required for compatibility analysis'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Simple compatibility algorithm (this is a basic implementation)
-        # In a real application, this would be more sophisticated
-        compatibility_score = 100 - abs(user_life_path - partner_life_path) * 10
-        compatibility_score = max(0, min(100, compatibility_score))  # Clamp between 0-100
+        # Get user's birth date from profile
+        user_birth_date = user.profile.date_of_birth
+        if not user_birth_date:
+            return Response({
+                'error': 'User birth date is required for compatibility analysis'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Determine strengths and challenges based on numbers
-        strengths = []
-        challenges = []
+        # Create compatibility analyzer with relationship type
+        analyzer = CompatibilityAnalyzer(relationship_type)
         
-        if user_life_path == partner_life_path:
-            strengths.append("Shared life path and understanding")
-        elif abs(user_life_path - partner_life_path) <= 2:
-            strengths.append("Complementary energies")
-        else:
-            challenges.append("Different life approaches")
+        # Perform enhanced compatibility analysis
+        analysis = analyzer.analyze_compatibility(
+            user_full_name=user_full_name,
+            user_birth_date=user_birth_date,
+            partner_full_name=partner_name,
+            partner_birth_date=partner_birth_date
+        )
         
-        # Add more logic based on specific numbers
-        if user_life_path in [1, 8] and partner_life_path in [2, 7]:
-            strengths.append("Balanced leadership and support")
-        elif user_life_path in [3, 6] and partner_life_path in [3, 6]:
-            strengths.append("Creative and nurturing connection")
-        
-        advice = "Focus on communication and understanding each other's perspectives."
+        # Extract results
+        compatibility_score = analysis['compatibility_score']
+        strengths = analysis['strengths']
+        challenges = analysis['challenges']
+        advice = analysis['advice']
         
         # Save compatibility check
         compatibility_check = CompatibilityCheck.objects.create(
@@ -1032,6 +1129,85 @@ def get_personalized_remedies(request):
                 title=ritual_data['title'],
                 description=ritual_data['description'],
                 recommendation=ritual_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Add personalized remedies based on other numerology numbers
+        # Mantra remedy based on Soul Urge Number
+        soul_urge_mantras = {
+            1: {"title": "Mantra for Leadership", "description": "Enhance your leadership qualities", "recommendation": "Chant 'Om Hum' 108 times on Sundays for confidence"},
+            2: {"title": "Mantra for Harmony", "description": "Promote peace and balance", "recommendation": "Chant 'Om Shantih' 108 times on Mondays for harmony"},
+            3: {"title": "Mantra for Creativity", "description": "Boost creativity and communication", "recommendation": "Chant 'Om Aim' 108 times on Thursdays for creativity"},
+            4: {"title": "Mantra for Stability", "description": "Bring stability and focus", "recommendation": "Chant 'Om Hrim' 108 times on Wednesdays for stability"},
+            5: {"title": "Mantra for Freedom", "description": "Enhance adaptability and change", "recommendation": "Chant 'Om Pim' 108 times on Wednesdays for freedom"},
+            6: {"title": "Mantra for Love", "description": "Attract love and harmony", "recommendation": "Chant 'Om Shrim' 108 times on Fridays for love"},
+            7: {"title": "Mantra for Wisdom", "description": "Enhance intuition and wisdom", "recommendation": "Chant 'Om Aum' 108 times on Saturdays for wisdom"},
+            8: {"title": "Mantra for Power", "description": "Bring success and abundance", "recommendation": "Chant 'Om Mahalakshmiyei Swaha' 108 times on Saturdays for abundance"},
+            9: {"title": "Mantra for Compassion", "description": "Enhance compassion and healing", "recommendation": "Chant 'Om Mani Padme Hum' 108 times on Tuesdays for compassion"},
+            11: {"title": "Mantra for Illumination", "description": "Enhance spiritual insight", "recommendation": "Chant 'Om Namah Shivaya' 108 times on Sundays for spiritual growth"},
+            22: {"title": "Mantra for Mastery", "description": "Enhance leadership and vision", "recommendation": "Chant 'Om Gam Ganapataye Namaha' 108 times on Saturdays for removing obstacles"},
+            33: {"title": "Mantra for Teaching", "description": "Enhance healing and teaching abilities", "recommendation": "Chant 'Om Tare Tuttare Ture Soha' 108 times on Sundays for compassion"}
+        }
+        
+        if profile.soul_urge_number in soul_urge_mantras:
+            mantra_data = soul_urge_mantras[profile.soul_urge_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='mantra',
+                title=mantra_data['title'],
+                description=mantra_data['description'],
+                recommendation=mantra_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Dietary remedy based on Personality Number
+        personality_diet = {
+            1: {"title": "Foods for Energy", "description": "Boost energy and vitality", "recommendation": "Include protein-rich foods like eggs, nuts, and lean meats. Eat spicy foods for energy."},
+            2: {"title": "Foods for Harmony", "description": "Promote peace and balance", "recommendation": "Focus on dairy products, fruits, and温和 foods. Avoid overly spicy or acidic foods."},
+            3: {"title": "Foods for Creativity", "description": "Enhance creativity and joy", "recommendation": "Include colorful fruits and vegetables. Add natural sweeteners like honey for joy."},
+            4: {"title": "Foods for Stability", "description": "Bring stability and grounding", "recommendation": "Focus on root vegetables, grains, and hearty foods. Eat regular, balanced meals."},
+            5: {"title": "Foods for Freedom", "description": "Enhance adaptability and change", "recommendation": "Include variety in your diet. Try new foods and cuisines regularly."},
+            6: {"title": "Foods for Love", "description": "Attract love and harmony", "recommendation": "Include heart-healthy foods like berries, dark chocolate, and leafy greens."},
+            7: {"title": "Foods for Wisdom", "description": "Enhance intuition and spirituality", "recommendation": "Focus on light, pure foods. Include fish, nuts, and fresh herbs."},
+            8: {"title": "Foods for Power", "description": "Bring success and abundance", "recommendation": "Include foods that support energy and focus like green tea, dark chocolate, and whole grains."},
+            9: {"title": "Foods for Compassion", "description": "Enhance compassion and healing", "recommendation": "Focus on plant-based foods and cleansing foods like lemon water and green tea."},
+            11: {"title": "Foods for Illumination", "description": "Enhance spiritual insight", "recommendation": "Include foods that enhance mental clarity like blueberries, walnuts, and turmeric."},
+            22: {"title": "Foods for Mastery", "description": "Enhance leadership and vision", "recommendation": "Focus on foods that support brain function like salmon, avocados, and leafy greens."},
+            33: {"title": "Foods for Teaching", "description": "Enhance healing and teaching abilities", "recommendation": "Include anti-inflammatory foods like ginger, turmeric, and leafy greens."}
+        }
+        
+        if profile.personality_number in personality_diet:
+            diet_data = personality_diet[profile.personality_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='dietary',
+                title=diet_data['title'],
+                description=diet_data['description'],
+                recommendation=diet_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Exercise remedy based on Personal Year Number
+        personal_year_exercise = {
+            1: {"title": "Exercise for New Beginnings", "description": "Boost energy for new initiatives", "recommendation": "Try high-energy activities like running, martial arts, or competitive sports."},
+            2: {"title": "Exercise for Partnership", "description": "Promote cooperation and balance", "recommendation": "Participate in partner activities like dancing, tennis, or yoga classes."},
+            3: {"title": "Exercise for Expression", "description": "Enhance creativity and communication", "recommendation": "Try expressive activities like dance, aerobics, or group fitness classes."},
+            4: {"title": "Exercise for Stability", "description": "Build structure and discipline", "recommendation": "Focus on structured activities like weight training, hiking, or regular gym routines."},
+            5: {"title": "Exercise for Change", "description": "Embrace freedom and adventure", "recommendation": "Try varied activities like cycling, swimming, or outdoor adventures."},
+            6: {"title": "Exercise for Harmony", "description": "Cultivate love and service", "recommendation": "Practice activities that connect you with others like group sports or community walks."},
+            7: {"title": "Exercise for Wisdom", "description": "Enhance introspection and knowledge", "recommendation": "Focus on mindful activities like yoga, tai chi, or meditation walks."},
+            8: {"title": "Exercise for Achievement", "description": "Focus on success and power", "recommendation": "Engage in goal-oriented activities like personal training or competitive sports."},
+            9: {"title": "Exercise for Completion", "description": "Express compassion and service", "recommendation": "Participate in activities that serve others like charity runs or community sports."}
+        }
+        
+        if profile.personal_year_number in personal_year_exercise:
+            exercise_data = personal_year_exercise[profile.personal_year_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='exercise',
+                title=exercise_data['title'],
+                description=exercise_data['description'],
+                recommendation=exercise_data['recommendation']
             )
             remedies.append(remedy)
         
@@ -1359,3 +1535,314 @@ def get_full_numerology_report(request):
         return Response({
             'error': f'Failed to generate report: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# New API endpoints for multi-person numerology
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def people_list_create(request):
+    """Get list of people or create a new person."""
+    if request.method == 'GET':
+        # Get all people for the current user
+        people = Person.objects.filter(user=request.user, is_active=True)
+        serializer = PersonSerializer(people, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    elif request.method == 'POST':
+        # Create a new person
+        serializer = PersonSerializer(data=request.data)
+        if serializer.is_valid():
+            # Check if person already exists
+            existing_person = Person.objects.filter(
+                user=request.user,
+                name=serializer.validated_data['name'],
+                birth_date=serializer.validated_data['birth_date']
+            ).first()
+            
+            if existing_person:
+                return Response({
+                    'error': 'Person with this name and birth date already exists'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Create new person
+            person = serializer.save(user=request.user)
+            return Response(PersonSerializer(person).data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def person_detail(request, person_id):
+    """Get, update, or delete a specific person."""
+    try:
+        person = Person.objects.get(id=person_id, user=request.user)
+    except Person.DoesNotExist:
+        return Response({
+            'error': 'Person not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'GET':
+        # Get person details
+        serializer = PersonSerializer(person)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    elif request.method == 'PUT':
+        # Update person
+        serializer = PersonSerializer(person, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'DELETE':
+        # Soft delete person
+        person.is_active = False
+        person.save()
+        return Response({
+            'message': 'Person deleted successfully'
+        }, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def calculate_person_numerology(request, person_id):
+    """Calculate numerology profile for a specific person."""
+    try:
+        person = Person.objects.get(id=person_id, user=request.user, is_active=True)
+    except Person.DoesNotExist:
+        return Response({
+            'error': 'Person not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # Get calculation system from request or use default
+    system = request.data.get('system', 'pythagorean')
+    
+    try:
+        # Calculate all numbers
+        calculator = NumerologyCalculator(system=system)
+        numbers = calculator.calculate_all(person.name, person.birth_date)
+        
+        # Update or create profile
+        profile, created = PersonNumerologyProfile.objects.update_or_create(
+            person=person,
+            defaults={
+                **numbers,
+                'calculation_system': system
+            }
+        )
+        
+        serializer = PersonNumerologyProfileSerializer(profile)
+        return Response({
+            'message': 'Profile calculated successfully',
+            'profile': serializer.data
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+    
+    except Exception as e:
+        return Response({
+            'error': f'Calculation failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_person_numerology_profile(request, person_id):
+    """Get numerology profile for a specific person."""
+    try:
+        person = Person.objects.get(id=person_id, user=request.user, is_active=True)
+        profile = PersonNumerologyProfile.objects.get(person=person)
+        serializer = PersonNumerologyProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Person.DoesNotExist:
+        return Response({
+            'error': 'Person not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except PersonNumerologyProfile.DoesNotExist:
+        return Response({
+            'error': 'Numerology profile not found. Please calculate it first.'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def report_templates_list(request):
+    """Get list of available report templates."""
+    templates = ReportTemplate.objects.filter(is_active=True)
+    serializer = ReportTemplateSerializer(templates, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_report(request):
+    """Generate a new report for a person using a template."""
+    person_id = request.data.get('person_id')
+    template_id = request.data.get('template_id')
+    
+    # Validate input
+    if not person_id or not template_id:
+        return Response({
+            'error': 'Person ID and Template ID are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Get person and template
+        person = Person.objects.get(id=person_id, user=request.user, is_active=True)
+        template = ReportTemplate.objects.get(id=template_id, is_active=True)
+    except Person.DoesNotExist:
+        return Response({
+            'error': 'Person not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except ReportTemplate.DoesNotExist:
+        return Response({
+            'error': 'Report template not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    try:
+        # Get person's numerology profile
+        numerology_profile = PersonNumerologyProfile.objects.get(person=person)
+    except PersonNumerologyProfile.DoesNotExist:
+        return Response({
+            'error': 'Numerology profile not found. Please calculate it first.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Generate report content based on template type
+        report_content = _generate_report_content(person, numerology_profile, template)
+        
+        # Create generated report
+        generated_report = GeneratedReport.objects.create(
+            user=request.user,
+            person=person,
+            template=template,
+            title=f"{template.name} for {person.name}",
+            content=report_content
+        )
+        
+        serializer = GeneratedReportSerializer(generated_report)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Failed to generate report: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_generated_reports(request):
+    """Get list of user's generated reports."""
+    reports = GeneratedReport.objects.filter(user=request.user).order_by('-generated_at')
+    serializer = GeneratedReportSerializer(reports, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_generated_report(request, report_id):
+    """Get a specific generated report."""
+    try:
+        report = GeneratedReport.objects.get(id=report_id, user=request.user)
+        serializer = GeneratedReportSerializer(report)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except GeneratedReport.DoesNotExist:
+        return Response({
+            'error': 'Report not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def bulk_generate_reports(request):
+    """Generate multiple reports at once."""
+    person_ids = request.data.get('person_ids', [])
+    template_ids = request.data.get('template_ids', [])
+    
+    # Validate input
+    if not person_ids or not template_ids:
+        return Response({
+            'error': 'Person IDs and Template IDs are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    generated_reports = []
+    errors = []
+    
+    # Generate reports for each combination
+    for person_id in person_ids:
+        for template_id in template_ids:
+            try:
+                # Get person and template
+                person = Person.objects.get(id=person_id, user=request.user, is_active=True)
+                template = ReportTemplate.objects.get(id=template_id, is_active=True)
+                
+                # Get person's numerology profile
+                numerology_profile = PersonNumerologyProfile.objects.get(person=person)
+                
+                # Generate report content
+                report_content = _generate_report_content(person, numerology_profile, template)
+                
+                # Create generated report
+                generated_report = GeneratedReport.objects.create(
+                    user=request.user,
+                    person=person,
+                    template=template,
+                    title=f"{template.name} for {person.name}",
+                    content=report_content
+                )
+                
+                generated_reports.append(generated_report)
+                
+            except Person.DoesNotExist:
+                errors.append(f"Person with ID {person_id} not found")
+            except ReportTemplate.DoesNotExist:
+                errors.append(f"Template with ID {template_id} not found")
+            except PersonNumerologyProfile.DoesNotExist:
+                errors.append(f"Numerology profile for {person.name} not found")
+            except Exception as e:
+                errors.append(f"Failed to generate report for {person.name} with template {template.name}: {str(e)}")
+    
+    # Serialize generated reports
+    serializer = GeneratedReportSerializer(generated_reports, many=True)
+    
+    response_data = {
+        'reports': serializer.data,
+        'errors': errors
+    }
+    
+    return Response(response_data, status=status.HTTP_201_CREATED if not errors else status.HTTP_207_MULTI_STATUS)
+
+
+# Helper function to generate report content
+def _generate_report_content(person, numerology_profile, template):
+    """Generate report content based on template type."""
+    # This is a simplified implementation
+    # In a real application, this would be much more complex
+    content = {
+        'person_name': person.name,
+        'birth_date': person.birth_date.isoformat(),
+        'report_type': template.report_type,
+        'generated_at': timezone.now().isoformat(),
+        'numbers': {
+            'life_path': numerology_profile.life_path_number,
+            'destiny': numerology_profile.destiny_number,
+            'soul_urge': numerology_profile.soul_urge_number,
+            'personality': numerology_profile.personality_number,
+            'attitude': numerology_profile.attitude_number,
+            'maturity': numerology_profile.maturity_number,
+            'balance': numerology_profile.balance_number,
+            'personal_year': numerology_profile.personal_year_number,
+            'personal_month': numerology_profile.personal_month_number,
+        }
+    }
+    
+    # Add template-specific content
+    if template.report_type == 'basic':
+        content['summary'] = f"This is a basic birth chart for {person.name}"
+    elif template.report_type == 'detailed':
+        content['summary'] = f"This is a detailed analysis for {person.name}"
+    elif template.report_type == 'compatibility':
+        content['summary'] = f"This is a compatibility report for {person.name}"
+    # Add more template types as needed
+    
+    return content

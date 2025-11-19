@@ -324,6 +324,12 @@ export default function Home() {
               description="Receive personalized readings and affirmations" 
               delay={0.7} 
             />
+            <FeatureCard 
+              icon={<UsersIcon className="w-8 h-8" />} 
+              title="Multi-Person Reports" 
+              description="Generate reports for family, friends, and colleagues with bulk processing" 
+              delay={0.8} 
+            />
           </div>
         </div>
       </section>
