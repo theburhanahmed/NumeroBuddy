@@ -28,15 +28,15 @@ const numberNames: Record<NumberType, string> = {
 };
 
 const numberDescriptions: Record<NumberType, string> = {
-  life_path_number: 'Your life purpose and main lessons',
-  destiny_number: 'Your natural talents and abilities',
-  soul_urge_number: 'Your inner motivations and desires',
-  personality_number: 'How others perceive you',
-  attitude_number: 'Your general outlook on life',
-  maturity_number: 'Your potential in later life',
-  balance_number: 'How you handle challenges',
-  personal_year_number: 'The theme of your current year',
-  personal_month_number: 'The energy of your current month',
+  life_path_number: 'Your mission in life and major lessons to learn',
+  destiny_number: 'Your natural talents and abilities you were born with',
+  soul_urge_number: 'Your inner desires and what truly motivates you',
+  personality_number: 'How others see and perceive you',
+  attitude_number: 'Your natural reaction to new situations',
+  maturity_number: 'Your wisdom and strengths in later years',
+  balance_number: 'How you maintain equilibrium during challenges',
+  personal_year_number: 'The major themes of your current year',
+  personal_month_number: 'The energies influencing your current month',
 };
 
 const numberColors: Record<NumberType, 'purple' | 'gold' | 'blue'> = {
@@ -198,9 +198,43 @@ export default function BirthChartPage() {
           </div>
           <h1 className="text-3xl font-bold">Calculate Your Birth Chart</h1>
           <p className="text-muted-foreground text-lg">
-            Discover your numerology profile and unlock insights into your life path,
+            Unlock the secrets of your numerology profile and discover insights into your life path,
             destiny, and personal characteristics.
           </p>
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 mt-4">
+            <p className="text-muted-foreground">
+              <span className="font-semibold text-blue-700 dark:text-blue-300">Important:</span> Make sure your profile is complete with your full name and birth date before calculating.
+            </p>
+          </div>
+          <div className="max-w-2xl mx-auto text-muted-foreground space-y-4 mt-6 text-left bg-secondary p-6 rounded-lg">
+            <h3 className="font-semibold text-lg text-foreground">Why Calculate Your Birth Chart?</h3>
+            <p>
+              Your birth chart is the foundation of your numerology profile, calculated using your birth date
+              and name. It reveals the core numbers that influence your personality, life purpose, and potential.
+            </p>
+            <div className="space-y-2 mt-4">
+              <div className="flex items-start gap-2">
+                <span className="text-purple-600 mt-1">•</span>
+                <span><strong>Life Path Number:</strong> Your mission in life and major lessons to learn</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-purple-600 mt-1">•</span>
+                <span><strong>Destiny Number:</strong> Your natural talents and abilities you were born with</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-purple-600 mt-1">•</span>
+                <span><strong>Soul Urge Number:</strong> Your inner desires and what truly motivates you</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-purple-600 mt-1">•</span>
+                <span><strong>Personality Number:</strong> How others see and perceive you</span>
+              </div>
+            </div>
+            <p className="mt-4">
+              Understanding these numbers can help you make better decisions, recognize your strengths,
+              and navigate life&apos;s challenges with greater awareness.
+            </p>
+          </div>
           <Button
             size="lg"
             onClick={handleCalculateProfile}
@@ -219,8 +253,8 @@ export default function BirthChartPage() {
               </>
             )}
           </Button>
-          <p className="text-sm text-muted-foreground">
-            Make sure you&apos;ve completed your profile with your birth date first.
+          <p className="text-sm text-muted-foreground mt-4">
+            <span className="font-medium">Note:</span> Your birth chart calculation requires your complete profile information including your full name and accurate birth date.
           </p>
         </div>
       </div>
@@ -245,6 +279,38 @@ export default function BirthChartPage() {
           <p className="text-muted-foreground text-lg">
             Explore the numerology numbers that define your unique path
           </p>
+          <div className="mt-6 p-4 bg-secondary rounded-lg">
+            <h2 className="text-xl font-semibold mb-3">What is a Birth Chart?</h2>
+            <p className="text-muted-foreground mb-3">
+              Your Birth Chart is a comprehensive numerology profile calculated using your birth date and name. 
+              It reveals the core numbers that influence your personality, life purpose, and potential.
+            </p>
+            <p className="text-muted-foreground">
+              Understanding these numbers can help you make better decisions, recognize your strengths, 
+              and navigate life&apos;s challenges with greater awareness. Each number provides unique insights 
+              into different aspects of your character and destiny.
+            </p>
+          </div>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-800">
+              <h3 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">Life Path Number</h3>
+              <p className="text-sm text-muted-foreground">
+                Your mission in life and the major lessons you&apos;re here to learn.
+              </p>
+            </div>
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h3 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">Destiny Number</h3>
+              <p className="text-sm text-muted-foreground">
+                Your natural talents, abilities, and the gifts you bring to the world.
+              </p>
+            </div>
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/30 rounded-lg border border-amber-200 dark:border-amber-800">
+              <h3 className="font-semibold text-amber-700 dark:text-amber-300 mb-2">Soul Urge Number</h3>
+              <p className="text-sm text-muted-foreground">
+                Your inner motivations, desires, and what truly drives you at the soul level.
+              </p>
+            </div>
+          </div>
         </div>
         <Button onClick={handleExportPDF} disabled={exporting} variant="outline">
           {exporting ? (

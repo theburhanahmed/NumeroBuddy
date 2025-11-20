@@ -148,6 +148,9 @@ export default function PersonDetailPage() {
               <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 {person.name}
               </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                View and manage numerology information for this person
+              </p>
               <div className="flex flex-wrap items-center gap-4 mt-2">
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <Calendar className="w-4 h-4" />
@@ -192,6 +195,9 @@ export default function PersonDetailPage() {
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                   Person Details
                 </h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                  Basic information about this person in your numerology system
+                </p>
                 
                 <div className="space-y-4">
                   <div>
@@ -237,6 +243,9 @@ export default function PersonDetailPage() {
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                     Numerology Profile
                   </h2>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Core numerology numbers calculated from this person&apos;s birth date
+                  </p>
                   
                   {!profile ? (
                     <GlassButton 

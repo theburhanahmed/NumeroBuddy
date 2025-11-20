@@ -1,0 +1,334 @@
+{
+    "meta": {
+        "title": "Mega Numerology Encyclopedia",
+        "version": "1.0",
+        "language": "en",
+        "author": "Generated for Burhan / NumerAI integration",
+        "description": "Comprehensive numerology rules, mappings, algorithms, interpretations, and example datasets for AI ingestion and algorithm training."
+    },
+    "systems": {
+        "pythagorean": {
+            "mapping": {
+                "A": 1,
+                "B": 2,
+                "C": 3,
+                "D": 4,
+                "E": 5,
+                "F": 6,
+                "G": 7,
+                "H": 8,
+                "I": 9,
+                "J": 1,
+                "K": 2,
+                "L": 3,
+                "M": 4,
+                "N": 5,
+                "O": 6,
+                "P": 7,
+                "Q": 8,
+                "R": 9,
+                "S": 1,
+                "T": 2,
+                "U": 3,
+                "V": 4,
+                "W": 5,
+                "X": 6,
+                "Y": 7,
+                "Z": 8
+            },
+            "notes": "Standard 1-9 cycling; common Western practice."
+        },
+        "chaldean": {
+            "mapping": {
+                "A": 1,
+                "B": 2,
+                "C": 3,
+                "D": 4,
+                "E": 5,
+                "F": 8,
+                "G": 3,
+                "H": 5,
+                "I": 1,
+                "J": 1,
+                "K": 2,
+                "L": 3,
+                "M": 4,
+                "N": 5,
+                "O": 7,
+                "P": 8,
+                "Q": 1,
+                "R": 2,
+                "S": 3,
+                "T": 4,
+                "U": 6,
+                "V": 6,
+                "W": 6,
+                "X": 5,
+                "Y": 1,
+                "Z": 7
+            },
+            "notes": "Vibrational mapping; compounds 10-39 have interpretive meanings."
+        },
+        "vedic": {
+            "mapping": {
+                "A": 1,
+                "B": 2,
+                "C": 3,
+                "D": 4,
+                "E": 5,
+                "F": 6,
+                "G": 7,
+                "H": 8,
+                "I": 9,
+                "J": 1,
+                "K": 2,
+                "L": 3,
+                "M": 4,
+                "N": 5,
+                "O": 6,
+                "P": 7,
+                "Q": 8,
+                "R": 9,
+                "S": 1,
+                "T": 2,
+                "U": 3,
+                "V": 4,
+                "W": 5,
+                "X": 6,
+                "Y": 7,
+                "Z": 8
+            },
+            "notes": "Planetary assignments vary by tradition; adjust mapping to match source."
+        }
+    },
+    "algorithms": {
+        "reduce": {
+            "description": "Reduce multi-digit numbers to single-digit, preserving master numbers 11,22,33 if specified.",
+            "pseudocode": "function reduce(n, keep_masters=true) { if(keep_masters && n in [11,22,33]) return n; while(n>9){ n = sumDigits(n); if(keep_masters && n in [11,22,33]) return n;} return n; }"
+        },
+        "life_path": {
+            "description": "Sum all birthdate digits (YYYYMMDD) then reduce.",
+            "example": "1992-07-24 -> 1+9+9+2+0+7+2+4=34 -> 3+4=7"
+        },
+        "expression": {
+            "description": "Sum letter values across full birth name using chosen mapping, then reduce (keep masters).",
+            "vowel_rule": "For vowels only computation (soul urge), consider Y as vowel per language heuristics."
+        },
+        "soul_urge": {
+            "description": "Sum vowels values only."
+        },
+        "personality": {
+            "description": "Sum consonants only."
+        },
+        "pinnacles": {
+            "description": "Four life cycles computed by combinations of month/day/year as per standard method.",
+            "formulas": {
+                "P1": "reduce(month + day)",
+                "P2": "reduce(day + year)",
+                "P3": "reduce(P1 + P2)",
+                "P4": "reduce(P2 + P3)"
+            }
+        },
+        "challenges": {
+            "formulas": {
+                "C1": "reduce(abs(month - day))",
+                "C2": "reduce(abs(day - year))",
+                "C3": "reduce(abs(C1 - C2))",
+                "C4": "reduce(abs(C2 - C3))"
+            }
+        }
+    },
+    "interpretations": {
+        "digits": {
+            "1": {
+                "short": "Leadership and initiative.",
+                "medium": "Indicates independence, leadership qualities and a drive to start things.",
+                "long": "Number 1 resonates with leadership, ambition, and a strong sense of self. People with prominent 1s often initiate projects and prefer independence. Shadow aspects include stubbornness and isolation."
+            },
+            "2": {
+                "short": "Cooperation and sensitivity.",
+                "medium": "Diplomatic, cooperative and supportive.",
+                "long": "Number 2 is about partnership and sensitivity..."
+            },
+            "3": {
+                "short": "Creativity and expression.",
+                "medium": "Social, creative, communicative.",
+                "long": "Number 3 speaks to expressive talent, creativity, and social optimism..."
+            },
+            "4": {
+                "short": "Discipline and work.",
+                "medium": "Methodical, reliable, practical.",
+                "long": "Number 4 suggests structure, work ethic, and reliability; can be rigid."
+            },
+            "5": {
+                "short": "Freedom and change.",
+                "medium": "Adventurous, flexible, risk-taker.",
+                "long": "Number 5 loves freedom and variety; seeks experiences and may resist routine."
+            },
+            "6": {
+                "short": "Responsibility and care.",
+                "medium": "Domestic, supportive, nurturing.",
+                "long": "Number 6 centers on service, family, responsibility, and artistic harmony."
+            },
+            "7": {
+                "short": "Analysis and introspection.",
+                "medium": "Studious, spiritual, analytical.",
+                "long": "Number 7 leans toward inner knowing, research, and spiritual pursuits; can be withdrawn."
+            },
+            "8": {
+                "short": "Power and abundance.",
+                "medium": "Management, ambition, material success.",
+                "long": "Number 8 is associated with material mastery, authority and executive ability. Shadow: greed."
+            },
+            "9": {
+                "short": "Compassion and completion.",
+                "medium": "Humanitarian, artistic, wise.",
+                "long": "Number 9 represents completion, compassion, philanthropy and global awareness."
+            },
+            "11": {
+                "short": "Intuition and vision.",
+                "medium": "Elevated intuition, leadership.",
+                "long": "Master number 11 amplifies sensitivity and visionary capacity; often feels mission-driven."
+            },
+            "22": {
+                "short": "Master builder.",
+                "medium": "Manifestation at scale.",
+                "long": "Master builder capable of turning ideas into large-scale reality; practical and visionary."
+            },
+            "33": {
+                "short": "Teacher and healer.",
+                "medium": "Selfless service, spiritual instruction.",
+                "long": "Master teacher; combines compassion and leadership for service work."
+            }
+        },
+        "karmic_debts": {
+            "13": "Need for discipline; transformation through work.",
+            "14": "Lessons around freedom; watch excesses.",
+            "16": "Ego collapse; spiritual evolution.",
+            "19": "Power misuse; clean up legacy behavior."
+        },
+        "chaldean_compounds": {
+            "10": "Wheel of change and outer cycles.",
+            "11": "Mystic insight.",
+            "12": "Sacrifice or delays.",
+            "13": "Rebellion; change.",
+            "14": "Instability; lessons in choices.",
+            "15": "Charm and magnetism.",
+            "16": "Sudden change; ego testing.",
+            "17": "Success through focused effort.",
+            "18": "Conflict and material tests.",
+            "19": "Victory after trials",
+            "20": "Waiting; building.",
+            "21": "Support and advancement",
+            "22": "Material mastery (in Chaldean larger compounds)",
+            "23": "Royal star/fortuned communications",
+            "24": "Love, family harmony",
+            "25": "Spiritual wisdom and intuition",
+            "26": "Karmic business/large tests",
+            "27": "Compassion manifest",
+            "28": "Loss through partnerships caution",
+            "29": "Emotional sacrifice",
+            "30": "Inventive expression",
+            "31": "Original genius",
+            "32": "Fortune through communication",
+            "33": "Teacher & healer",
+            "34": "Work, discipline",
+            "35": "Recognition through art/speech",
+            "36": "Karmic testing",
+            "37": "Lucky star, protection",
+            "38": "Material/family struggles",
+            "39": "Artistic maturation"
+        }
+    },
+    "examples": {
+        "life_path_example": {
+            "birthdate": "1992-07-24",
+            "calculation": [
+                1,
+                9,
+                9,
+                2,
+                0,
+                7,
+                2,
+                4
+            ],
+            "sum": 34,
+            "reduced": 7,
+            "note": "LP=7"
+        },
+        "expression_example": {
+            "name": "JANE DOE",
+            "system": "pythagorean",
+            "letters": {
+                "J": 1,
+                "A": 1,
+                "N": 5,
+                "E": 5,
+                "D": 4,
+                "O": 6,
+                "E": 5
+            },
+            "sum": 27,
+            "reduced": 9
+        }
+    },
+    "datasets_schema": {
+        "profile_sample": {
+            "fields": {
+                "id": "string (uuid)",
+                "name": "string",
+                "birthdate": "YYYY-MM-DD",
+                "system": "pythagorean|chaldean|vedic",
+                "computed": {
+                    "LP": "int",
+                    "EX": "int",
+                    "SU": "int",
+                    "PN": "int",
+                    "BD": "int",
+                    "MN": "int",
+                    "pinnacles": [
+                        "int,int,int,int"
+                    ],
+                    "challenges": [
+                        "int,int,int,int"
+                    ]
+                },
+                "karmic": {
+                    "debts": [
+                        "13",
+                        "14"
+                    ],
+                    "lessons": [
+                        "4",
+                        "6"
+                    ]
+                },
+                "hidden_passion": "int",
+                "compatibility_scores": "object"
+            }
+        }
+    },
+    "ingestion_recommendations": {
+        "chunk_size": 800,
+        "overlap": 100,
+        "metadata_fields": [
+            "title",
+            "section",
+            "system",
+            "created_at",
+            "version"
+        ],
+        "embedding_model": "text-embedding-ada-002 or your platform equivalent",
+        "vector_store": "Pinecone/Weaviate/Milvus/Chromadb",
+        "embedding_batch": 128
+    },
+    "prompt_templates": {
+        "system_prompt": "You are a numerology expert engine. Use the retrieved facts to compute deterministic numerology outputs and then generate user-friendly interpretations. When computing numbers, never hallucinate numeric calculations. Use the canonical 'reduce' method provided in the retrieved documents.",
+        "user_template": "Compute full numerology profile for: {name} / {birthdate} / {system}. Return a JSON object with deterministic values and a plain-English interpretation for each number (short, medium, long). Also include 'recommended actions' and 'timing windows' (personal year & best months)."
+    },
+    "license": {
+        "type": "proprietary_generated",
+        "notes": "Use per project needs."
+    }
+}

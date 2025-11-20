@@ -61,6 +61,11 @@ export default function CompatibilityCheckerPage() {
               <p className="text-gray-600 dark:text-gray-400 mt-2">
                 Analyze relationships and business partnerships
               </p>
+              <p className="text-gray-600 dark:text-gray-400 mt-4 max-w-3xl mx-auto">
+                Our compatibility checker uses numerology to analyze the energetic connections between you 
+                and another person. By comparing your Life Path Numbers and other key numerology factors, 
+                we can reveal the dynamics, strengths, and challenges in your relationship.
+              </p>
             </div>
             
             <GlassButton 
@@ -76,6 +81,10 @@ export default function CompatibilityCheckerPage() {
             <div className="lg:col-span-1">
               <GlassCard variant="elevated" className="p-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Check Compatibility</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Enter the details of the person you&apos;d like to analyze compatibility with. 
+                  We&apos;ll compare your numerology profiles to reveal relationship dynamics.
+                </p>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
@@ -163,10 +172,16 @@ export default function CompatibilityCheckerPage() {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">How It Works</h3>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
                   Our compatibility checker analyzes numerological profiles to determine relationship dynamics, 
                   strengths, and areas for growth based on ancient numerology principles.
                 </p>
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <p>• Compares Life Path Numbers for core compatibility</p>
+                  <p>• Analyzes Destiny Numbers for shared talents and goals</p>
+                  <p>• Examines Soul Urge Numbers for emotional connection</p>
+                  <p>• Considers Personality Numbers for communication styles</p>
+                </div>
               </GlassCard>
             </div>
             
@@ -175,6 +190,10 @@ export default function CompatibilityCheckerPage() {
               {result ? (
                 <GlassCard variant="elevated" className="p-6">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Compatibility Results</h2>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    Your compatibility score is based on the alignment of key numerology numbers 
+                    between you and your partner. Higher scores indicate stronger natural connections.
+                  </p>
                   
                   {/* Score */}
                   <div className="text-center mb-8">
@@ -222,6 +241,9 @@ export default function CompatibilityCheckerPage() {
                         <HeartIcon className="w-5 h-5" />
                         Strengths
                       </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                        These are the areas where you and your partner naturally connect and support each other.
+                      </p>
                       <ul className="space-y-2">
                         {result.strengths.map((strength: string, index: number) => (
                           <li key={index} className="flex items-start gap-2">
@@ -241,6 +263,9 @@ export default function CompatibilityCheckerPage() {
                         <UsersIcon className="w-5 h-5" />
                         Challenges
                       </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                        These are areas where you and your partner may experience friction or need to work on communication.
+                      </p>
                       <ul className="space-y-2">
                         {result.challenges.map((challenge: string, index: number) => (
                           <li key={index} className="flex items-start gap-2">
@@ -262,6 +287,9 @@ export default function CompatibilityCheckerPage() {
                       <SparklesIcon className="w-5 h-5" />
                       Advice
                     </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-3">
+                      Personalized guidance to help you navigate this relationship successfully.
+                    </p>
                     <p className="text-gray-600 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 p-4 rounded-2xl">
                       {result.advice}
                     </p>
@@ -270,7 +298,14 @@ export default function CompatibilityCheckerPage() {
                   <div className="flex flex-wrap gap-3">
                     <GlassButton 
                       variant="primary" 
-                      onClick={() => setResult(null)}
+                      onClick={() => {
+                        setResult(null);
+                        setFormData({
+                          name: '',
+                          birthDate: '',
+                          relationshipType: 'romantic'
+                        });
+                      }}
                     >
                       Check Another
                     </GlassButton>

@@ -119,6 +119,10 @@ export default function PeoplePage() {
               <p className="text-gray-600 dark:text-gray-400 mt-2">
                 Manage people for numerology reports
               </p>
+              <p className="text-gray-600 dark:text-gray-400 mt-4 max-w-3xl">
+                Add family members, friends, or colleagues to generate personalized numerology reports for them. 
+                You can create compatibility analyses, birth charts, and other numerology insights for each person.
+              </p>
             </div>
             
             <GlassButton 
@@ -150,6 +154,9 @@ export default function PeoplePage() {
               className="block w-full pl-10 pr-3 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
+            Search for people by name or relationship to quickly find them in your list.
+          </p>
 
           {/* People Grid */}
           {filteredPeople.length === 0 ? (
@@ -160,6 +167,10 @@ export default function PeoplePage() {
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 {searchTerm ? 'No people match your search.' : 'Add people to generate numerology reports for them.'}
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                Adding people allows you to create compatibility reports, generate birth charts, 
+                and analyze numerology connections between you and your loved ones.
               </p>
               <GlassButton 
                 variant="primary" 

@@ -58,6 +58,7 @@ export default function DashboardPage() {
     {
       title: "Birth Chart",
       description: "View your numerology profile",
+      details: "Discover your unique numerology numbers including Life Path, Destiny, Soul Urge, and Personality numbers that define your character and life purpose.",
       icon: <Sparkles className="w-6 h-6" />,
       path: "/birth-chart",
       color: "from-blue-500 to-purple-600"
@@ -65,6 +66,7 @@ export default function DashboardPage() {
     {
       title: "Daily Reading",
       description: "Your personalized guidance",
+      details: "Receive daily insights and advice based on your personal numerology numbers and current cosmic influences to guide your decisions.",
       icon: <Calendar className="w-6 h-6" />,
       path: "/daily-reading",
       color: "from-purple-500 to-pink-600"
@@ -72,6 +74,7 @@ export default function DashboardPage() {
     {
       title: "AI Numerologist",
       description: "Chat with our AI expert",
+      details: "Get instant answers to your numerology questions and personalized guidance from our advanced AI numerology expert available 24/7.",
       icon: <MessageCircle className="w-6 h-6" />,
       path: "/ai-chat",
       color: "from-pink-500 to-red-600"
@@ -79,6 +82,7 @@ export default function DashboardPage() {
     {
       title: "Life Path Analysis",
       description: "Deep dive into your purpose",
+      details: "Understand your core life purpose, natural talents, and the lessons you're meant to learn throughout your journey.",
       icon: <Star className="w-6 h-6" />,
       path: "/life-path",
       color: "from-indigo-500 to-purple-600"
@@ -86,6 +90,7 @@ export default function DashboardPage() {
     {
       title: "Compatibility Checker",
       description: "Analyze relationships",
+      details: "Explore relationship dynamics with partners, family members, friends, or business associates through numerology compatibility.",
       icon: <Heart className="w-6 h-6" />,
       path: "/compatibility",
       color: "from-red-500 to-pink-600"
@@ -93,6 +98,7 @@ export default function DashboardPage() {
     {
       title: "Personalized Remedies",
       description: "Custom recommendations",
+      details: "Receive personalized remedies, gemstone recommendations, and rituals to enhance positive energies in your life.",
       icon: <TrendingUp className="w-6 h-6" />,
       path: "/remedies",
       color: "from-green-500 to-teal-600"
@@ -155,6 +161,11 @@ export default function DashboardPage() {
                 <p className="font-semibold text-gray-900 dark:text-white">
                   {user.is_verified ? 'Verified' : 'Not Verified'}
                 </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  {user.is_verified 
+                    ? 'Your account is fully verified and secure' 
+                    : 'Please verify your email to unlock all features'}
+                </p>
               </div>
             </div>
           </GlassCard>
@@ -169,6 +180,11 @@ export default function DashboardPage() {
                 <p className="font-semibold text-gray-900 dark:text-white">
                   {user.subscription_plan.charAt(0).toUpperCase() + user.subscription_plan.slice(1)}
                 </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  {user.subscription_plan === 'free' 
+                    ? 'Upgrade for advanced features' 
+                    : 'Enjoy premium benefits'}
+                </p>
               </div>
             </div>
           </GlassCard>
@@ -181,6 +197,9 @@ export default function DashboardPage() {
               <div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">Last Reading</p>
                 <p className="font-semibold text-gray-900 dark:text-white">Today</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  Your daily guidance is ready
+                </p>
               </div>
             </div>
           </GlassCard>
@@ -193,6 +212,9 @@ export default function DashboardPage() {
               <div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">Life Path</p>
                 <p className="font-semibold text-gray-900 dark:text-white">7</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  The Seeker of Truth and Wisdom
+                </p>
               </div>
             </div>
           </GlassCard>
@@ -228,6 +250,9 @@ export default function DashboardPage() {
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     {feature.description}
                   </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">
+                    {feature.details}
+                  </p>
                   <GlassButton variant="secondary" className="w-full">
                     Explore
                   </GlassButton>
@@ -254,6 +279,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">Birth Chart Generated</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Today at 10:30 AM</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Your complete numerology profile has been calculated and is ready to explore.</p>
                 </div>
               </div>
               
@@ -264,6 +290,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">Daily Reading Viewed</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Yesterday at 8:15 AM</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">You viewed your personalized daily guidance based on numerology.</p>
                 </div>
               </div>
               
@@ -274,6 +301,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">AI Chat Session</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">2 days ago at 3:45 PM</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">You had a conversation with our AI numerology expert for personalized guidance.</p>
                 </div>
               </div>
             </div>

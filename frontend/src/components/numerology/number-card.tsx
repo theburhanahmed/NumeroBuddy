@@ -55,10 +55,10 @@ export function NumberCard({ type, value, name, description, color, onClick }: N
           <h3 className="text-xl font-semibold">{name}</h3>
 
           {/* Description */}
-          <p className="text-sm opacity-90 line-clamp-2">{description}</p>
+          <p className="text-sm opacity-90 line-clamp-3">{description}</p>
 
           {/* Click hint */}
-          <p className="text-xs opacity-75 mt-2">Click for details</p>
+          <p className="text-xs opacity-75 mt-2">Click to explore meaning</p>
         </div>
       </CardContent>
     </Card>

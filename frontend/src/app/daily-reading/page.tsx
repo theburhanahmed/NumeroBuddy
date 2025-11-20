@@ -141,6 +141,11 @@ Affirmation: "${todayReading.affirmation}"`;
           <p className="text-muted-foreground text-lg">
             Your personalized numerology guidance for each day
           </p>
+          <p className="text-muted-foreground mt-4 max-w-3xl mx-auto">
+            Your daily reading is calculated based on your personal numerology numbers and the current date
+            to provide insights and guidance tailored specifically to you. Each day brings unique energies
+            and opportunities that can influence your decisions and experiences.
+          </p>
         </div>
         {todayReading && isToday(selectedDate) && (
           <Button
@@ -181,6 +186,13 @@ Affirmation: "${todayReading.affirmation}"`;
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
+      
+      <div className="text-center text-sm text-muted-foreground mb-8 max-w-2xl mx-auto">
+        <p>
+          Navigate through your daily readings to see how the energies have shifted over time.
+          Each reading is personalized based on your unique numerology profile and the specific date.
+        </p>
+      </div>
 
       {/* Current Reading */}
       {selectedReading ? (
@@ -199,6 +211,10 @@ Affirmation: "${todayReading.affirmation}"`;
       {readingHistory.length > 0 && isToday(selectedDate) && (
         <div className="mt-12">
           <h2 className="text-2xl font-bold mb-6">Recent Readings</h2>
+          <p className="text-muted-foreground mb-6 max-w-3xl mx-auto">
+            Review your recent daily readings to identify patterns and recurring themes in your life.
+            These insights can help you understand how numerology influences your experiences over time.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {readingHistory.slice(1).map((reading) => (
               <ReadingCard key={reading.id} reading={reading} />

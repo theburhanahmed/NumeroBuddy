@@ -83,6 +83,17 @@ function LifePathContent() {
                 <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                   {analysis.description}
                 </p>
+                <div className="mt-6 max-w-3xl mx-auto text-gray-600 dark:text-gray-400 text-left space-y-4">
+                  <p>
+                    Your Life Path Number is the most significant number in your numerology chart. 
+                    It reveals your innate talents, challenges you&apos;ll face, and the major lessons 
+                    you&apos;re here to learn throughout your lifetime.
+                  </p>
+                  <p>
+                    This number influences your natural inclinations, the way you approach 
+                    relationships and career decisions, and how you respond to life&apos;s ups and downs.
+                  </p>
+                </div>
               </GlassCard>
 
               {/* Key Insights */}
@@ -94,6 +105,10 @@ function LifePathContent() {
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Strengths</h3>
                   </div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    These are your natural talents and abilities that you can leverage to achieve success 
+                    and fulfillment in various areas of your life.
+                  </p>
                   <div className="grid grid-cols-2 gap-3">
                     {analysis.strengths.map((strength: string, index: number) => (
                       <div 
@@ -113,6 +128,10 @@ function LifePathContent() {
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Challenges</h3>
                   </div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    These are the areas where you may face obstacles or need to develop greater awareness. 
+                    Understanding these challenges can help you navigate them more effectively.
+                  </p>
                   <div className="grid grid-cols-2 gap-3">
                     {analysis.challenges.map((challenge: string, index: number) => (
                       <div 
@@ -135,6 +154,10 @@ function LifePathContent() {
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Career Paths</h3>
                   </div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    These career paths align with your natural talents and life purpose. 
+                    Consider these options when making professional decisions or seeking fulfillment in your work.
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {analysis.career.map((career: string, index: number) => (
                       <span 
@@ -157,6 +180,10 @@ function LifePathContent() {
                   <p className="text-gray-600 dark:text-gray-400">
                     {analysis.relationships}
                   </p>
+                  <p className="text-gray-600 dark:text-gray-400 mt-4">
+                    Understanding your relationship patterns can help you build stronger connections 
+                    and navigate interpersonal dynamics more effectively.
+                  </p>
                 </GlassCard>
               </div>
 
@@ -170,6 +197,10 @@ function LifePathContent() {
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   {analysis.advice}
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  This personalized guidance is based on your unique Life Path Number and is designed 
+                  to help you make the most of your natural strengths while addressing potential challenges.
                 </p>
                 <GlassButton 
                   variant="primary" 

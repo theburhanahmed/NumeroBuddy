@@ -86,6 +86,9 @@ export default function AddPersonPage() {
             <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Add Person
             </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Add someone to generate numerology reports for them
+            </p>
           </div>
 
           <GlassCard variant="default" className="p-6 sm:p-8">
@@ -101,6 +104,9 @@ export default function AddPersonPage() {
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Full Name
                 </label>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                  Enter the person&apos;s full name as it appears on official documents
+                </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="h-5 w-5 text-gray-400" />
@@ -123,6 +129,9 @@ export default function AddPersonPage() {
                 <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Birth Date
                 </label>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                  Enter the person&apos;s date of birth (required for numerology calculations)
+                </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Calendar className="h-5 w-5 text-gray-400" />
@@ -144,6 +153,9 @@ export default function AddPersonPage() {
                 <label htmlFor="relationship" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Relationship
                 </label>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                  Select your relationship to this person for personalized compatibility analysis
+                </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Users className="h-5 w-5 text-gray-400" />
@@ -169,6 +181,9 @@ export default function AddPersonPage() {
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Notes (Optional)
                 </label>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                  Add any additional information that might be helpful for future reference
+                </p>
                 <textarea
                   id="notes"
                   name="notes"

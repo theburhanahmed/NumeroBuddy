@@ -1,0 +1,387 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { 
+  User, 
+  Mail, 
+  Phone, 
+  Calendar, 
+  MapPin, 
+  Globe, 
+  Edit,
+  Save,
+  X
+} from 'lucide-react';
+import { GlassCard } from '@/components/glassmorphism/glass-card';
+import { GlassButton } from '@/components/glassmorphism/glass-button';
+import { useAuth } from '@/contexts/auth-context';
+import { userAPI } from '@/lib/api-client';
+
+export default function ProfilePage() {
+  const router = useRouter();
+  const { user, loading, refreshUser } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    date_of_birth: '',
+    gender: '',
+    timezone: '',
+    location: '',
+    bio: ''
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        full_name: user.full_name || '',
+        date_of_birth: '',
+        gender: '',
+        timezone: '',
+        location: '',
+        bio: ''
+      });
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    
+    try {
+      await userAPI.updateProfile(formData);
+      await refreshUser();
+      setIsEditing(false);
+    } catch (err) {
+      setError('Failed to update profile. Please try again.');
+      console.error('Profile update error:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-12 bg-white/50 dark:bg-gray-800/50 rounded w-1/3 mb-8"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-1">
+                <div className="h-96 bg-white/50 dark:bg-gray-800/50 rounded-2xl"></div>
+              </div>
+              <div className="lg:col-span-2">
+                <div className="h-96 bg-white/50 dark:bg-gray-800/50 rounded-2xl"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
+      <div className="max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Profile Settings
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                Manage your account information and preferences
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 mt-4 max-w-3xl">
+                Update your personal information to ensure accurate numerology calculations 
+                and personalized insights. Your profile information helps us provide more 
+                relevant and meaningful numerology guidance.
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              {isEditing ? (
+                <>
+                  <GlassButton 
+                    variant="secondary" 
+                    onClick={() => setIsEditing(false)}
+                    icon={<X className="w-5 h-5" />}
+                  >
+                    Cancel
+                  </GlassButton>
+                  <GlassButton 
+                    variant="primary" 
+                    onClick={handleSave}
+                    disabled={saving}
+                    icon={<Save className="w-5 h-5" />}
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </GlassButton>
+                </>
+              ) : (
+                <GlassButton 
+                  variant="primary" 
+                  onClick={() => setIsEditing(true)}
+                  icon={<Edit className="w-5 h-5" />}
+                >
+                  Edit Profile
+                </GlassButton>
+              )}
+            </div>
+          </div>
+
+          {error && (
+            <div className="mb-6 p-4 rounded-2xl bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800">
+              <p className="text-red-800 dark:text-red-200">{error}</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Profile Card */}
+            <div className="lg:col-span-1">
+              <GlassCard variant="elevated" className="p-6 text-center">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+                  <User className="w-12 h-12 text-white" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
+                  {user.full_name}
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                  {user.email || user.phone}
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
+                  Your account information and subscription details
+                </p>
+                
+                <div className="space-y-3 text-left">
+                  <div className="flex items-center gap-3 text-sm">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {user.email || 'Not provided'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 text-sm">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {user.phone || 'Not provided'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">
+                        {user.subscription_plan.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-gray-600 dark:text-gray-400 capitalize">
+                      {user.subscription_plan} Plan
+                    </span>
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+            
+            {/* Profile Details */}
+            <div className="lg:col-span-2">
+              <GlassCard variant="default" className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                  {isEditing ? 'Edit Profile' : 'Profile Information'}
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  {isEditing 
+                    ? 'Update your personal information to ensure accurate numerology calculations.' 
+                    : 'Your personal information used for numerology calculations and personalized insights.'}
+                </p>
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Full Name
+                    </label>
+                    <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">
+                      Your full name as it appears on official documents
+                    </p>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={formData.full_name}
+                        onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                        className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        placeholder="Enter your full name"
+                      />
+                    ) : (
+                      <p className="text-gray-900 dark:text-white">
+                        {user.full_name}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Date of Birth
+                      </label>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">
+                        Required for accurate numerology calculations
+                      </p>
+                      {isEditing ? (
+                        <input
+                          type="date"
+                          value={formData.date_of_birth}
+                          onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
+                          className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        />
+                      ) : (
+                        <p className="text-gray-900 dark:text-white">
+                          Not provided
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Gender
+                      </label>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">
+                        Used for personalized insights and recommendations
+                      </p>
+                      {isEditing ? (
+                        <select
+                          value={formData.gender}
+                          onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                          className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        >
+                          <option value="">Select gender</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                          <option value="prefer_not_to_say">Prefer not to say</option>
+                        </select>
+                      ) : (
+                        <p className="text-gray-900 dark:text-white">
+                          Not provided
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Timezone
+                      </label>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">
+                        Helps determine the most accurate daily readings for your location
+                      </p>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={formData.timezone}
+                          onChange={(e) => setFormData({...formData, timezone: e.target.value})}
+                          className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                          placeholder="e.g., America/New_York"
+                        />
+                      ) : (
+                        <p className="text-gray-900 dark:text-white">
+                          Not provided
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Location
+                      </label>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">
+                        Your general location for personalized cultural insights
+                      </p>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={formData.location}
+                          onChange={(e) => setFormData({...formData, location: e.target.value})}
+                          className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                          placeholder="City, Country"
+                        />
+                      ) : (
+                        <p className="text-gray-900 dark:text-white">
+                          Not provided
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Bio
+                    </label>
+                    <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">
+                      Share anything about yourself that might help provide more personalized insights
+                    </p>
+                    {isEditing ? (
+                      <textarea
+                        value={formData.bio}
+                        onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                        rows={4}
+                        className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        placeholder="Tell us about yourself..."
+                      />
+                    ) : (
+                      <p className="text-gray-900 dark:text-white">
+                        {formData.bio || 'No bio provided'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </GlassCard>
+              
+              {/* Account Status */}
+              <GlassCard variant="default" className="p-6 mt-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Account Status
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  View your account verification status and subscription details
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/50 dark:bg-gray-800/50">
+                    <div className={`w-3 h-3 rounded-full ${user.is_verified ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">Email Verification</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {user.is_verified ? 'Verified' : 'Not verified'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/50 dark:bg-gray-800/50">
+                    <div className={`w-3 h-3 rounded-full ${user.is_premium ? 'bg-green-500' : 'bg-gray-500'}`}></div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">Premium Status</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {user.is_premium ? 'Active' : 'Inactive'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}

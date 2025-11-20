@@ -34,7 +34,7 @@ export default function RootLayout({
           <AuthProvider>
             <ErrorBoundary>
               <Navigation />
-              <main>{children}</main>
+              <main className="pt-16">{children}</main>
               <Toaster />
             </ErrorBoundary>
           </AuthProvider>

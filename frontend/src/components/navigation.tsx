@@ -1,6 +1,3 @@
-/**
- * Navigation component with links to all main pages.
- */
 'use client';
 
 import Link from 'next/link';
@@ -20,7 +17,9 @@ import {
   Users,
   FileText,
   MoonIcon,
-  SunIcon
+  SunIcon,
+  BookOpen,
+  Bot
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
@@ -32,17 +31,43 @@ export function Navigation() {
 
   if (!user) return null;
 
-  const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/birth-chart', label: 'Birth Chart', icon: Sparkles },
-    { href: '/daily-reading', label: 'Daily Reading', icon: Calendar },
-    { href: '/life-path', label: 'Life Path', icon: User },
-    { href: '/compatibility', label: 'Compatibility', icon: Heart },
-    { href: '/remedies', label: 'Remedies', icon: TrendingUp },
-    { href: '/numerology-report', label: 'Report', icon: FileText },
-    { href: '/consultations', label: 'Consultations', icon: Users },
-    { href: '/ai-chat', label: 'AI Chat', icon: MessageCircle },
+  // Group navigation items by category
+  const navGroups = [
+    {
+      title: "Core Features",
+      items: [
+        { href: '/dashboard', label: 'Dashboard', icon: Home },
+        { href: '/birth-chart', label: 'Birth Chart', icon: Sparkles },
+        { href: '/daily-reading', label: 'Daily Reading', icon: Calendar },
+        { href: '/life-path', label: 'Life Path', icon: User },
+      ]
+    },
+    {
+      title: "Relationships",
+      items: [
+        { href: '/compatibility', label: 'Compatibility', icon: Heart },
+        { href: '/people', label: 'People', icon: Users },
+      ]
+    },
+    {
+      title: "Resources",
+      items: [
+        { href: '/remedies', label: 'Remedies', icon: TrendingUp },
+        { href: '/numerology-report', label: 'Reports', icon: FileText },
+        { href: '/templates', label: 'Templates', icon: BookOpen },
+      ]
+    },
+    {
+      title: "Services",
+      items: [
+        { href: '/consultations', label: 'Consultations', icon: Users },
+        { href: '/ai-chat', label: 'AI Chat', icon: Bot },
+      ]
+    }
   ];
+
+  // Flatten nav items for mobile view
+  const allNavItems = navGroups.flatMap(group => group.items);
 
   return (
     <nav className="fixed top-0 w-full backdrop-blur-2xl bg-white/30 dark:bg-gray-900/30 z-40 border-b border-white/20 dark:border-gray-700/30 shadow-lg">
@@ -52,26 +77,37 @@ export function Navigation() {
             <Link href="/dashboard" className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               NumerAI
             </Link>
-            <div className="hidden md:flex items-center gap-2">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all',
-                      isActive
-                        ? 'bg-gradient-to-r from-blue-500/90 to-purple-600/90 text-white shadow-lg'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50'
-                    )}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
+            
+            {/* Desktop Navigation - Grouped */}
+            <div className="hidden md:flex items-center gap-1">
+              {navGroups.map((group, groupIndex) => (
+                <div key={group.title} className="flex items-center">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          'flex items-center gap-2 px-3 py-2 rounded-2xl text-sm font-medium transition-all mx-1',
+                          isActive
+                            ? 'bg-gradient-to-r from-blue-500/90 to-purple-600/90 text-white shadow-lg'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50'
+                        )}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="hidden lg:inline">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                  
+                  {/* Separator between groups (except last group) */}
+                  {groupIndex < navGroups.length - 1 && (
+                    <div className="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -101,14 +137,14 @@ export function Navigation() {
               icon={<LogOut className="w-4 h-4" />}
               className="gap-2"
             >
-              Logout
+              <span className="hidden sm:inline">Logout</span>
             </GlassButton>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - Flattened */}
         <div className="md:hidden flex items-center gap-2 pb-3 overflow-x-auto">
-          {navItems.map((item) => {
+          {allNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
@@ -123,7 +159,7 @@ export function Navigation() {
                 )}
               >
                 <Icon className="w-4 h-4" />
-                {item.label}
+                <span>{item.label}</span>
               </Link>
             );
           })}
