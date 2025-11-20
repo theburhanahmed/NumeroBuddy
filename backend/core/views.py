@@ -74,53 +74,58 @@ def verify_otp(request):
     """Verify OTP and activate account."""
     serializer = OTPVerificationSerializer(data=request.data)
     if serializer.is_valid():
+        # Access validated_data safely
+        # Type checker issues are suppressed with # type: ignore comments
+        user_data = serializer.validated_data['user']  # type: ignore
+        otp_data = serializer.validated_data['otp_obj']  # type: ignore
+        
         try:
-            user = serializer.validated_data['user']
-            otp_obj = serializer.validated_data['otp_obj']
-            
             # Mark OTP as used
-            otp_obj.is_used = True
-            otp_obj.save()
+            otp_data.is_used = True
+            otp_data.save()
         
             # Verify user
-            user.is_verified = True
-            user.save()
+            user_data.is_verified = True
+            user_data.save()
         
             # Generate JWT tokens
-            refresh = JWTRefreshToken.for_user(user)
+            refresh = JWTRefreshToken.for_user(user_data)
             access_token = str(getattr(refresh, 'access_token', refresh))
             refresh_token = str(refresh)
         
             # Store refresh token
             RefreshToken.objects.create(
-                user=user,
+                user=user_data,
                 token=refresh_token,
                 expires_at=timezone.now() + timedelta(days=7)
             )
         
-            user_data = {
-                'id': str(getattr(user, 'id', '')),
-                'full_name': getattr(user, 'full_name', ''),
+            user_response_data = {
+                'id': str(getattr(user_data, 'id', '')),
+                'full_name': getattr(user_data, 'full_name', ''),
             }
             
-            if hasattr(user, 'email'):
-                user_data['email'] = user.email
-            if hasattr(user, 'phone'):
-                user_data['phone'] = user.phone
+            if hasattr(user_data, 'email'):
+                user_response_data['email'] = user_data.email
+            if hasattr(user_data, 'phone'):
+                user_response_data['phone'] = user_data.phone
         
             return Response({
                 'message': 'Account verified successfully',
                 'access_token': access_token,
                 'refresh_token': refresh_token,
-                'user': user_data
+                'user': user_response_data
             }, status=status.HTTP_200_OK)
         except (KeyError, AttributeError) as e:
             return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
     
     # Increment attempts if OTP object exists
     try:
-        if 'otp_obj' in serializer.validated_data:
-            serializer.validated_data['otp_obj'].increment_attempts()
+        # Type checker issues are suppressed with # type: ignore comments
+        if hasattr(serializer, 'validated_data') and serializer.validated_data and 'otp_obj' in serializer.validated_data:  # type: ignore
+            otp_obj = serializer.validated_data['otp_obj']  # type: ignore
+            if otp_obj:
+                otp_obj.increment_attempts()
     except (KeyError, AttributeError):
         pass
     
@@ -172,7 +177,9 @@ def login(request):
     """Login user and return JWT tokens."""
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.validated_data['user']
+        # Access validated_data safely
+        # Type checker issues are suppressed with # type: ignore comments
+        user = serializer.validated_data['user']  # type: ignore
         
         # Generate JWT tokens
         refresh = JWTRefreshToken.for_user(user)
@@ -213,7 +220,9 @@ def logout(request):
     """Logout user and blacklist refresh token."""
     serializer = LogoutSerializer(data=request.data)
     if serializer.is_valid():
-        refresh_token = serializer.validated_data['refresh_token']
+        # Access validated_data safely
+        # Type checker issues are suppressed with # type: ignore comments
+        refresh_token = serializer.validated_data['refresh_token']  # type: ignore
         
         # Blacklist token
         token_obj = RefreshToken.objects.filter(token=refresh_token).first()
@@ -234,7 +243,9 @@ def refresh_token(request):
     """Refresh access token using refresh token."""
     serializer = RefreshTokenSerializer(data=request.data)
     if serializer.is_valid():
-        refresh_token = serializer.validated_data['refresh_token']
+        # Access validated_data safely
+        # Type checker issues are suppressed with # type: ignore comments
+        refresh_token = serializer.validated_data['refresh_token']  # type: ignore
         
         # Check if token is valid
         token_obj = RefreshToken.objects.filter(token=refresh_token).first()
@@ -260,7 +271,10 @@ def password_reset_request(request):
     """Request password reset OTP."""
     serializer = PasswordResetRequestSerializer(data=request.data)
     if serializer.is_valid():
-        email = serializer.validated_data['email']
+        # Access validated_data safely
+        # Type checker issues are suppressed with # type: ignore comments
+        email = serializer.validated_data['email']  # type: ignore
+        
         user = User.objects.filter(email=email).first()
         
         if not user:
@@ -275,11 +289,14 @@ def password_reset_request(request):
             expires_at=timezone.now() + timedelta(minutes=10)
         )
         
-        send_otp_email(user.email, otp_code)
-        
-        return Response({
-            'message': 'Password reset OTP sent to your email'
-        }, status=status.HTTP_200_OK)
+        if send_otp_email(user.email, otp_code):
+            return Response({
+                'message': 'Password reset OTP sent to your email'
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'error': 'Failed to send password reset email. Please try again later.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -290,9 +307,10 @@ def password_reset_confirm(request):
     """Confirm password reset with OTP."""
     serializer = PasswordResetConfirmSerializer(data=request.data)
     if serializer.is_valid():
-        email = serializer.validated_data['email']
-        otp_code = serializer.validated_data['otp']
-        new_password = serializer.validated_data['new_password']
+        # Type checker issues are suppressed with # type: ignore comments
+        email = serializer.validated_data['email']  # type: ignore
+        otp_code = serializer.validated_data['otp']  # type: ignore
+        new_password = serializer.validated_data['new_password']  # type: ignore
         
         user = User.objects.filter(email=email).first()
         if not user:
@@ -333,7 +351,8 @@ def password_reset_token_request(request):
     
     serializer = PasswordResetTokenRequestSerializer(data=request.data)
     if serializer.is_valid():
-        email = serializer.validated_data['email']
+        # Type checker issues are suppressed with # type: ignore comments
+        email = serializer.validated_data['email']  # type: ignore
         user = User.objects.filter(email=email, is_active=True).first()
         
         if not user:
@@ -377,8 +396,9 @@ def password_reset_token_confirm(request):
     
     serializer = PasswordResetTokenConfirmSerializer(data=request.data)
     if serializer.is_valid():
-        token = serializer.validated_data['token']
-        new_password = serializer.validated_data['new_password']
+        # Type checker issues are suppressed with # type: ignore comments
+        token = serializer.validated_data['token']  # type: ignore
+        new_password = serializer.validated_data['new_password']  # type: ignore
         
         # Find valid token
         reset_token = PasswordResetToken.objects.filter(
@@ -956,6 +976,10 @@ def ai_chat(request):
         
         ai_response = response.choices[0].message.content
         tokens_used = response.usage.total_tokens
+        
+        # Handle case where ai_response is None
+        if ai_response is None:
+            ai_response = ""
         
         # Create AI message
         ai_msg = AIMessage.objects.create(
@@ -2416,7 +2440,7 @@ def _generate_report_content(person, numerology_profile, template):
             'health_focus': "Maintain consistent wellness practices and be patient with your personal transformation process.",
             'affirmation': f"This year, trust: {interpretations['life_path'].get('life_purpose', 'Your life purpose')}"
         }
-        }
+    }
     # Add more template types as needed
     
     return content
