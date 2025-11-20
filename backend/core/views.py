@@ -54,12 +54,17 @@ def register(request):
     serializer = UserRegistrationSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        return Response({
+        response_data = {
             'message': 'Registration successful. Please check your email for OTP.',
-            'user_id': str(user.id),
-            'email': user.email,
-            'phone': user.phone
-        }, status=status.HTTP_201_CREATED)
+            'user_id': str(getattr(user, 'id', '')),
+        }
+        email = getattr(user, 'email', None)
+        if email:
+            response_data['email'] = email
+        phone = getattr(user, 'phone', None)
+        if phone:
+            response_data['phone'] = phone
+        return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -69,44 +74,55 @@ def verify_otp(request):
     """Verify OTP and activate account."""
     serializer = OTPVerificationSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.validated_data['user']
-        otp_obj = serializer.validated_data['otp_obj']
+        try:
+            user = serializer.validated_data['user']
+            otp_obj = serializer.validated_data['otp_obj']
+            
+            # Mark OTP as used
+            otp_obj.is_used = True
+            otp_obj.save()
         
-        # Mark OTP as used
-        otp_obj.is_used = True
-        otp_obj.save()
+            # Verify user
+            user.is_verified = True
+            user.save()
         
-        # Verify user
-        user.is_verified = True
-        user.save()
+            # Generate JWT tokens
+            refresh = JWTRefreshToken.for_user(user)
+            access_token = str(getattr(refresh, 'access_token', refresh))
+            refresh_token = str(refresh)
         
-        # Generate JWT tokens
-        refresh = JWTRefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
+            # Store refresh token
+            RefreshToken.objects.create(
+                user=user,
+                token=refresh_token,
+                expires_at=timezone.now() + timedelta(days=7)
+            )
         
-        # Store refresh token
-        RefreshToken.objects.create(
-            user=user,
-            token=refresh_token,
-            expires_at=timezone.now() + timedelta(days=7)
-        )
-        
-        return Response({
-            'message': 'Account verified successfully',
-            'access_token': access_token,
-            'refresh_token': refresh_token,
-            'user': {
-                'id': str(user.id),
-                'email': user.email,
-                'phone': user.phone,
-                'full_name': user.full_name
+            user_data = {
+                'id': str(getattr(user, 'id', '')),
+                'full_name': getattr(user, 'full_name', ''),
             }
-        }, status=status.HTTP_200_OK)
+            
+            if hasattr(user, 'email'):
+                user_data['email'] = user.email
+            if hasattr(user, 'phone'):
+                user_data['phone'] = user.phone
+        
+            return Response({
+                'message': 'Account verified successfully',
+                'access_token': access_token,
+                'refresh_token': refresh_token,
+                'user': user_data
+            }, status=status.HTTP_200_OK)
+        except (KeyError, AttributeError) as e:
+            return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
     
     # Increment attempts if OTP object exists
-    if 'otp_obj' in serializer.validated_data:
-        serializer.validated_data['otp_obj'].increment_attempts()
+    try:
+        if 'otp_obj' in serializer.validated_data:
+            serializer.validated_data['otp_obj'].increment_attempts()
+    except (KeyError, AttributeError):
+        pass
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -160,7 +176,7 @@ def login(request):
         
         # Generate JWT tokens
         refresh = JWTRefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
+        access_token = str(getattr(refresh, 'access_token', refresh))
         refresh_token = str(refresh)
         
         # Store refresh token
@@ -748,17 +764,19 @@ def get_daily_reading(request):
                     user=user,
                     reading_date=reading_date,
                     personal_day_number=personal_day_number,
-                    **reading_content
+                    lucky_number=reading_content['lucky_number'],
+                    lucky_color=reading_content['lucky_color'],
+                    auspicious_time=reading_content['auspicious_time'],
+                    activity_recommendation=reading_content['activity_recommendation'],
+                    warning=reading_content['warning'],
+                    affirmation=reading_content['affirmation'],
+                    actionable_tip=reading_content['actionable_tip']
                 )
             except Exception as e:
                 return Response({
                     'error': f'Failed to save reading to database: {str(e)}'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as e:
-            return Response({
-                'error': f'Failed to retrieve or create reading: {str(e)}'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+                
     except Exception as e:
         return Response({
             'error': f'Unexpected error occurred: {str(e)}'
@@ -1758,6 +1776,171 @@ def export_full_numerology_report_pdf(request):
             'error': f'Failed to generate PDF: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def export_generated_report_pdf(request, report_id):
+    """Export a generated report as PDF."""
+    try:
+        # Get the generated report
+        report = GeneratedReport.objects.get(id=report_id, user=request.user)
+        content = report.content
+        
+        # Create PDF
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{report.title.replace(" ", "_")}.pdf"'
+        
+        # Create PDF document
+        p = canvas.Canvas(response, pagesize=letter)
+        width, height = letter
+        
+        # Title
+        p.setFont("Helvetica-Bold", 24)
+        p.drawString(50, height - 50, report.title)
+        
+        # Report info
+        p.setFont("Helvetica", 12)
+        p.drawString(50, height - 80, f"Person: {content.get('person_name', 'Unknown')}")
+        p.drawString(50, height - 100, f"Birth Date: {content.get('birth_date', 'Unknown')}")
+        p.drawString(50, height - 120, f"Generated: {content.get('generated_at', 'Unknown')}")
+        
+        # Summary
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(50, height - 160, "Summary")
+        
+        p.setFont("Helvetica", 12)
+        summary = content.get('summary', 'No summary available')
+        # Split summary into lines that fit on the page
+        summary_lines = []
+        line = ""
+        for word in summary.split():
+            if p.stringWidth(line + word, "Helvetica", 12) < width - 100:
+                line += word + " "
+            else:
+                summary_lines.append(line)
+                line = word + " "
+        summary_lines.append(line)
+        
+        y_position = height - 180
+        for line in summary_lines:
+            p.drawString(50, y_position, line)
+            y_position -= 20
+            if y_position < 100:  # Start new page if needed
+                p.showPage()
+                y_position = height - 50
+        
+        # Numbers table
+        y_position -= 40
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(50, y_position, "Core Numbers")
+        
+        numbers_data = content.get('numbers', {})
+        if numbers_data:
+            y_position -= 30
+            p.setFont("Helvetica-Bold", 12)
+            p.drawString(50, y_position, "Number Type")
+            p.drawString(200, y_position, "Value")
+            
+            y_position -= 20
+            p.setFont("Helvetica", 12)
+            for key, value in numbers_data.items():
+                if y_position < 100:  # Start new page if needed
+                    p.showPage()
+                    y_position = height - 50
+                
+                # Format the key to be more readable
+                formatted_key = key.replace('_', ' ').title()
+                p.drawString(50, y_position, formatted_key)
+                p.drawString(200, y_position, str(value))
+                y_position -= 20
+        
+        # Sections
+        sections = content.get('sections', {})
+        if sections:
+            y_position -= 40
+            if y_position < 100:  # Start new page if needed
+                p.showPage()
+                y_position = height - 50
+            
+            p.setFont("Helvetica-Bold", 16)
+            p.drawString(50, y_position, "Detailed Sections")
+            
+            y_position -= 30
+            for section_name, section_content in sections.items():
+                if y_position < 150:  # Start new page if needed
+                    p.showPage()
+                    y_position = height - 50
+                
+                p.setFont("Helvetica-Bold", 14)
+                p.drawString(50, y_position, section_name.replace('_', ' ').title())
+                y_position -= 20
+                
+                p.setFont("Helvetica", 12)
+                # Handle different content types
+                if isinstance(section_content, str):
+                    # Split content into lines that fit on the page
+                    content_lines = []
+                    line = ""
+                    for word in section_content.split():
+                        if p.stringWidth(line + word, "Helvetica", 12) < width - 100:
+                            line += word + " "
+                        else:
+                            content_lines.append(line)
+                            line = word + " "
+                    content_lines.append(line)
+                    
+                    for line in content_lines:
+                        if y_position < 100:  # Start new page if needed
+                            p.showPage()
+                            y_position = height - 50
+                        p.drawString(70, y_position, line)
+                        y_position -= 20
+                elif isinstance(section_content, list):
+                    # Handle list content
+                    for item in section_content:
+                        if y_position < 100:  # Start new page if needed
+                            p.showPage()
+                            y_position = height - 50
+                        if isinstance(item, dict):
+                            # Handle dict items in list
+                            for key, value in item.items():
+                                if y_position < 100:  # Start new page if needed
+                                    p.showPage()
+                                    y_position = height - 50
+                                p.drawString(90, y_position, f"{key}: {value}")
+                                y_position -= 20
+                        else:
+                            p.drawString(90, y_position, f"• {item}")
+                            y_position -= 20
+                elif isinstance(section_content, dict):
+                    # Handle dict content
+                    for key, value in section_content.items():
+                        if y_position < 100:  # Start new page if needed
+                            p.showPage()
+                            y_position = height - 50
+                        p.drawString(90, y_position, f"{key}: {value}")
+                        y_position -= 20
+                
+                y_position -= 10  # Extra space between sections
+        
+        # Footer
+        p.setFont("Helvetica", 10)
+        p.drawString(50, 50, "Generated by NumerAI - Your Personal Numerology Guide")
+        
+        p.showPage()
+        p.save()
+        
+        return response
+        
+    except GeneratedReport.DoesNotExist:
+        return Response({
+            'error': 'Report not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': f'Failed to generate PDF: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 # New API endpoints for multi-person numerology
 
 @api_view(['GET', 'POST'])
@@ -2124,6 +2307,115 @@ def _generate_report_content(person, numerology_profile, template):
                     'description': 'Your emotional compatibility'
                 }
             ]
+        }
+    elif template.report_type == 'career':
+        content['summary'] = f"Career Guidance Report for {person.name}"
+        content['sections'] = {
+            'overview': f"Welcome to your career guidance report, {person.name}. This analysis explores your professional strengths and opportunities based on your numerological profile.",
+            'career_path': f"Your Life Path number {numerology_profile.life_path_number} indicates your natural career inclinations and professional destiny.",
+            'talents': f"Your Destiny number {numerology_profile.destiny_number} reveals your innate talents that can be leveraged in your career.",
+            'work_style': f"Your Personality number {numerology_profile.personality_number} shows how you present yourself professionally.",
+            'timing': f"Your Personal Year number {numerology_profile.personal_year_number} suggests favorable periods for career changes and advancement.",
+            'challenges': f"Your Balance number {numerology_profile.balance_number} indicates potential challenges in your professional life that need attention."
+        }
+        # Add career-specific insights
+        content['career_insights'] = {
+            'best_industries': interpretations['life_path'].get('career', []),
+            'leadership_style': "Based on your numbers, you exhibit a balanced approach to leadership.",
+            'networking': "Your communication skills make you well-suited for collaborative environments.",
+            'growth_periods': f"Your Personal Year {numerology_profile.personal_year_number} suggests opportunities for professional development."
+        }
+    elif template.report_type == 'relationship':
+        content['summary'] = f"Relationship Analysis Report for {person.name}"
+        content['sections'] = {
+            'overview': f"Welcome to your relationship analysis report, {person.name}. This analysis explores your compatibility patterns and relationship dynamics.",
+            'compatibility': f"Your Life Path number {numerology_profile.life_path_number} influences how you approach relationships.",
+            'emotional_needs': f"Your Soul Urge number {numerology_profile.soul_urge_number} reveals your deepest emotional needs in relationships.",
+            'communication': f"Your Personality number {numerology_profile.personality_number} shows how you express yourself in relationships.",
+            'challenges': f"Your Balance number {numerology_profile.balance_number} indicates areas that may need attention in relationships."
+        }
+        # Add relationship-specific insights
+        content['relationship_insights'] = {
+            'love_style': interpretations['soul_urge'].get('relationships', ''),
+            'communication_patterns': interpretations['personality'].get('relationships', ''),
+            'compatibility_with': "Numbers 2, 6, and 9 tend to be most compatible with your profile.",
+            'growth_areas': "Focus on developing patience and understanding different perspectives."
+        }
+    elif template.report_type == 'finance':
+        content['summary'] = f"Financial Forecast Report for {person.name}"
+        content['sections'] = {
+            'overview': f"Welcome to your financial forecast report, {person.name}. This analysis explores your financial patterns and opportunities.",
+            'money_mindset': f"Your Life Path number {numerology_profile.life_path_number} influences your approach to money and financial decisions.",
+            'earning_potential': f"Your Destiny number {numerology_profile.destiny_number} reveals your natural talents for generating wealth.",
+            'spending_habits': f"Your Personality number {numerology_profile.personality_number} shows how you tend to spend and save.",
+            'timing': f"Your Personal Year number {numerology_profile.personal_year_number} suggests favorable periods for financial investments."
+        }
+        # Add finance-specific insights
+        content['financial_insights'] = {
+            'best_months': "Based on your Personal Month numbers, months 3, 6, and 9 are favorable for financial activities.",
+            'investment_style': "Your numbers suggest a balanced approach to investments with moderate risk tolerance.",
+            'wealth_building': f"Focus on opportunities related to your Life Path number {numerology_profile.life_path_number} for wealth generation.",
+            'pitfalls': "Avoid impulsive financial decisions, especially during challenging Personal Month periods."
+        }
+    elif template.report_type == 'weekly':
+        from datetime import datetime, timedelta
+        today = datetime.now().date()
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=6)
+        
+        content['summary'] = f"Weekly Guidance Report for {person.name} ({week_start.strftime('%b %d')} - {week_end.strftime('%b %d, %Y')})"
+        content['sections'] = {
+            'overview': f"Welcome to your weekly guidance report, {person.name}. This analysis provides insights for the week ahead.",
+            'energy_tone': f"Your Personal Month number {numerology_profile.personal_month_number} sets the overall tone for this week.",
+            'focus_areas': "Based on your numbers, focus on personal growth and relationship building this week.",
+            'opportunities': "Look for opportunities to express your creativity and connect with others.",
+            'challenges': "Be mindful of potential communication misunderstandings this week."
+        }
+        # Add weekly-specific insights
+        content['weekly_insights'] = {
+            'best_days': "Tuesday and Thursday are particularly favorable days this week.",
+            'activities': "Focus on collaborative projects and creative endeavors.",
+            'health_focus': "Pay attention to stress management and maintaining work-life balance.",
+            'affirmation': f"This week, remember: {interpretations['life_path'].get('description', 'Trust your journey')}"
+        }
+    elif template.report_type == 'monthly':
+        from datetime import datetime
+        today = datetime.now().date()
+        
+        content['summary'] = f"Monthly Guidance Report for {person.name} ({today.strftime('%B %Y')})"
+        content['sections'] = {
+            'overview': f"Welcome to your monthly guidance report, {person.name}. This analysis provides insights for the month ahead.",
+            'monthly_theme': f"Your Personal Month number {numerology_profile.personal_month_number} defines the primary theme for this month.",
+            'focus_areas': "Based on your numbers, focus on personal development and new beginnings this month.",
+            'opportunities': "Look for opportunities to start new projects and strengthen important relationships.",
+            'challenges': "Be mindful of potential obstacles related to decision-making this month."
+        }
+        # Add monthly-specific insights
+        content['monthly_insights'] = {
+            'best_weeks': "Weeks 2 and 4 are particularly favorable for taking action on important goals.",
+            'activities': "Focus on strategic planning and long-term vision development.",
+            'health_focus': "Prioritize self-care and maintaining healthy routines.",
+            'affirmation': f"This month, embrace: {interpretations['destiny'].get('description', 'Your unique talents')}"
+        }
+    elif template.report_type == 'yearly':
+        from datetime import datetime
+        today = datetime.now().date()
+        
+        content['summary'] = f"Yearly Forecast Report for {person.name} ({today.strftime('%Y')})"
+        content['sections'] = {
+            'overview': f"Welcome to your yearly forecast report, {person.name}. This analysis provides insights for the year ahead.",
+            'yearly_theme': f"Your Personal Year number {numerology_profile.personal_year_number} defines the primary theme for this year.",
+            'focus_areas': "Based on your numbers, focus on transformation and personal empowerment this year.",
+            'opportunities': "Look for opportunities to make significant life changes and pursue long-term goals.",
+            'challenges': "Be prepared for periods of intense growth that may feel challenging but are ultimately beneficial."
+        }
+        # Add yearly-specific insights
+        content['yearly_insights'] = {
+            'best_seasons': "Spring and Fall are particularly favorable for major initiatives.",
+            'activities': "Focus on personal reinvention and building a strong foundation for future success.",
+            'health_focus': "Maintain consistent wellness practices and be patient with your personal transformation process.",
+            'affirmation': f"This year, trust: {interpretations['life_path'].get('life_purpose', 'Your life purpose')}"
+        }
         }
     # Add more template types as needed
     

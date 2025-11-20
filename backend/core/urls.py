@@ -52,6 +52,7 @@ urlpatterns = [
     path('reports/bulk-generate/', views.bulk_generate_reports, name='bulk-generate-reports'),
     path('reports/', views.get_generated_reports, name='get-generated-reports'),
     path('reports/<uuid:report_id>/', views.get_generated_report, name='get-generated-report'),
+    path('reports/<uuid:report_id>/pdf/', views.export_generated_report_pdf, name='export-generated-report-pdf'),
     
     # Expert and consultation endpoints
     path('experts/', views.get_experts, name='experts'),

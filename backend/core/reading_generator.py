@@ -2,7 +2,7 @@
 Daily reading content generator for NumerAI.
 Enhanced with personalization based on user numerology profiles.
 """
-from typing import Dict, List
+from typing import Dict, List, Any
 from datetime import date
 import random
 from .numerology import NumerologyCalculator
@@ -357,7 +357,7 @@ class DailyReadingGenerator:
     }
     
     @classmethod
-    def generate_reading(cls, personal_day_number: int) -> Dict[str, str]:
+    def generate_reading(cls, personal_day_number: int) -> Dict[str, Any]:
         """
         Generate daily reading content.
         
@@ -378,7 +378,7 @@ class DailyReadingGenerator:
         lucky_number = random.choice(lucky_numbers)
         
         return {
-            'lucky_number': str(lucky_number),
+            'lucky_number': lucky_number,  # Return as integer, not string
             'lucky_color': random.choice(cls.LUCKY_COLORS[personal_day_number]),
             'auspicious_time': random.choice(cls.AUSPICIOUS_TIMES[personal_day_number]),
             'activity_recommendation': random.choice(cls.ACTIVITIES[personal_day_number]),
@@ -388,7 +388,7 @@ class DailyReadingGenerator:
         }
     
     @classmethod
-    def generate_personalized_reading(cls, personal_day_number: int, user_profile: Dict) -> Dict[str, str]:
+    def generate_personalized_reading(cls, personal_day_number: int, user_profile: Dict) -> Dict[str, Any]:
         """
         Generate personalized daily reading content based on user's numerology profile.
         
