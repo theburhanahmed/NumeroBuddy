@@ -541,7 +541,12 @@ export const reportAPI = {
    */
   async getReportTemplates(): Promise<ReportTemplate[]> {
     const response = await apiClient.get('/report-templates/');
-    return response.data;
+    // Handle paginated response
+    if (response.data && response.data.results) {
+      return response.data.results;
+    }
+    // Fallback for non-paginated response
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   /**

@@ -33,7 +33,17 @@ from io import BytesIO
 def calculate_numerology_profile(request):
     """Calculate and save user's numerology profile."""
     user = request.user
-    full_name = request.data.get('full_name') or user.full_name
+    
+    # Get full name from request data or user profile
+    full_name = request.data.get('full_name')
+    if not full_name:
+        # Try to get full name from user object
+        if hasattr(user, 'full_name') and user.full_name:
+            full_name = user.full_name
+        # Try to get full name from user profile
+        elif hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
+            full_name = user.profile.full_name
+    
     birth_date_str = request.data.get('birth_date')
     system = request.data.get('system', 'pythagorean')
     
@@ -45,7 +55,7 @@ def calculate_numerology_profile(request):
     
     if not birth_date_str:
         # Try to get birth date from user profile
-        if not user.profile.date_of_birth:
+        if not (hasattr(user, 'profile') and hasattr(user.profile, 'date_of_birth') and user.profile.date_of_birth):
             return Response({
                 'error': 'Birth date is required'
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -191,9 +201,16 @@ def export_birth_chart_pdf(request):
             'error': 'Profile not found. Please calculate your profile first.'
         }, status=status.HTTP_404_NOT_FOUND)
     
+    # Get user's full name safely
+    user_full_name = "User"
+    if hasattr(user, 'full_name') and user.full_name:
+        user_full_name = user.full_name
+    elif hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
+        user_full_name = user.profile.full_name
+    
     # Create PDF
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="birth_chart_{user.full_name.replace(" ", "_")}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="birth_chart_{user_full_name.replace(" ", "_")}.pdf"'
     
     # Create PDF document
     buffer = BytesIO()
@@ -202,11 +219,12 @@ def export_birth_chart_pdf(request):
     
     # Title
     p.setFont("Helvetica-Bold", 24)
-    p.drawString(50, height - 50, f"Numerology Birth Chart for {user.full_name}")
+    p.drawString(50, height - 50, f"Numerology Birth Chart for {user_full_name}")
     
     # User info
     p.setFont("Helvetica", 12)
-    p.drawString(50, height - 80, f"Date of Birth: {user.profile.date_of_birth}")
+    if hasattr(user, 'profile') and hasattr(user.profile, 'date_of_birth'):
+        p.drawString(50, height - 80, f"Date of Birth: {user.profile.date_of_birth}")
     p.drawString(50, height - 100, f"Calculation Date: {profile.calculated_at.strftime('%Y-%m-%d')}")
     
     # Numbers table
@@ -470,11 +488,33 @@ def check_compatibility(request):
         calculator = NumerologyCalculator()
         partner_numbers = calculator.calculate_all(partner_name, partner_birth_date)
         
+        # Get user's full name - try multiple sources
+        user_full_name = None
+        if hasattr(user, 'full_name') and user.full_name:
+            user_full_name = user.full_name
+        elif hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
+            user_full_name = user.profile.full_name
+        
+        # Validate that user has a full name
+        if not user_full_name:
+            return Response({
+                'error': 'User full name is required. Please update your profile.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate that user has a birth date
+        user_birth_date = None
+        if hasattr(user, 'profile') and hasattr(user.profile, 'date_of_birth') and user.profile.date_of_birth:
+            user_birth_date = user.profile.date_of_birth
+        else:
+            return Response({
+                'error': 'User birth date is required. Please update your profile.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         # Analyze compatibility
         analyzer = CompatibilityAnalyzer()
         compatibility_result = analyzer.analyze_compatibility(
-            user.full_name or user.profile.full_name,
-            user.profile.date_of_birth,
+            user_full_name,
+            user_birth_date,
             partner_name,
             partner_birth_date
         )
@@ -786,6 +826,11 @@ def get_full_numerology_report(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
+        # Get user's full name safely
+        user_full_name = user.full_name if hasattr(user, 'full_name') and user.full_name else "User"
+        if user_full_name == "User" and hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
+            user_full_name = user.profile.full_name
+        
         # Get all interpretations
         interpretations = {}
         number_fields = [
@@ -823,11 +868,16 @@ def get_full_numerology_report(request):
                     'is_completed': tracking.is_completed
                 })
         
+        # Get user birth date safely
+        user_birth_date = None
+        if hasattr(user, 'profile') and hasattr(user.profile, 'date_of_birth'):
+            user_birth_date = user.profile.date_of_birth
+        
         serializer = NumerologyReportSerializer({
             'user_profile': {
-                'full_name': user.full_name,
+                'full_name': user_full_name,
                 'email': user.email,
-                'date_of_birth': user.profile.date_of_birth,
+                'date_of_birth': user_birth_date,
                 'calculation_date': profile.calculated_at
             },
             'numerology_profile': profile,
@@ -857,9 +907,16 @@ def export_full_numerology_report_pdf(request):
             'error': 'Please calculate your numerology profile first.'
         }, status=status.HTTP_400_BAD_REQUEST)
     
+    # Get user's full name safely
+    user_full_name = "User"
+    if hasattr(user, 'full_name') and user.full_name:
+        user_full_name = user.full_name
+    elif hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
+        user_full_name = user.profile.full_name
+    
     # Create PDF response
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="numerology_report_{user.full_name.replace(" ", "_")}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="numerology_report_{user_full_name.replace(" ", "_")}.pdf"'
     
     # Create PDF document
     buffer = BytesIO()
@@ -868,11 +925,12 @@ def export_full_numerology_report_pdf(request):
     
     # Title
     p.setFont("Helvetica-Bold", 24)
-    p.drawString(50, height - 50, f"Numerology Report for {user.full_name}")
+    p.drawString(50, height - 50, f"Numerology Report for {user_full_name}")
     
     # User info
     p.setFont("Helvetica", 12)
-    p.drawString(50, height - 80, f"Date of Birth: {user.profile.date_of_birth}")
+    if hasattr(user, 'profile') and hasattr(user.profile, 'date_of_birth'):
+        p.drawString(50, height - 80, f"Date of Birth: {user.profile.date_of_birth}")
     p.drawString(50, height - 100, f"Report Generated: {timezone.now().strftime('%Y-%m-%d')}")
     
     # Core Numbers section
@@ -921,7 +979,7 @@ def export_full_numerology_report_pdf(request):
     return response
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def people_list_create(request):
     """List all people or create a new person."""

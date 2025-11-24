@@ -4,22 +4,8 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1',
   },
-  // Add redirects for Vercel
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/dashboard',
-        permanent: false,
-        has: [
-          {
-            type: 'cookie',
-            key: 'token',
-          },
-        ],
-      },
-    ];
-  },
+  // Remove the problematic redirect that was causing '/' to redirect to '/dashboard'
+  // This was causing unexpected behavior for unauthenticated users
 };
 
 export default nextConfig;

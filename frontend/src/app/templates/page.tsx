@@ -46,12 +46,18 @@ export default function TemplatesPage() {
     router.push(`/reports/generate?template=${templateId}`);
   };
 
-  const filteredTemplates = templates.filter(template => 
-    template.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (filterType === '' || template.report_type === filterType)
-  );
+  // Ensure templates is an array before filtering
+  const filteredTemplates = Array.isArray(templates) 
+    ? templates.filter(template => 
+        template.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (filterType === '' || template.report_type === filterType)
+      )
+    : [];
 
-  const reportTypes = [...new Set(templates.map(t => t.report_type))];
+  // Ensure templates is an array before mapping for report types
+  const reportTypes = Array.isArray(templates) 
+    ? [...new Set(templates.map(t => t.report_type))]
+    : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
