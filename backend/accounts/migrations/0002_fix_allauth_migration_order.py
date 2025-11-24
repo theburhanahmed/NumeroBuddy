@@ -7,14 +7,15 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('accounts', '0001_initial'),
+        ('account', '0001_initial'),
     ]
 
     operations = [
         # This migration fixes the ordering issue between django-allauth's account
         # app and our custom accounts app when using a custom user model.
         #
-        # By explicitly depending only on accounts.0001_initial, we ensure that
-        # our custom user model is fully migrated before any allauth migrations
+        # By explicitly depending on both accounts.0001_initial and account.0001_initial,
+        # we ensure that our custom user model is fully migrated before any allauth migrations
         # that depend on it are applied.
         #
         # This resolves the InconsistentMigrationHistory error:
