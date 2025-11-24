@@ -24,6 +24,9 @@ if [ "$ACCOUNTS_APPLIED" -eq 0 ] && [ "$ACCOUNT_APPLIED" -eq 1 ]; then
     echo "  - accounts.0001_initial is not applied [ ]"
     echo "Faking accounts.0001_initial migration to resolve dependency order..."
     python manage.py migrate accounts 0001_initial --fake --no-input || true
+    
+    # Also fake any other accounts migrations that might exist
+    python manage.py migrate accounts --fake --no-input || true
 else
     echo "Migration state appears consistent or already resolved."
 fi
