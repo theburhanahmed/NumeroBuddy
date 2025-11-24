@@ -8,7 +8,7 @@ from accounts.models import User, UserProfile
 from .models import DailyReading
 from .numerology import NumerologyCalculator
 from .reading_generator import DailyReadingGenerator
-from core.utils import send_push_notification
+from utils import send_push_notification
 import logging
 
 logger = logging.getLogger(__name__)

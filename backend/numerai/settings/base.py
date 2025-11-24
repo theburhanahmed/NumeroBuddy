@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'django_celery_beat',
-    'core',
     'accounts',
     'numerology',
     'ai_chat',
@@ -189,7 +188,7 @@ REST_FRAMEWORK = {
         'ai_chat': '20/hour',
     },
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'EXCEPTION_HANDLER': 'accounts.exceptions.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'utils.exceptions.custom_exception_handler',
 }
 
 # JWT Settings

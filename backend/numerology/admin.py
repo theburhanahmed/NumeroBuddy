@@ -93,10 +93,10 @@ class RemedyTrackingAdmin(admin.ModelAdmin):
     fieldsets = (
         ('User & Remedy', {'fields': ('user', 'remedy')}),
         ('Tracking', {'fields': ('date', 'is_completed', 'notes')}),
-        ('Timestamps', {'fields': ('created_at', 'updated_at')}),
+        ('Timestamps', {'fields': ('created_at',)}),
     )
     
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['created_at']
 
 
 @admin.register(Person)

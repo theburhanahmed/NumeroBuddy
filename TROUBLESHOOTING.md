@@ -1,61 +1,21 @@
-# Troubleshooting Guide for NumerAI
-
-This guide helps you resolve common issues when setting up and running the NumerAI application.
+# Troubleshooting Guide
 
 ## Common Issues and Solutions
 
-### 1. 404 Errors for Person Numerology Profile
+### 1. Creating a PersonNumerologyProfile manually
 
-**Error Message:**
-```
-GET https://numerai-backend.onrender.com/api/v1/people/{id}/profile/ 404 (Not Found)
-```
+If you need to create a PersonNumerologyProfile manually:
 
-**Causes and Solutions:**
-
-#### A. Database Services Not Running
-The application requires PostgreSQL and Redis to be running.
-
-**Solution:**
-1. Check if services are running:
+1. Access the Django shell:
    ```bash
-   # On macOS with Homebrew
-   brew services list | grep -E "(postgresql|redis)"
-   
-   # Start services if needed
-   brew services start postgresql
-   brew services start redis
-   ```
-
-2. Or use Docker:
-   ```bash
-   cd /Users/burhanahmed/Desktop/NumerAI
-   docker-compose up -d
-   ```
-
-#### B. Database Migrations Not Applied
-The required database tables may not exist.
-
-**Solution:**
-```bash
-cd backend
-source venv/bin/activate  # If using virtual environment
-python manage.py migrate
-```
-
-#### C. Person or Profile Doesn't Exist
-The person record or their numerology profile may not exist in the database.
-
-**Solution:**
-1. Create a person record through the API or admin interface
-2. Calculate their numerology profile:
-   ```bash
+   cd backend
    python manage.py shell
    ```
-   Then in the Django shell:
+
+2. Then in the Django shell:
    ```python
-   from core.models import Person, PersonNumerologyProfile
-   from core.numerology import NumerologyCalculator
+   from numerology.models import Person, PersonNumerologyProfile
+   from numerology.numerology import NumerologyCalculator
    
    # Find the person
    person = Person.objects.get(id='your-person-id')

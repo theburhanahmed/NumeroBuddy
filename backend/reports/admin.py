@@ -28,16 +28,16 @@ class ReportTemplateAdmin(admin.ModelAdmin):
 class GeneratedReportAdmin(admin.ModelAdmin):
     """Admin interface for GeneratedReport model."""
     
-    list_display = ['user', 'template', 'title', 'created_at']
-    list_filter = ['template__report_type', 'created_at']
+    list_display = ['user', 'person', 'template', 'title', 'generated_at']
+    list_filter = ['template__report_type', 'generated_at']
     search_fields = ['user__email', 'user__full_name', 'title']
-    ordering = ['-created_at']
+    ordering = ['-generated_at']
     
     fieldsets = (
-        ('User & Template', {'fields': ('user', 'template')}),
+        ('User & Template', {'fields': ('user', 'person', 'template')}),
         ('Report Details', {'fields': ('title', 'content')}),
-        ('Metadata', {'fields': ('metadata',)}),
-        ('Timestamps', {'fields': ('created_at',)}),
+        ('Metadata', {'fields': ('expires_at',)}),
+        ('Timestamps', {'fields': ('generated_at',)}),
     )
     
-    readonly_fields = ['created_at']
+    readonly_fields = ['generated_at']

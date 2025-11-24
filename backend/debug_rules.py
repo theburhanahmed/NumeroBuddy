@@ -2,19 +2,19 @@
 """
 Debug script for compatibility rules.
 """
-import sys
 import os
-
-# Add the backend directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__)))
-
-# Set up Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'numerai.settings.development')
-
+import sys
 import django
+from pathlib import Path
+
+# Add the project root to the path
+sys.path.append(str(Path(__file__).parent))
+
+# Set up Django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'numerai.settings.development')
 django.setup()
 
-from core.compatibility import CompatibilityAnalyzer
+from numerology.compatibility import CompatibilityAnalyzer
 
 def debug_compatibility_rules():
     """Debug compatibility rules."""

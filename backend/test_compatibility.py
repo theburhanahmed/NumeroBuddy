@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-Test script for the enhanced compatibility analyzer.
+Test script for compatibility analysis.
 """
-import sys
 import os
+import sys
+import django
+from pathlib import Path
 from datetime import date
 
-# Add the backend directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__)))
+# Add the project root to the path
+sys.path.append(str(Path(__file__).parent))
 
-# Set up Django environment
+# Set up Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'numerai.settings.development')
-
-import django
 django.setup()
 
-from core.compatibility import CompatibilityAnalyzer
-from core.numerology import NumerologyCalculator
+from numerology.compatibility import CompatibilityAnalyzer
+from numerology.numerology import NumerologyCalculator
 
 def test_compatibility_analyzer():
     """Test the enhanced compatibility analyzer."""
