@@ -11,9 +11,8 @@ from datetime import timedelta, date, datetime
 from .models import NumerologyProfile, DailyReading, CompatibilityCheck, Remedy, RemedyTracking, Person, PersonNumerologyProfile
 from .serializers import (
     NumerologyProfileSerializer, DailyReadingSerializer, BirthChartSerializer,
-    LifePathAnalysisSerializer, PinnacleCycleSerializer,
-    CompatibilityCheckSerializer, RemedySerializer, RemedyTrackingSerializer,
-    PersonSerializer, PersonNumerologyProfileSerializer
+    LifePathAnalysisSerializer, CompatibilityCheckSerializer, RemedySerializer, RemedyTrackingSerializer,
+    PersonSerializer, PersonNumerologyProfileSerializer, NumerologyReportSerializer
 )
 from .utils import generate_otp, send_otp_email, generate_secure_token
 from .numerology import NumerologyCalculator, validate_name, validate_birth_date
@@ -421,15 +420,12 @@ def get_life_path_analysis(request):
         
         # Calculate pinnacle cycles
         calculator = NumerologyCalculator()
-        pinnacle_cycles = calculator.calculate_pinnacle_cycles(
-            user.full_name or user.profile.full_name,
-            user.profile.date_of_birth
-        )
+        pinnacle_data = calculator.calculate_pinnacles(user.profile.date_of_birth)
         
         serializer = LifePathAnalysisSerializer({
             'life_path_number': profile.life_path_number,
             'interpretation': interpretation,
-            'pinnacle_cycles': pinnacle_cycles
+            'pinnacle_cycles': pinnacle_data
         })
         
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -477,8 +473,10 @@ def check_compatibility(request):
         # Analyze compatibility
         analyzer = CompatibilityAnalyzer()
         compatibility_result = analyzer.analyze_compatibility(
-            user_profile.life_path_number,
-            partner_numbers['life_path_number']
+            user.full_name or user.profile.full_name,
+            user.profile.date_of_birth,
+            partner_name,
+            partner_birth_date
         )
         
         # Save compatibility check
@@ -554,24 +552,170 @@ def get_personalized_remedies(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     try:
-        # Generate personalized remedies
-        calculator = NumerologyCalculator()
-        remedies_data = calculator.generate_remedies(profile)
+        # Generate new remedies based on numerology profile
+        remedies = []
         
-        # Create remedies in database
-        created_remedies = []
-        for remedy_data in remedies_data:
+        # Gemstone remedy
+        gemstone_remedies = {
+            1: {"title": "Ruby for Leadership", "description": "Enhances leadership qualities and confidence", "recommendation": "Wear as a ring on the right hand on Sunday"},
+            2: {"title": "Pearl for Harmony", "description": "Promotes peace and emotional balance", "recommendation": "Wear as a pendant on Monday"},
+            3: {"title": "Yellow Sapphire for Creativity", "description": "Boosts creativity and communication", "recommendation": "Wear as a ring on Thursday"},
+            4: {"title": "Emerald for Stability", "description": "Brings stability and growth", "recommendation": "Wear as a pendant on Wednesday"},
+            5: {"title": "Peridot for Freedom", "description": "Enhances adaptability and freedom", "recommendation": "Wear as a ring on Wednesday"},
+            6: {"title": "Pink Tourmaline for Love", "description": "Attracts love and harmony", "recommendation": "Wear as a pendant on Friday"},
+            7: {"title": "Amethyst for Wisdom", "description": "Enhances intuition and wisdom", "recommendation": "Wear as a ring on Saturday"},
+            8: {"title": "Diamond for Power", "description": "Brings success and abundance", "recommendation": "Wear as a ring on Saturday"},
+            9: {"title": "Bloodstone for Compassion", "description": "Enhances compassion and healing", "recommendation": "Wear as a pendant on Tuesday"},
+            11: {"title": "White Sapphire for Illumination", "description": "Enhances spiritual insight", "recommendation": "Wear as a ring on Sunday"},
+            22: {"title": "Blue Sapphire for Mastery", "description": "Enhances leadership and vision", "recommendation": "Wear as a pendant on Saturday"},
+            33: {"title": "Clear Quartz for Teaching", "description": "Enhances healing and teaching abilities", "recommendation": "Wear as a pendant on Sunday"}
+        }
+        
+        if profile.life_path_number in gemstone_remedies:
+            gemstone_data = gemstone_remedies[profile.life_path_number]
             remedy = Remedy.objects.create(
                 user=user,
-                remedy_type=remedy_data['type'],
-                title=remedy_data['title'],
-                description=remedy_data['description'],
-                recommendation=remedy_data['recommendation'],
-                is_active=True
+                remedy_type='gemstone',
+                title=gemstone_data['title'],
+                description=gemstone_data['description'],
+                recommendation=gemstone_data['recommendation']
             )
-            created_remedies.append(remedy)
+            remedies.append(remedy)
         
-        serializer = RemedySerializer(created_remedies, many=True)
+        # Color remedy
+        color_remedies = {
+            1: {"title": "Red for Energy", "description": "Boosts energy and vitality", "recommendation": "Incorporate red in clothing or home decor on Sundays"},
+            2: {"title": "Silver for Harmony", "description": "Promotes peace and balance", "recommendation": "Incorporate silver in clothing or accessories on Mondays"},
+            3: {"title": "Yellow for Creativity", "description": "Enhances creativity and joy", "recommendation": "Incorporate yellow in clothing or home decor on Thursdays"},
+            4: {"title": "Green for Growth", "description": "Brings stability and growth", "recommendation": "Incorporate green in clothing or home decor on Wednesdays"},
+            5: {"title": "Orange for Freedom", "description": "Enhances adaptability and change", "recommendation": "Incorporate orange in clothing or home decor on Wednesdays"},
+            6: {"title": "Pink for Love", "description": "Attracts love and harmony", "recommendation": "Incorporate pink in clothing or home decor on Fridays"},
+            7: {"title": "Purple for Wisdom", "description": "Enhances intuition and spirituality", "recommendation": "Incorporate purple in clothing or home decor on Saturdays"},
+            8: {"title": "White for Power", "description": "Brings success and clarity", "recommendation": "Incorporate white in clothing or home decor on Saturdays"},
+            9: {"title": "Blue for Compassion", "description": "Enhances compassion and healing", "recommendation": "Incorporate blue in clothing or home decor on Tuesdays"},
+            11: {"title": "White for Illumination", "description": "Enhances spiritual insight", "recommendation": "Incorporate white in clothing or home decor on Sundays"},
+            22: {"title": "Blue for Mastery", "description": "Enhances leadership and vision", "recommendation": "Incorporate blue in clothing or home decor on Saturdays"},
+            33: {"title": "Clear for Teaching", "description": "Enhances healing and teaching abilities", "recommendation": "Incorporate clear/white in clothing or home decor on Sundays"}
+        }
+        
+        if profile.life_path_number in color_remedies:
+            color_data = color_remedies[profile.life_path_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='color',
+                title=color_data['title'],
+                description=color_data['description'],
+                recommendation=color_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Ritual remedy
+        ritual_remedies = {
+            1: {"title": "Morning Affirmations", "description": "Boost confidence and set intentions", "recommendation": "Practice 10 minutes of affirmations each morning"},
+            2: {"title": "Meditation for Peace", "description": "Promote inner harmony", "recommendation": "Practice 15 minutes of meditation daily"},
+            3: {"title": "Creative Expression", "description": "Enhance self-expression", "recommendation": "Engage in creative activities for 30 minutes daily"},
+            4: {"title": "Grounding Exercises", "description": "Build stability", "recommendation": "Practice grounding exercises like walking barefoot for 10 minutes"},
+            5: {"title": "Adventure Time", "description": "Embrace change and freedom", "recommendation": "Try something new once a week"},
+            6: {"title": "Heart Opening", "description": "Cultivate love and compassion", "recommendation": "Practice heart-opening yoga poses 3 times a week"},
+            7: {"title": "Study Time", "description": "Enhance wisdom and knowledge", "recommendation": "Dedicate 30 minutes daily to learning"},
+            8: {"title": "Goal Setting", "description": "Focus on success and abundance", "recommendation": "Review and set goals weekly"},
+            9: {"title": "Service to Others", "description": "Express compassion", "recommendation": "Perform one act of service weekly"},
+            11: {"title": "Spiritual Practice", "description": "Enhance spiritual connection", "recommendation": "Practice spiritual activities daily"},
+            22: {"title": "Vision Planning", "description": "Work on big dreams", "recommendation": "Dedicate time monthly to vision planning"},
+            33: {"title": "Healing Practice", "description": "Develop healing abilities", "recommendation": "Practice healing techniques weekly"}
+        }
+        
+        if profile.life_path_number in ritual_remedies:
+            ritual_data = ritual_remedies[profile.life_path_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='ritual',
+                title=ritual_data['title'],
+                description=ritual_data['description'],
+                recommendation=ritual_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Add personalized remedies based on other numerology numbers
+        # Mantra remedy based on Soul Urge Number
+        soul_urge_mantras = {
+            1: {"title": "Mantra for Leadership", "description": "Enhance your leadership qualities", "recommendation": "Chant 'Om Hum' 108 times on Sundays for confidence"},
+            2: {"title": "Mantra for Harmony", "description": "Promote peace and balance", "recommendation": "Chant 'Om Shantih' 108 times on Mondays for harmony"},
+            3: {"title": "Mantra for Creativity", "description": "Boost creativity and communication", "recommendation": "Chant 'Om Aim' 108 times on Thursdays for creativity"},
+            4: {"title": "Mantra for Stability", "description": "Bring stability and focus", "recommendation": "Chant 'Om Hrim' 108 times on Wednesdays for stability"},
+            5: {"title": "Mantra for Freedom", "description": "Enhance adaptability and change", "recommendation": "Chant 'Om Pim' 108 times on Wednesdays for freedom"},
+            6: {"title": "Mantra for Love", "description": "Attract love and harmony", "recommendation": "Chant 'Om Shrim' 108 times on Fridays for love"},
+            7: {"title": "Mantra for Wisdom", "description": "Enhance intuition and wisdom", "recommendation": "Chant 'Om Aum' 108 times on Saturdays for wisdom"},
+            8: {"title": "Mantra for Power", "description": "Bring success and abundance", "recommendation": "Chant 'Om Mahalakshmiyei Swaha' 108 times on Saturdays for abundance"},
+            9: {"title": "Mantra for Compassion", "description": "Enhance compassion and healing", "recommendation": "Chant 'Om Mani Padme Hum' 108 times on Tuesdays for compassion"},
+            11: {"title": "Mantra for Illumination", "description": "Enhance spiritual insight", "recommendation": "Chant 'Om Namah Shivaya' 108 times on Sundays for spiritual growth"},
+            22: {"title": "Mantra for Mastery", "description": "Enhance leadership and vision", "recommendation": "Chant 'Om Gam Ganapataye Namaha' 108 times on Saturdays for removing obstacles"},
+            33: {"title": "Mantra for Teaching", "description": "Enhance healing and teaching abilities", "recommendation": "Chant 'Om Tare Tuttare Ture Soha' 108 times on Sundays for compassion"}
+        }
+        
+        if profile.soul_urge_number in soul_urge_mantras:
+            mantra_data = soul_urge_mantras[profile.soul_urge_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='mantra',
+                title=mantra_data['title'],
+                description=mantra_data['description'],
+                recommendation=mantra_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Dietary remedy based on Personality Number
+        personality_diet = {
+            1: {"title": "Foods for Energy", "description": "Boost energy and vitality", "recommendation": "Include protein-rich foods like eggs, nuts, and lean meats. Eat spicy foods for energy."},
+            2: {"title": "Foods for Harmony", "description": "Promote peace and balance", "recommendation": "Focus on dairy products, fruits, and温和 foods. Avoid overly spicy or acidic foods."},
+            3: {"title": "Foods for Creativity", "description": "Enhance creativity and joy", "recommendation": "Include colorful fruits and vegetables. Add natural sweeteners like honey for joy."},
+            4: {"title": "Foods for Stability", "description": "Bring stability and grounding", "recommendation": "Focus on root vegetables, grains, and hearty foods. Eat regular, balanced meals."},
+            5: {"title": "Foods for Freedom", "description": "Enhance adaptability and change", "recommendation": "Include variety in your diet. Try new foods and cuisines regularly."},
+            6: {"title": "Foods for Love", "description": "Attract love and harmony", "recommendation": "Include heart-healthy foods like berries, dark chocolate, and leafy greens."},
+            7: {"title": "Foods for Wisdom", "description": "Enhance intuition and spirituality", "recommendation": "Focus on light, pure foods. Include fish, nuts, and fresh herbs."},
+            8: {"title": "Foods for Power", "description": "Bring success and abundance", "recommendation": "Include foods that support energy and focus like green tea, dark chocolate, and whole grains."},
+            9: {"title": "Foods for Compassion", "description": "Enhance compassion and healing", "recommendation": "Focus on plant-based foods and cleansing foods like lemon water and green tea."},
+            11: {"title": "Foods for Illumination", "description": "Enhance spiritual insight", "recommendation": "Include foods that enhance mental clarity like blueberries, walnuts, and turmeric."},
+            22: {"title": "Foods for Mastery", "description": "Enhance leadership and vision", "recommendation": "Focus on foods that support brain function like salmon, avocados, and leafy greens."},
+            33: {"title": "Foods for Teaching", "description": "Enhance healing and teaching abilities", "recommendation": "Include anti-inflammatory foods like ginger, turmeric, and leafy greens."}
+        }
+        
+        if profile.personality_number in personality_diet:
+            diet_data = personality_diet[profile.personality_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='dietary',
+                title=diet_data['title'],
+                description=diet_data['description'],
+                recommendation=diet_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        # Exercise remedy based on Personal Year Number
+        personal_year_exercise = {
+            1: {"title": "Exercise for New Beginnings", "description": "Boost energy for new initiatives", "recommendation": "Try high-energy activities like running, martial arts, or competitive sports."},
+            2: {"title": "Exercise for Partnership", "description": "Promote cooperation and balance", "recommendation": "Participate in partner activities like dancing, tennis, or yoga classes."},
+            3: {"title": "Exercise for Expression", "description": "Enhance creativity and communication", "recommendation": "Try expressive activities like dance, aerobics, or group fitness classes."},
+            4: {"title": "Exercise for Stability", "description": "Build structure and discipline", "recommendation": "Focus on structured activities like weight training, hiking, or regular gym routines."},
+            5: {"title": "Exercise for Change", "description": "Embrace freedom and adventure", "recommendation": "Try varied activities like cycling, swimming, or outdoor adventures."},
+            6: {"title": "Exercise for Harmony", "description": "Cultivate love and service", "recommendation": "Practice activities that connect you with others like group sports or community walks."},
+            7: {"title": "Exercise for Wisdom", "description": "Enhance introspection and knowledge", "recommendation": "Focus on mindful activities like yoga, tai chi, or meditation walks."},
+            8: {"title": "Exercise for Achievement", "description": "Focus on success and power", "recommendation": "Engage in goal-oriented activities like personal training or competitive sports."},
+            9: {"title": "Exercise for Completion", "description": "Express compassion and service", "recommendation": "Participate in activities that serve others like charity runs or community sports."}
+        }
+        
+        if profile.personal_year_number in personal_year_exercise:
+            exercise_data = personal_year_exercise[profile.personal_year_number]
+            remedy = Remedy.objects.create(
+                user=user,
+                remedy_type='exercise',
+                title=exercise_data['title'],
+                description=exercise_data['description'],
+                recommendation=exercise_data['recommendation']
+            )
+            remedies.append(remedy)
+        
+        serializer = RemedySerializer(remedies, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     except Exception as e:

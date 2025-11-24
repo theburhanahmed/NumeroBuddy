@@ -1,38 +1,17 @@
 """
-Celery tasks for NumerAI core application.
+Celery tasks for NumerAI numerology application.
 """
 from celery import shared_task
 from django.utils import timezone
 from datetime import date
-from .models import OTPCode, RefreshToken, User, DailyReading
+from accounts.models import User, UserProfile
+from .models import DailyReading
 from .numerology import NumerologyCalculator
 from .reading_generator import DailyReadingGenerator
-from .utils import send_push_notification
+from core.utils import send_push_notification
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-@shared_task
-def cleanup_expired_otps():
-    """Clean up expired OTP codes."""
-    expired_count = OTPCode.objects.filter(
-        expires_at__lt=timezone.now()
-    ).delete()[0]
-    
-    logger.info(f'Deleted {expired_count} expired OTP codes')
-    return f'Deleted {expired_count} expired OTP codes'
-
-
-@shared_task
-def cleanup_expired_tokens():
-    """Clean up expired refresh tokens."""
-    expired_count = RefreshToken.objects.filter(
-        expires_at__lt=timezone.now()
-    ).delete()[0]
-    
-    logger.info(f'Deleted {expired_count} expired refresh tokens')
-    return f'Deleted {expired_count} expired refresh tokens'
 
 
 @shared_task
@@ -61,9 +40,17 @@ def generate_daily_readings():
             if DailyReading.objects.filter(user=user, reading_date=today).exists():
                 continue
             
+            # Get user's date of birth from profile
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+                date_of_birth = user_profile.date_of_birth
+            except UserProfile.DoesNotExist:
+                logger.warning(f'User {user.id} has no profile')
+                continue
+            
             # Calculate personal day number
             personal_day_number = calculator.calculate_personal_day_number(
-                user.profile.date_of_birth,
+                date_of_birth,
                 today
             )
             
