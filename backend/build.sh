@@ -10,13 +10,16 @@ pip install -r requirements.txt
 echo "Checking migration history..."
 python manage.py showmigrations
 
+echo "Handling migration inconsistencies..."
+# Handle the specific migration dependency issue between accounts and account apps
+# This is a known issue when using django-allauth with custom user models
+# First, fake the accounts initial migration if it hasn't been applied yet
+python manage.py migrate accounts 0001_initial --fake --no-input || true
+
 echo "Creating migrations for all apps..."
 python manage.py makemigrations --no-input
 
-echo "Attempting to resolve migration inconsistencies..."
-# Handle the specific migration dependency issue between accounts and account apps
-# This is a known issue when using django-allauth with custom user models
-python manage.py migrate accounts 0002_fix_allauth_migration_order --no-input || true
+echo "Running database migrations..."
 python manage.py migrate --no-input
 
 echo "Collecting static files..."
