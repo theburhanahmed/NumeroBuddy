@@ -10,33 +10,32 @@ pip install -r requirements.txt
 echo "Checking migration history..."
 python manage.py showmigrations
 
-# Completely rewritten migration handling for refactored Django codebase
-echo "=== Migration Handling for Refactored Codebase ==="
+echo "Handling migration inconsistencies..."
+# Handle the specific migration dependency issue between accounts and account apps
+# This is a known issue when using django-allauth with custom user models
 
-# Step 1: Handle django-allauth and custom accounts app dependency issues
-echo "Step 1: Resolving django-allauth and accounts app dependency conflicts..."
-# Check if we have the inconsistent state where account is applied but accounts is not
-ACCOUNTS_INITIAL_APPLIED=$(python manage.py showmigrations accounts | grep "0001_initial" | grep -c "^\[X\]" || echo "0")
-ACCOUNT_INITIAL_APPLIED=$(python manage.py showmigrations account | grep "0001_initial" | grep -c "^\[X\]" || echo "0")
+# Check if accounts.0001_initial is not applied but account.0001_initial is applied
+ACCOUNTS_APPLIED=$(python manage.py showmigrations accounts | grep "0001_initial" | grep -c "^\[X\]")
+ACCOUNT_APPLIED=$(python manage.py showmigrations account | grep "0001_initial" | grep -c "^\[X\]")
 
-if [ "$ACCOUNTS_INITIAL_APPLIED" -eq 0 ] && [ "$ACCOUNT_INITIAL_APPLIED" -eq 1 ]; then
-    echo "  → Detected dependency conflict: account.0001_initial applied before accounts.0001_initial"
-    echo "  → Faking initial migration to resolve dependency order..."
-    python manage.py migrate accounts 0001_initial --fake-initial --no-input
-    echo "  → Initial migration faked successfully"
+if [ "$ACCOUNTS_APPLIED" -eq 0 ] && [ "$ACCOUNT_APPLIED" -eq 1 ]; then
+    echo "Detected inconsistent migration history:"
+    echo "  - account.0001_initial is applied [X]"
+    echo "  - accounts.0001_initial is not applied [ ]"
+    echo "Faking accounts.0001_initial migration to resolve dependency order..."
+    python manage.py migrate accounts 0001_initial --fake --no-input || true
+    
+    # Also fake any other accounts migrations that might exist
+    python manage.py migrate accounts --fake --no-input || true
 else
-    echo "  → No dependency conflicts detected"
+    echo "Migration state appears consistent or already resolved."
 fi
 
-# Step 2: Create any missing migrations
-echo "Step 2: Creating any missing migrations..."
+echo "Creating migrations for all apps..."
 python manage.py makemigrations --no-input
 
-# Step 3: Apply all migrations
-echo "Step 3: Applying all migrations..."
+echo "Running database migrations..."
 python manage.py migrate --no-input
-
-echo "=== Migration Handling Complete ==="
 
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
