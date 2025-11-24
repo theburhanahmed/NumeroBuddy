@@ -159,8 +159,30 @@ AUTH_USER_MODEL = 'accounts.User'
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS', 
     default='http://localhost:3000,http://127.0.0.1:3000',
-    cast=lambda v: [s.strip() for s in v.split(',')]
+    cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]
 )
+
+# Add CORS_ALLOW_HEADERS and CORS_ALLOW_METHODS for better control
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # REST Framework Settings
 REST_FRAMEWORK = {

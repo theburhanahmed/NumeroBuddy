@@ -8,20 +8,42 @@ import dj_database_url
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
 
 # Database - Use dj-database-url for Render.com
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL'),
         conn_max_age=600,
         conn_health_checks=True,
     )
 }
 
 # CORS Settings for production
-CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='').split(',')
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False  # Explicitly set to False for security
+
+# Add CORS_ALLOW_HEADERS and CORS_ALLOW_METHODS for better control
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # Security Settings
 SECURE_SSL_REDIRECT = True
@@ -37,7 +59,7 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_TRUSTED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='').split(',')
+CSRF_TRUSTED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 SECURE_CONTENT_TYPE_NOSNIFF = True
