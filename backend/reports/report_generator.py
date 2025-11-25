@@ -14,6 +14,7 @@ def generate_report_content(person, numerology_profile, template):
         'person_name': person.name,
         'birth_date': person.birth_date.isoformat(),
         'report_type': template.report_type,
+        'template_name': template.name,
         'generated_at': timezone.now().isoformat(),
         'numbers': {
             'life_path': numerology_profile.life_path_number,
@@ -50,6 +51,12 @@ def generate_report_content(person, numerology_profile, template):
             }
     
     content['interpretations'] = interpretations
+    
+    # Use template content if available, otherwise use default content
+    if template.content_template and template.content_template.strip():
+        # If template has custom content, we could process it here
+        # For now, we'll still generate the default content but could extend this
+        pass
     
     # Add template-specific content
     if template.report_type == 'basic':

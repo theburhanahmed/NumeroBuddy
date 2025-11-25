@@ -16,8 +16,8 @@ class ReportTemplateAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Basic Information', {'fields': ('name', 'description', 'report_type')}),
-        ('Settings', {'fields': ('is_premium', 'is_active', 'required_data')}),
-        ('Content', {'fields': ('content_template',)}),
+        ('Settings', {'fields': ('is_premium', 'is_active')}),
+        ('Content', {'fields': ('content_template', 'required_data')}),
         ('Timestamps', {'fields': ('created_at', 'updated_at')}),
     )
     

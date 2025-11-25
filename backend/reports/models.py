@@ -27,6 +27,8 @@ class ReportTemplate(models.Model):
     report_type = models.CharField(max_length=20, choices=REPORT_TYPES)
     is_premium = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    content_template = models.TextField(help_text="Template content for generating reports", default="")
+    required_data = models.JSONField(default=dict, blank=True, help_text="Required data fields for this template")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

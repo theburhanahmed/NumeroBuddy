@@ -13,7 +13,8 @@ class ReportTemplateSerializer(serializers.ModelSerializer):
         model = ReportTemplate
         fields = [
             'id', 'name', 'description', 'report_type',
-            'is_premium', 'is_active', 'created_at', 'updated_at'
+            'is_premium', 'is_active', 'content_template', 'required_data',
+            'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
