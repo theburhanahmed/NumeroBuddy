@@ -197,8 +197,3 @@ export const notificationAPI = {
   getUnreadCount: () =>
     apiClient.get('/notifications/unread-count/'),
 };
-
-export const accountAPI = {
-  deleteAccount: () => apiClient.post('/users/delete-account/'),
-  exportData: () => apiClient.post('/users/export-data/', {}, { responseType: 'blob' }),
-};
