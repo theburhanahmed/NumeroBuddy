@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Trash2, Bell, BellOff } from 'lucide-react';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
@@ -29,16 +29,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
   const [markingRead, setMarkingRead] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchNotifications();
-      // Poll for new notifications every 10 seconds when open
-      const interval = setInterval(fetchNotifications, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [isOpen]);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
       const response = await notificationAPI.list();
@@ -52,7 +43,16 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchNotifications();
+      // Poll for new notifications every 10 seconds when open
+      const interval = setInterval(fetchNotifications, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [isOpen, fetchNotifications]);
 
   const handleMarkRead = async (notificationId: string) => {
     try {

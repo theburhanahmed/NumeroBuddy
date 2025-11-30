@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Receipt, Calendar } from 'lucide-react';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
@@ -26,11 +26,7 @@ export function BillingHistory() {
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
-
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       setLoading(true);
       const response = await paymentsAPI.getBillingHistory();
@@ -46,7 +42,11 @@ export function BillingHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   const formatAmount = (amount: string, currency: string) => {
     const numAmount = parseFloat(amount);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard, X, Check, AlertTriangle } from 'lucide-react';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
@@ -26,11 +26,7 @@ export function SubscriptionManagement() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadSubscription();
-  }, []);
-
-  const loadSubscription = async () => {
+  const loadSubscription = useCallback(async () => {
     try {
       setLoading(true);
       const response = await paymentsAPI.getSubscriptionStatus();
@@ -46,7 +42,11 @@ export function SubscriptionManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadSubscription();
+  }, [loadSubscription]);
 
   const handleCancel = async () => {
     setCanceling(true);

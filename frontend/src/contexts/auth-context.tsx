@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI, userAPI } from '@/lib/api-client';
 import { User, AuthResponse, RegisterData, LoginData, OTPVerificationData } from '@/types';
@@ -13,6 +13,7 @@ interface AuthContextType {
   verifyOTP: (data: OTPVerificationData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,6 +22,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  const refreshUser = useCallback(async (): Promise<void> => {
+    try {
+      // Only run in browser environment
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
+      const response = await userAPI.getProfile();
+      const userData = response.data.user;
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+      // Don't automatically logout on profile fetch failure
+      // The user might still have valid tokens but the profile endpoint is temporarily unavailable
+    }
+  }, []);
 
   useEffect(() => {
     // Check if user is logged in on mount
@@ -51,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initAuth();
-  }, []);
+  }, [refreshUser]);
 
   const register = async (data: RegisterData): Promise<void> => {
     try {
@@ -127,24 +146,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const refreshUser = async (): Promise<void> => {
-    try {
-      // Only run in browser environment
-      if (typeof window === 'undefined') {
-        return;
-      }
-      
-      const response = await userAPI.getProfile();
-      const userData = response.data.user;
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-    } catch (error) {
-      console.error('Failed to refresh user:', error);
-      // Don't automatically logout on profile fetch failure
-      // The user might still have valid tokens but the profile endpoint is temporarily unavailable
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -155,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         verifyOTP,
         logout,
         refreshUser,
+        setUser,
       }}
     >
       {children}
