@@ -1,0 +1,68 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "dashboard": "Dashboard",
+    "birthChart": "Birth Chart",
+    "dailyReading": "Daily Reading",
+    "compatibility": "Compatibility",
+    "remedies": "Remedies",
+    "aiChat": "AI Chat",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "birthChart": {
+    "title": "Your Birth Chart",
+    "description": "Explore the numerology numbers that define your unique path",
+    "calculateProfile": "Calculate My Profile",
+    "calculating": "Calculating...",
+    "exportPDF": "Export PDF",
+    "lifePathNumber": "Life Path Number",
+    "destinyNumber": "Destiny Number",
+    "soulUrgeNumber": "Soul Urge Number",
+    "personalityNumber": "Personality Number",
+    "attitudeNumber": "Attitude Number",
+    "maturityNumber": "Maturity Number",
+    "balanceNumber": "Balance Number",
+    "personalYearNumber": "Personal Year Number",
+    "personalMonthNumber": "Personal Month Number"
+  },
+  "loShuGrid": {
+    "title": "Lo Shu Grid",
+    "subtitle": "Magic Square Numerology",
+    "interpretation": "Interpretation",
+    "strongNumbers": "Strong Numbers",
+    "missingNumbers": "Missing Numbers (Areas to Develop)",
+    "strong": "Strong (2+)",
+    "present": "Present",
+    "missing": "Missing"
+  },
+  "dailyReading": {
+    "title": "Daily Reading",
+    "personalDayNumber": "Personal Day Number",
+    "luckyNumber": "Lucky Number",
+    "luckyColor": "Lucky Color",
+    "auspiciousTime": "Auspicious Time",
+    "affirmation": "Affirmation",
+    "tip": "Today's Tip",
+    "warning": "Warning",
+    "activity": "Activity Recommendation"
+  },
+  "language": {
+    "select": "Select Language",
+    "english": "English",
+    "hindi": "Hindi",
+    "tamil": "Tamil",
+    "telugu": "Telugu"
+  }
+}
+

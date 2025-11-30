@@ -15,7 +15,7 @@ class NumerologyProfileSerializer(serializers.ModelSerializer):
             'personality_number', 'attitude_number', 'maturity_number',
             'balance_number', 'personal_year_number', 'personal_month_number',
             'karmic_debt_number', 'hidden_passion_number', 'subconscious_self_number',
-            'calculation_system', 'calculated_at', 'updated_at'
+            'lo_shu_grid', 'calculation_system', 'calculated_at', 'updated_at'
         ]
         read_only_fields = ['id', 'calculated_at', 'updated_at']
 
@@ -37,6 +37,7 @@ class BirthChartSerializer(serializers.Serializer):
     """Serializer for birth chart with interpretations."""
     profile = NumerologyProfileSerializer()
     interpretations = serializers.DictField()
+    lo_shu_grid = serializers.DictField(required=False, allow_null=True)
 
 
 class LifePathAnalysisSerializer(serializers.Serializer):

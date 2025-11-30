@@ -18,6 +18,15 @@ urlpatterns = [
     path('api/v1/', include('consultations.urls')),
     path('api/v1/', include('reports.urls')),
     path('api/v1/', include('payments.urls')),
+    path('api/v1/dashboard/', include('dashboard.urls')),
+    path('api/v1/calendar/', include('smart_calendar.urls')),
+    path('api/v1/knowledge-graph/', include('knowledge_graph.urls')),
+    path('api/v1/decisions/', include('decisions.urls')),
+    path('api/v1/analytics/', include('analytics.urls')),
+    path('api/v1/social/', include('social.urls')),
+    path('api/v1/matchmaking/', include('matchmaking.urls')),
+    path('api/v1/rewards/', include('rewards.urls')),
+    path('api/v1/developer/', include('developer_api.urls')),
     
     # Django Allauth
     path('accounts/', include('allauth.urls')),

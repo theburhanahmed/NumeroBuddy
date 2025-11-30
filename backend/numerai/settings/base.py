@@ -58,6 +58,15 @@ INSTALLED_APPS = [
     'consultations',
     'reports',
     'payments',
+    'dashboard',
+    'smart_calendar',
+    'knowledge_graph',
+    'decisions',
+    'analytics',
+    'social',
+    'matchmaking',
+    'rewards',
+    'developer_api',
 ]
 
 MIDDLEWARE = [

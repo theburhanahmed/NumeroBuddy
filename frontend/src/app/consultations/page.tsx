@@ -73,7 +73,7 @@ export default function ConsultationsPage() {
         </span>;
       default:
         return <span className="px-2.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs font-medium rounded-full">
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+          {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
         </span>;
     }
   };

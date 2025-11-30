@@ -1,0 +1,68 @@
+{
+  "common": {
+    "welcome": "स्वागत है",
+    "dashboard": "डैशबोर्ड",
+    "birthChart": "जन्म चार्ट",
+    "dailyReading": "दैनिक पढ़ना",
+    "compatibility": "अनुकूलता",
+    "remedies": "उपचार",
+    "aiChat": "AI चैट",
+    "settings": "सेटिंग्स",
+    "logout": "लॉग आउट",
+    "login": "लॉग इन",
+    "register": "पंजीकरण",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "close": "बंद करें",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफलता"
+  },
+  "birthChart": {
+    "title": "आपका जन्म चार्ट",
+    "description": "अंक ज्योतिष संख्याओं का अन्वेषण करें जो आपके अद्वितीय मार्ग को परिभाषित करती हैं",
+    "calculateProfile": "मेरा प्रोफ़ाइल गणना करें",
+    "calculating": "गणना हो रही है...",
+    "exportPDF": "PDF निर्यात करें",
+    "lifePathNumber": "जीवन पथ संख्या",
+    "destinyNumber": "भाग्य संख्या",
+    "soulUrgeNumber": "आत्मा आग्रह संख्या",
+    "personalityNumber": "व्यक्तित्व संख्या",
+    "attitudeNumber": "दृष्टिकोण संख्या",
+    "maturityNumber": "परिपक्वता संख्या",
+    "balanceNumber": "संतुलन संख्या",
+    "personalYearNumber": "व्यक्तिगत वर्ष संख्या",
+    "personalMonthNumber": "व्यक्तिगत माह संख्या"
+  },
+  "loShuGrid": {
+    "title": "लो शू ग्रिड",
+    "subtitle": "जादुई वर्ग अंक ज्योतिष",
+    "interpretation": "व्याख्या",
+    "strongNumbers": "मजबूत संख्याएं",
+    "missingNumbers": "गायब संख्याएं (विकसित करने के क्षेत्र)",
+    "strong": "मजबूत (2+)",
+    "present": "उपस्थित",
+    "missing": "गायब"
+  },
+  "dailyReading": {
+    "title": "दैनिक पढ़ना",
+    "personalDayNumber": "व्यक्तिगत दिवस संख्या",
+    "luckyNumber": "भाग्यशाली संख्या",
+    "luckyColor": "भाग्यशाली रंग",
+    "auspiciousTime": "शुभ समय",
+    "affirmation": "पुष्टि",
+    "tip": "आज की सुझाव",
+    "warning": "चेतावनी",
+    "activity": "गतिविधि सुझाव"
+  },
+  "language": {
+    "select": "भाषा चुनें",
+    "english": "अंग्रेजी",
+    "hindi": "हिंदी",
+    "tamil": "तमिल",
+    "telugu": "तेलुगु"
+  }
+}
+

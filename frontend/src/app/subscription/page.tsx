@@ -151,8 +151,10 @@ export default function SubscriptionPage() {
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     You are currently subscribed to the{' '}
-                    {subscriptionStatus?.subscription?.plan?.charAt(0).toUpperCase() +
-                      subscriptionStatus?.subscription?.plan?.slice(1)}{' '}
+                    {subscriptionStatus?.subscription?.plan
+                      ? subscriptionStatus.subscription.plan.charAt(0).toUpperCase() +
+                        subscriptionStatus.subscription.plan.slice(1)
+                      : 'Unknown'}{' '}
                     plan
                   </p>
                 </div>
@@ -238,7 +240,7 @@ export default function SubscriptionPage() {
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Enter your payment details to activate your{' '}
-                {selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan
+                {selectedPlan ? selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1) : 'Premium'} plan
               </p>
               <StripeForm
                 plan={selectedPlan}

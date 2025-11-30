@@ -114,7 +114,9 @@ export default function RemediesPage() {
                       </div>
                       
                       <span className="text-xs font-semibold px-2.5 py-0.5 bg-white/50 dark:bg-gray-800/50 rounded-full text-gray-700 dark:text-gray-300 w-fit mb-2">
-                        {remedy.remedy_type.charAt(0).toUpperCase() + remedy.remedy_type.slice(1)}
+                        {remedy.remedy_type 
+                          ? remedy.remedy_type.charAt(0).toUpperCase() + remedy.remedy_type.slice(1)
+                          : 'Remedy'}
                       </span>
                       
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">

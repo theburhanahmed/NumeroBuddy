@@ -1,0 +1,68 @@
+{
+  "common": {
+    "welcome": "స్వాగతం",
+    "dashboard": "డాష్బోర్డ్",
+    "birthChart": "జనన చార్ట్",
+    "dailyReading": "రోజువారీ చదవడం",
+    "compatibility": "అనుకూలత",
+    "remedies": "పరిహారాలు",
+    "aiChat": "AI చాట్",
+    "settings": "సెట్టింగ్‌లు",
+    "logout": "లాగ్అవుట్",
+    "login": "లాగిన్",
+    "register": "నమోదు",
+    "save": "సేవ్",
+    "cancel": "రద్దు చేయి",
+    "delete": "తొలగించు",
+    "edit": "సవరించు",
+    "close": "మూసివేయి",
+    "loading": "లోడ్ అవుతోంది...",
+    "error": "దోషం",
+    "success": "విజయం"
+  },
+  "birthChart": {
+    "title": "మీ జనన చార్ట్",
+    "description": "మీ ప్రత్యేక మార్గాన్ని నిర్వచించే సంఖ్యాశాస్త్ర సంఖ్యలను అన్వేషించండి",
+    "calculateProfile": "నా ప్రొఫైల్‌ను లెక్కించండి",
+    "calculating": "లెక్కిస్తోంది...",
+    "exportPDF": "PDF ఎగుమతి",
+    "lifePathNumber": "జీవిత మార్గం సంఖ్య",
+    "destinyNumber": "భాగ్య సంఖ్య",
+    "soulUrgeNumber": "ఆత్మ కోరిక సంఖ్య",
+    "personalityNumber": "వ్యక్తిత్వ సంఖ్య",
+    "attitudeNumber": "వైఖరి సంఖ్య",
+    "maturityNumber": "పరిపక్వత సంఖ్య",
+    "balanceNumber": "సమతుల్యత సంఖ్య",
+    "personalYearNumber": "వ్యక్తిగత సంవత్సరం సంఖ్య",
+    "personalMonthNumber": "వ్యక్తిగత నెల సంఖ్య"
+  },
+  "loShuGrid": {
+    "title": "లో షు గ్రిడ్",
+    "subtitle": "మాంత్రిక చతురస్ర సంఖ్యాశాస్త్రం",
+    "interpretation": "వివరణ",
+    "strongNumbers": "బలమైన సంఖ్యలు",
+    "missingNumbers": "తప్పిపోయిన సంఖ్యలు (అభివృద్ధి చేయవలసిన ప్రాంతాలు)",
+    "strong": "బలమైన (2+)",
+    "present": "ప్రస్తుతం",
+    "missing": "తప్పిపోయిన"
+  },
+  "dailyReading": {
+    "title": "రోజువారీ చదవడం",
+    "personalDayNumber": "వ్యక్తిగత రోజు సంఖ్య",
+    "luckyNumber": "అదృష్ట సంఖ్య",
+    "luckyColor": "అదృష్ట రంగు",
+    "auspiciousTime": "శుభ సమయం",
+    "affirmation": "ధృవీకరణ",
+    "tip": "నేటి చిట్కా",
+    "warning": "హెచ్చరిక",
+    "activity": "కార్యాచరణ సిఫార్సు"
+  },
+  "language": {
+    "select": "భాషను ఎంచుకోండి",
+    "english": "ఆంగ్లం",
+    "hindi": "హిందీ",
+    "tamil": "తమిళం",
+    "telugu": "తెలుగు"
+  }
+}
+

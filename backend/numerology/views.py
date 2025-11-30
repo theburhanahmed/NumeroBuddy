@@ -86,6 +86,9 @@ def calculate_numerology_profile(request):
         calculator = NumerologyCalculator(system=system)
         numbers = calculator.calculate_all(full_name, birth_date)
         
+        # Calculate Lo Shu Grid
+        lo_shu_grid = calculator.calculate_lo_shu_grid(full_name, birth_date)
+        
         # Update or create profile
         profile, created = NumerologyProfile.objects.update_or_create(
             user=user,
@@ -102,6 +105,7 @@ def calculate_numerology_profile(request):
                 'karmic_debt_number': numbers.get('karmic_debt_number'),
                 'hidden_passion_number': numbers.get('hidden_passion_number'),
                 'subconscious_self_number': numbers.get('subconscious_self_number'),
+                'lo_shu_grid': lo_shu_grid,
                 'calculation_system': system
             }
         )
@@ -177,10 +181,50 @@ def get_birth_chart(request):
         
         serializer = BirthChartSerializer({
             'profile': profile,
-            'interpretations': interpretations
+            'interpretations': interpretations,
+            'lo_shu_grid': profile.lo_shu_grid
         })
         
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    except NumerologyProfile.DoesNotExist:
+        return Response({
+            'error': 'Profile not found. Please calculate your profile first.'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_lo_shu_grid(request):
+    """Get Lo Shu Grid for user."""
+    user = request.user
+    
+    try:
+        profile = NumerologyProfile.objects.get(user=user)
+        
+        if not profile.lo_shu_grid:
+            # Calculate if not already stored
+            user_full_name = None
+            if hasattr(user, 'full_name') and user.full_name:
+                user_full_name = user.full_name
+            elif hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
+                user_full_name = user.profile.full_name
+            
+            if not user_full_name or not user.profile.date_of_birth:
+                return Response({
+                    'error': 'Full name and birth date are required for Lo Shu Grid calculation.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            calculator = NumerologyCalculator(profile.calculation_system)
+            lo_shu_grid = calculator.calculate_lo_shu_grid(user_full_name, user.profile.date_of_birth)
+            
+            # Save to profile
+            profile.lo_shu_grid = lo_shu_grid
+            profile.save()
+        else:
+            lo_shu_grid = profile.lo_shu_grid
+        
+        return Response(lo_shu_grid, status=status.HTTP_200_OK)
     
     except NumerologyProfile.DoesNotExist:
         return Response({

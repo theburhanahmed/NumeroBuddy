@@ -110,7 +110,7 @@ export default function TemplatesPage() {
                 <option value="">All Types</option>
                 {reportTypes.map(type => (
                   <option key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Unknown'}
                   </option>
                 ))}
               </select>

@@ -32,4 +32,7 @@ urlpatterns = [
     path('people/<uuid:person_id>/', views.person_detail, name='person-detail'),
     path('people/<uuid:person_id>/calculate/', views.calculate_person_numerology, name='calculate-person-numerology'),
     path('people/<uuid:person_id>/profile/', views.get_person_numerology_profile, name='person-numerology-profile'),
+    
+    # Lo Shu Grid
+    path('numerology/lo-shu-grid/', views.get_lo_shu_grid, name='lo-shu-grid'),
 ]

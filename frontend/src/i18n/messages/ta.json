@@ -1,0 +1,68 @@
+{
+  "common": {
+    "welcome": "வரவேற்கிறோம்",
+    "dashboard": "டாஷ்போர்டு",
+    "birthChart": "பிறப்பு விளக்கப்படம்",
+    "dailyReading": "தினசரி வாசிப்பு",
+    "compatibility": "இணக்கத்தன்மை",
+    "remedies": "மருந்துகள்",
+    "aiChat": "AI அரட்டை",
+    "settings": "அமைப்புகள்",
+    "logout": "வெளியேறு",
+    "login": "உள்நுழை",
+    "register": "பதிவு செய்",
+    "save": "சேமி",
+    "cancel": "ரத்துசெய்",
+    "delete": "நீக்கு",
+    "edit": "திருத்து",
+    "close": "மூடு",
+    "loading": "ஏற்றுகிறது...",
+    "error": "பிழை",
+    "success": "வெற்றி"
+  },
+  "birthChart": {
+    "title": "உங்கள் பிறப்பு விளக்கப்படம்",
+    "description": "உங்கள் தனித்துவமான பாதையை வரையறுக்கும் எண் சோதிட எண்களை ஆராயுங்கள்",
+    "calculateProfile": "எனது சுயவிவரத்தை கணக்கிடு",
+    "calculating": "கணக்கிடுகிறது...",
+    "exportPDF": "PDF ஏற்றுமதி",
+    "lifePathNumber": "வாழ்க்கை பாதை எண்",
+    "destinyNumber": "விதி எண்",
+    "soulUrgeNumber": "ஆத்மா விருப்பம் எண்",
+    "personalityNumber": "வளர்ச்சி எண்",
+    "attitudeNumber": "மனப்பான்மை எண்",
+    "maturityNumber": "முதிர்ச்சி எண்",
+    "balanceNumber": "சமநிலை எண்",
+    "personalYearNumber": "தனிப்பட்ட ஆண்டு எண்",
+    "personalMonthNumber": "தனிப்பட்ட மாத எண்"
+  },
+  "loShuGrid": {
+    "title": "லோ ஷு கட்டம்",
+    "subtitle": "மந்திர சதுர எண் சோதிடம்",
+    "interpretation": "விளக்கம்",
+    "strongNumbers": "வலுவான எண்கள்",
+    "missingNumbers": "காணாமல் போன எண்கள் (வளர்ச்சிக்கான பகுதிகள்)",
+    "strong": "வலுவான (2+)",
+    "present": "தற்போது",
+    "missing": "காணாமல்"
+  },
+  "dailyReading": {
+    "title": "தினசரி வாசிப்பு",
+    "personalDayNumber": "தனிப்பட்ட நாள் எண்",
+    "luckyNumber": "அதிர்ஷ்ட எண்",
+    "luckyColor": "அதிர்ஷ்ட நிறம்",
+    "auspiciousTime": "நல்ல நேரம்",
+    "affirmation": "உறுதிப்படுத்தல்",
+    "tip": "இன்றைய உதவிக்குறிப்பு",
+    "warning": "எச்சரிக்கை",
+    "activity": "செயல்பாட்டு பரிந்துரை"
+  },
+  "language": {
+    "select": "மொழியைத் தேர்ந்தெடு",
+    "english": "ஆங்கிலம்",
+    "hindi": "இந்தி",
+    "tamil": "தமிழ்",
+    "telugu": "தெலுங்கு"
+  }
+}
+

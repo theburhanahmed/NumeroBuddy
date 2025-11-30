@@ -32,6 +32,9 @@ class NumerologyProfile(models.Model):
     hidden_passion_number = models.IntegerField(null=True, blank=True)
     subconscious_self_number = models.IntegerField(null=True, blank=True)
     
+    # Lo Shu Grid data
+    lo_shu_grid = models.JSONField(null=True, blank=True)  # Stores grid calculation results
+    
     # Calculation metadata
     calculation_system = models.CharField(max_length=20, choices=SYSTEM_CHOICES, default='pythagorean')
     calculated_at = models.DateTimeField(auto_now_add=True)

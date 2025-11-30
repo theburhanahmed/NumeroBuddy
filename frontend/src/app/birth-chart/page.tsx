@@ -9,6 +9,7 @@ import { numerologyAPI } from '@/lib/numerology-api';
 import { BirthChart, NumberCardData, NumberType, NumberInterpretation } from '@/types/numerology';
 import { BirthChartGrid } from '@/components/numerology/birth-chart-grid';
 import { NumberDetailModal } from '@/components/numerology/number-detail-modal';
+import { LoShuGrid } from '@/components/numerology/lo-shu-grid';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
@@ -328,6 +329,13 @@ export default function BirthChartPage() {
       </div>
 
       <BirthChartGrid numbers={numbers} onNumberClick={handleNumberClick} />
+
+      {/* Lo Shu Grid Section */}
+      {birthChart.lo_shu_grid && (
+        <div className="mt-12">
+          <LoShuGrid gridData={birthChart.lo_shu_grid} />
+        </div>
+      )}
 
       <NumberDetailModal
         open={modalOpen}

@@ -361,6 +361,147 @@ class NumerologyCalculator:
             "details": details
         }
 
+    def calculate_lo_shu_grid(self, full_name: str, birth_date: date) -> Dict[str, Any]:
+        """
+        Calculate Lo Shu Grid (Magic Square) for a person.
+        
+        The Lo Shu Grid is a 3x3 magic square where:
+        - Each row, column, and diagonal sums to 15
+        - Numbers 1-9 are placed based on numerology calculations
+        - Position indicates strengths and weaknesses
+        
+        Returns a dictionary with grid positions and interpretations.
+        """
+        # Extract digits from birth date
+        day = birth_date.day
+        month = birth_date.month
+        year = birth_date.year
+        
+        # Calculate name number
+        name_number = self._sum_name(full_name)
+        name_digit = self._reduce_to_single_digit(name_number, preserve_master=False)
+        
+        # Standard Lo Shu Grid layout (Magic Square)
+        # 4 9 2
+        # 3 5 7
+        # 8 1 6
+        
+        # Calculate which numbers appear in the person's numerology
+        life_path = self.calculate_life_path_number(birth_date)
+        destiny = self.calculate_destiny_number(full_name)
+        soul_urge = self.calculate_soul_urge_number(full_name)
+        personality = self.calculate_personality_number(full_name)
+        
+        # Get all numbers (reduced to single digits)
+        numbers = [
+            self._reduce_to_single_digit(life_path, preserve_master=False),
+            self._reduce_to_single_digit(destiny, preserve_master=False),
+            self._reduce_to_single_digit(soul_urge, preserve_master=False),
+            self._reduce_to_single_digit(personality, preserve_master=False),
+            self._reduce_to_single_digit(day, preserve_master=False),
+            self._reduce_to_single_digit(month, preserve_master=False),
+            self._reduce_to_single_digit(year, preserve_master=False),
+            name_digit
+        ]
+        
+        # Count frequency of each number (1-9)
+        number_counts = {}
+        for num in numbers:
+            if 1 <= num <= 9:
+                number_counts[num] = number_counts.get(num, 0) + 1
+        
+        # Standard Lo Shu positions
+        grid_positions = {
+            'top_left': 4, 'top_center': 9, 'top_right': 2,
+            'middle_left': 3, 'center': 5, 'middle_right': 7,
+            'bottom_left': 8, 'bottom_center': 1, 'bottom_right': 6
+        }
+        
+        # Map numbers to grid positions with their meanings
+        grid_data = {}
+        for position, grid_number in grid_positions.items():
+            count = number_counts.get(grid_number, 0)
+            grid_data[position] = {
+                'number': grid_number,
+                'count': count,
+                'is_present': count > 0,
+                'strength': 'strong' if count >= 2 else 'present' if count == 1 else 'missing',
+                'meaning': self._get_lo_shu_meaning(grid_number, position)
+            }
+        
+        # Calculate missing numbers (weak areas)
+        missing_numbers = [n for n in range(1, 10) if n not in number_counts or number_counts[n] == 0]
+        
+        # Calculate strong numbers (appear 2+ times)
+        strong_numbers = [n for n, count in number_counts.items() if count >= 2]
+        
+        return {
+            'grid': grid_data,
+            'missing_numbers': missing_numbers,
+            'strong_numbers': strong_numbers,
+            'number_frequency': number_counts,
+            'interpretation': self._get_lo_shu_interpretation(missing_numbers, strong_numbers)
+        }
+    
+    def _get_lo_shu_meaning(self, number: int, position: str) -> str:
+        """Get meaning of a number in a specific Lo Shu Grid position."""
+        meanings = {
+            (4, 'top_left'): 'Foundation and stability',
+            (9, 'top_center'): 'Completion and wisdom',
+            (2, 'top_right'): 'Cooperation and partnership',
+            (3, 'middle_left'): 'Creativity and expression',
+            (5, 'center'): 'Freedom and change (most important)',
+            (7, 'middle_right'): 'Spirituality and introspection',
+            (8, 'bottom_left'): 'Material success and power',
+            (1, 'bottom_center'): 'Leadership and independence',
+            (6, 'bottom_right'): 'Love and service',
+        }
+        
+        position_meanings = {
+            'top_left': 'Foundation and stability in life',
+            'top_center': 'Wisdom and completion',
+            'top_right': 'Partnership and cooperation',
+            'middle_left': 'Creative expression',
+            'center': 'Core energy and balance',
+            'middle_right': 'Spiritual growth',
+            'bottom_left': 'Material success',
+            'bottom_center': 'Leadership qualities',
+            'bottom_right': 'Love and service to others',
+        }
+        
+        number_meanings = {
+            1: 'Leadership, independence, new beginnings',
+            2: 'Cooperation, diplomacy, partnership',
+            3: 'Creativity, expression, communication',
+            4: 'Stability, foundation, hard work',
+            5: 'Freedom, adventure, change',
+            6: 'Love, responsibility, service',
+            7: 'Spirituality, analysis, introspection',
+            8: 'Material success, power, achievement',
+            9: 'Completion, wisdom, humanitarianism',
+        }
+        
+        return f"{number_meanings.get(number, 'Unknown')} - {position_meanings.get(position, '')}"
+    
+    def _get_lo_shu_interpretation(self, missing_numbers: List[int], strong_numbers: List[int]) -> str:
+        """Generate overall Lo Shu Grid interpretation."""
+        if not missing_numbers and not strong_numbers:
+            return "Your Lo Shu Grid shows a balanced distribution of numbers."
+        
+        interpretation_parts = []
+        
+        if missing_numbers:
+            interpretation_parts.append(
+                f"Missing numbers {', '.join(map(str, missing_numbers))} indicate areas that may need attention and development."
+            )
+        
+        if strong_numbers:
+            interpretation_parts.append(
+                f"Strong numbers {', '.join(map(str, strong_numbers))} appear multiple times, indicating your core strengths and talents."
+            )
+        
+        return " ".join(interpretation_parts)
+    
     def calculate_all(self, full_name: str, birth_date: date) -> Dict[str, Any]:
         """
         Calculate all numerology numbers at once.

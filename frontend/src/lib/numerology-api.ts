@@ -31,6 +31,22 @@ export interface NumberInterpretation {
   life_purpose: string;
 }
 
+export interface LoShuGrid {
+  grid: {
+    [key: string]: {
+      number: number;
+      count: number;
+      is_present: boolean;
+      strength: 'strong' | 'present' | 'missing';
+      meaning: string;
+    };
+  };
+  missing_numbers: number[];
+  strong_numbers: number[];
+  number_frequency: Record<number, number>;
+  interpretation: string;
+}
+
 export interface BirthChart {
   profile: NumerologyProfile;
   interpretations: {
@@ -44,6 +60,7 @@ export interface BirthChart {
     personal_year_number: NumberInterpretation;
     personal_month_number: NumberInterpretation;
   };
+  lo_shu_grid?: LoShuGrid;
 }
 
 export interface DailyReading {
@@ -386,6 +403,14 @@ export const numerologyAPI = {
   async getFullNumerologyReport(): Promise<NumerologyReport> {
     const response = await apiClient.get('/numerology/full-report/');
     return response.data;
+  },
+
+  /**
+   * Get Lo Shu Grid.
+   */
+  async getLoShuGrid(): Promise<LoShuGrid> {
+    const response = await apiClient.get('/numerology/lo-shu-grid/');
+    return response.data;
   }
 };
 
@@ -587,6 +612,482 @@ export const reportAPI = {
    */
   async getGeneratedReport(reportId: string): Promise<GeneratedReport> {
     const response = await apiClient.get(`/reports/${reportId}/`);
+    return response.data;
+  }
+};
+
+// Dashboard API types and methods
+export interface DashboardWidget {
+  id: string;
+  widget_type: string;
+  widget_type_display: string;
+  position: number;
+  is_visible: boolean;
+  config: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserActivity {
+  id: string;
+  activity_type: string;
+  activity_type_display: string;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface QuickInsight {
+  id: string;
+  insight_type: string;
+  insight_type_display: string;
+  title: string;
+  content: string;
+  action_url?: string;
+  action_text?: string;
+  priority: number;
+  is_read: boolean;
+  expires_at?: string;
+  created_at: string;
+}
+
+export interface DashboardOverview {
+  widgets: DashboardWidget[];
+  insights: QuickInsight[];
+  recent_activities: UserActivity[];
+  daily_reading?: DailyReading;
+  numerology_profile?: NumerologyProfile;
+  upcoming_events: any[];
+  stats: {
+    total_readings: number;
+    profile_calculated: boolean;
+    unread_insights: number;
+  };
+}
+
+export const dashboardAPI = {
+  /**
+   * Get unified dashboard overview.
+   */
+  async getOverview(): Promise<DashboardOverview> {
+    const response = await apiClient.get('/dashboard/overview/');
+    return response.data;
+  },
+
+  /**
+   * Get user's dashboard widgets.
+   */
+  async getWidgets(): Promise<DashboardWidget[]> {
+    const response = await apiClient.get('/dashboard/widgets/');
+    return response.data;
+  },
+
+  /**
+   * Create or update a dashboard widget.
+   */
+  async createWidget(data: {
+    widget_type: string;
+    position?: number;
+    config?: Record<string, any>;
+  }): Promise<DashboardWidget> {
+    const response = await apiClient.post('/dashboard/widgets/', data);
+    return response.data;
+  },
+
+  /**
+   * Update a dashboard widget.
+   */
+  async updateWidget(widgetId: string, data: Partial<DashboardWidget>): Promise<DashboardWidget> {
+    const response = await apiClient.put(`/dashboard/widgets/${widgetId}/`, data);
+    return response.data;
+  },
+
+  /**
+   * Delete a dashboard widget.
+   */
+  async deleteWidget(widgetId: string): Promise<void> {
+    await apiClient.delete(`/dashboard/widgets/${widgetId}/`);
+  },
+
+  /**
+   * Reorder dashboard widgets.
+   */
+  async reorderWidgets(widgetPositions: Array<{ id: string; position: number }>): Promise<DashboardWidget[]> {
+    const response = await apiClient.post('/dashboard/widgets/reorder/', {
+      widget_positions: widgetPositions
+    });
+    return response.data;
+  },
+
+  /**
+   * Get AI-generated insights.
+   */
+  async getInsights(limit?: number, unreadOnly?: boolean): Promise<QuickInsight[]> {
+    const params: any = {};
+    if (limit) params.limit = limit;
+    if (unreadOnly) params.unread_only = 'true';
+    const response = await apiClient.get('/dashboard/insights/', { params });
+    return response.data;
+  },
+
+  /**
+   * Mark an insight as read.
+   */
+  async markInsightRead(insightId: string): Promise<QuickInsight> {
+    const response = await apiClient.post(`/dashboard/insights/${insightId}/mark-read/`);
+    return response.data;
+  }
+};
+
+// Calendar API types and methods
+export interface NumerologyEvent {
+  id: string;
+  event_type: string;
+  event_type_display: string;
+  event_date: string;
+  title: string;
+  description: string;
+  numerology_number?: number;
+  importance: number;
+  is_recurring: boolean;
+  created_at: string;
+}
+
+export interface PersonalCycle {
+  id: string;
+  cycle_type: string;
+  cycle_type_display: string;
+  cycle_number: number;
+  start_date: string;
+  end_date: string;
+  description: string;
+  created_at: string;
+}
+
+export interface AuspiciousDate {
+  id: string;
+  activity_type: string;
+  activity_type_display: string;
+  activity_description: string;
+  auspicious_date: string;
+  numerology_score: number;
+  reasoning: string;
+  created_at: string;
+}
+
+export interface CalendarReminder {
+  id: string;
+  reminder_type: string;
+  reminder_type_display: string;
+  title: string;
+  description: string;
+  reminder_date: string;
+  reminder_time?: string;
+  numerology_context: string;
+  is_completed: boolean;
+  is_recurring: boolean;
+  recurrence_pattern: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DateInsight {
+  date: string;
+  personal_day_number: number;
+  personal_year_number: number;
+  personal_month_number: number;
+  weekday: string;
+  insight: string;
+}
+
+export const calendarAPI = {
+  /**
+   * Get numerology events for a date range.
+   */
+  async getEvents(startDate?: string, endDate?: string): Promise<NumerologyEvent[]> {
+    const params: any = {};
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    const response = await apiClient.get('/calendar/events/', { params });
+    return response.data;
+  },
+
+  /**
+   * Find auspicious dates for activities.
+   */
+  async findAuspiciousDates(data: {
+    activity_type?: string;
+    start_date?: string;
+    end_date?: string;
+    preferred_numbers?: number[];
+  }): Promise<Array<{
+    date: string;
+    personal_day_number: number;
+    score: number;
+    reasoning: string;
+  }>> {
+    const params: any = {};
+    if (data.activity_type) params.activity_type = data.activity_type;
+    if (data.start_date) params.start_date = data.start_date;
+    if (data.end_date) params.end_date = data.end_date;
+    if (data.preferred_numbers) params.preferred_numbers = data.preferred_numbers.join(',');
+    const response = await apiClient.get('/calendar/auspicious-dates/', { params });
+    return response.data;
+  },
+
+  /**
+   * Create a calendar reminder.
+   */
+  async createReminder(data: {
+    reminder_type: string;
+    title: string;
+    description?: string;
+    reminder_date: string;
+    reminder_time?: string;
+    numerology_context?: string;
+    is_recurring?: boolean;
+    recurrence_pattern?: string;
+  }): Promise<CalendarReminder> {
+    const response = await apiClient.post('/calendar/reminders/', data);
+    return response.data;
+  },
+
+  /**
+   * Get personal cycles.
+   */
+  async getPersonalCycles(startDate?: string, daysAhead?: number): Promise<Array<{
+    type: string;
+    date: string;
+    number: number;
+    title: string;
+  }>> {
+    const params: any = {};
+    if (startDate) params.start_date = startDate;
+    if (daysAhead) params.days_ahead = daysAhead;
+    const response = await apiClient.get('/calendar/cycles/', { params });
+    return response.data;
+  },
+
+  /**
+   * Get numerology insight for a specific date.
+   */
+  async getDateInsight(date?: string): Promise<DateInsight> {
+    const params: any = {};
+    if (date) params.date = date;
+    const response = await apiClient.get('/calendar/date-insight/', { params });
+    return response.data;
+  }
+};
+
+// Co-Pilot API types and methods
+export interface CoPilotSuggestion {
+  type: string;
+  title: string;
+  content: string;
+  action_url?: string;
+  action_text?: string;
+  priority: number;
+}
+
+export interface DecisionAnalysis {
+  decision_id?: string;
+  decision_text: string;
+  decision_date: string;
+  personal_day_number: number;
+  personal_year_number: number;
+  personal_month_number: number;
+  timing_score: number;
+  timing_reasoning: string[];
+  recommendation: string;
+  suggested_actions: string[];
+}
+
+export const coPilotAPI = {
+  /**
+   * Get proactive suggestions from Co-Pilot.
+   */
+  async getSuggestions(): Promise<CoPilotSuggestion[]> {
+    const response = await apiClient.post('/ai-co-pilot/suggest/');
+    return response.data;
+  },
+
+  /**
+   * Analyze a decision with numerology.
+   */
+  async analyzeDecision(data: {
+    decision_text: string;
+    decision_date?: string;
+  }): Promise<DecisionAnalysis> {
+    const response = await apiClient.post('/ai-co-pilot/analyze-decision/', data);
+    return response.data;
+  },
+
+  /**
+   * Get personalized insights.
+   */
+  async getInsights(): Promise<CoPilotSuggestion[]> {
+    const response = await apiClient.get('/ai-co-pilot/insights/');
+    return response.data;
+  }
+};
+
+// Decision Engine API types and methods
+export interface Decision {
+  id: string;
+  decision_text: string;
+  decision_category: string;
+  decision_date: string;
+  timing_score: number;
+  recommendation: string;
+  is_made: boolean;
+  outcome_recorded: boolean;
+}
+
+export const decisionAPI = {
+  /**
+   * Analyze a decision.
+   */
+  async analyzeDecision(data: {
+    decision_text: string;
+    decision_category?: string;
+    decision_date?: string;
+  }): Promise<DecisionAnalysis> {
+    const response = await apiClient.post('/decisions/analyze/', data);
+    return response.data;
+  },
+
+  /**
+   * Get decision history.
+   */
+  async getHistory(limit?: number): Promise<Decision[]> {
+    const params: any = {};
+    if (limit) params.limit = limit;
+    const response = await apiClient.get('/decisions/history/', { params });
+    return response.data;
+  },
+
+  /**
+   * Record decision outcome.
+   */
+  async recordOutcome(decisionId: string, data: {
+    outcome_type: string;
+    outcome_description: string;
+    satisfaction_score?: number;
+    actual_date?: string;
+    notes?: string;
+  }): Promise<void> {
+    await apiClient.post(`/decisions/${decisionId}/outcome/`, data);
+  },
+
+  /**
+   * Get decision recommendations.
+   */
+  async getRecommendations(category?: string): Promise<any[]> {
+    const params: any = {};
+    if (category) params.category = category;
+    const response = await apiClient.get('/decisions/recommendations/', { params });
+    return response.data;
+  },
+
+  /**
+   * Get success rate.
+   */
+  async getSuccessRate(): Promise<{
+    total_decisions: number;
+    success_rate: number;
+    average_satisfaction: number;
+  }> {
+    const response = await apiClient.get('/decisions/success-rate/');
+    return response.data;
+  }
+};
+
+// Analytics API types and methods
+export interface PersonalAnalytics {
+  period_days: number;
+  total_actions: number;
+  engagement_score: number;
+  feature_usage: Array<{ action_type: string; count: number }>;
+  daily_activity: Record<string, number>;
+  average_daily_actions: number;
+}
+
+export const analyticsAPI = {
+  /**
+   * Get personal analytics.
+   */
+  async getPersonalAnalytics(days?: number): Promise<PersonalAnalytics> {
+    const params: any = {};
+    if (days) params.days = days;
+    const response = await apiClient.get('/analytics/personal/', { params });
+    return response.data;
+  },
+
+  /**
+   * Get behavioral insights.
+   */
+  async getInsights(): Promise<any[]> {
+    const response = await apiClient.get('/analytics/insights/');
+    return response.data;
+  },
+
+  /**
+   * Get growth metrics.
+   */
+  async getGrowthMetrics(periodDays?: number): Promise<any> {
+    const params: any = {};
+    if (periodDays) params.period_days = periodDays;
+    const response = await apiClient.get('/analytics/growth/', { params });
+    return response.data;
+  },
+
+  /**
+   * Track behavior.
+   */
+  async trackBehavior(data: {
+    action_type: string;
+    action_details?: Record<string, any>;
+    session_id?: string;
+  }): Promise<void> {
+    await apiClient.post('/analytics/track/', data);
+  }
+};
+
+// Knowledge Graph API types and methods
+export const knowledgeGraphAPI = {
+  /**
+   * Discover patterns.
+   */
+  async discoverPatterns(): Promise<any[]> {
+    const response = await apiClient.get('/knowledge-graph/patterns/');
+    return response.data;
+  },
+
+  /**
+   * Find number connections.
+   */
+  async findConnections(number: number): Promise<any[]> {
+    const response = await apiClient.get('/knowledge-graph/connections/', {
+      params: { number }
+    });
+    return response.data;
+  },
+
+  /**
+   * Generate insights.
+   */
+  async generateInsights(): Promise<any[]> {
+    const response = await apiClient.get('/knowledge-graph/insights/');
+    return response.data;
+  },
+
+  /**
+   * Query graph.
+   */
+  async queryGraph(queryType: string, params: Record<string, any>): Promise<any> {
+    const response = await apiClient.post('/knowledge-graph/query/', {
+      query_type: queryType,
+      params
+    });
     return response.data;
   }
 };

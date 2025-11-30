@@ -25,6 +25,12 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, loading, refreshUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
   const [formData, setFormData] = useState({
     full_name: '',
     date_of_birth: '',
@@ -245,11 +251,11 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-3 text-sm">
                     <div className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 flex items-center justify-center">
                       <span className="text-xs font-bold text-white">
-                        {user.subscription_plan.charAt(0).toUpperCase()}
+                        {user.subscription_plan ? user.subscription_plan.charAt(0).toUpperCase() : 'F'}
                       </span>
                     </div>
                     <span className="text-gray-600 dark:text-gray-400 capitalize">
-                      {user.subscription_plan} Plan
+                      {user.subscription_plan || 'Free'} Plan
                     </span>
                   </div>
                 </div>

@@ -237,3 +237,77 @@ def get_conversation_messages(request, conversation_id):
         'page_size': page_size,
         'results': serializer.data
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def co_pilot_suggest(request):
+    """Get proactive suggestions from AI Co-Pilot."""
+    from .services import CoPilotService
+    
+    service = CoPilotService()
+    suggestions = service.generate_proactive_suggestions(request.user)
+    
+    # Save as insights
+    for suggestion in suggestions:
+        QuickInsight.objects.update_or_create(
+            user=request.user,
+            title=suggestion['title'],
+            defaults={
+                'insight_type': suggestion['type'],
+                'content': suggestion['content'],
+                'action_url': suggestion.get('action_url', ''),
+                'action_text': suggestion.get('action_text', ''),
+                'priority': suggestion.get('priority', 5),
+                'is_read': False
+            }
+        )
+    
+    return Response(suggestions, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def co_pilot_analyze_decision(request):
+    """Analyze a decision with numerology."""
+    from .services import CoPilotService
+    from datetime import datetime
+    
+    decision_text = request.data.get('decision_text')
+    decision_date_str = request.data.get('decision_date')
+    
+    if not decision_text:
+        return Response(
+            {'error': 'decision_text is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    decision_date = None
+    if decision_date_str:
+        try:
+            decision_date = datetime.strptime(decision_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response(
+                {'error': 'Invalid date format. Use YYYY-MM-DD'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    service = CoPilotService()
+    analysis = service.analyze_decision(request.user, decision_text, decision_date)
+    
+    if 'error' in analysis:
+        return Response(analysis, status=status.HTTP_400_BAD_REQUEST)
+    
+    return Response(analysis, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def co_pilot_insights(request):
+    """Get personalized insights from Co-Pilot."""
+    from .services import CoPilotService
+    
+    service = CoPilotService()
+    insights = service.get_personalized_insights(request.user)
+    
+    return Response(insights, status=status.HTTP_200_OK)

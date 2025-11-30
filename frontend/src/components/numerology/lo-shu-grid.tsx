@@ -1,0 +1,177 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { Grid3x3, Info } from 'lucide-react';
+import { GlassCard } from '@/components/glassmorphism/glass-card';
+
+interface LoShuGridProps {
+  gridData: {
+    grid: {
+      [key: string]: {
+        number: number;
+        count: number;
+        is_present: boolean;
+        strength: 'strong' | 'present' | 'missing';
+        meaning: string;
+      };
+    };
+    missing_numbers: number[];
+    strong_numbers: number[];
+    interpretation: string;
+  };
+  className?: string;
+}
+
+export function LoShuGrid({ gridData, className = '' }: LoShuGridProps) {
+  const { grid, missing_numbers, strong_numbers, interpretation } = gridData;
+
+  // Standard Lo Shu Grid layout
+  const gridLayout = [
+    ['top_left', 'top_center', 'top_right'],
+    ['middle_left', 'center', 'middle_right'],
+    ['bottom_left', 'bottom_center', 'bottom_right'],
+  ];
+
+  const getCellColor = (strength: string) => {
+    switch (strength) {
+      case 'strong':
+        return 'bg-gradient-to-br from-green-500 to-emerald-600 text-white';
+      case 'present':
+        return 'bg-gradient-to-br from-blue-500 to-cyan-600 text-white';
+      case 'missing':
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600';
+      default:
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-400';
+    }
+  };
+
+  const getCellBorder = (strength: string) => {
+    switch (strength) {
+      case 'strong':
+        return 'border-2 border-green-400';
+      case 'present':
+        return 'border-2 border-blue-400';
+      default:
+        return 'border border-gray-300 dark:border-gray-700';
+    }
+  };
+
+  return (
+    <GlassCard variant="default" className={`p-6 ${className}`}>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 flex items-center justify-center text-white">
+          <Grid3x3 className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Lo Shu Grid
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Magic Square Numerology
+          </p>
+        </div>
+      </div>
+
+      {/* Grid Visualization */}
+      <div className="mb-6">
+        <div className="grid grid-cols-3 gap-2 max-w-md mx-auto">
+          {gridLayout.map((row, rowIdx) =>
+            row.map((position, colIdx) => {
+              const cell = grid[position];
+              const isCenter = position === 'center';
+              
+              return (
+                <motion.div
+                  key={position}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: (rowIdx * 3 + colIdx) * 0.05 }}
+                  className={`
+                    aspect-square flex flex-col items-center justify-center rounded-lg
+                    ${getCellColor(cell.strength)}
+                    ${getCellBorder(cell.strength)}
+                    ${isCenter ? 'ring-2 ring-yellow-400 ring-offset-2' : ''}
+                    transition-all duration-300
+                    hover:scale-105 cursor-pointer
+                  `}
+                  title={cell.meaning}
+                >
+                  <span className="text-2xl font-bold">{cell.number}</span>
+                  {cell.count > 0 && (
+                    <span className="text-xs opacity-80 mt-1">
+                      {cell.count}x
+                    </span>
+                  )}
+                </motion.div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-4 mb-6 text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-gradient-to-br from-green-500 to-emerald-600"></div>
+          <span className="text-gray-600 dark:text-gray-400">Strong (2+)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-gradient-to-br from-blue-500 to-cyan-600"></div>
+          <span className="text-gray-600 dark:text-gray-400">Present</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700"></div>
+          <span className="text-gray-600 dark:text-gray-400">Missing</span>
+        </div>
+      </div>
+
+      {/* Interpretation */}
+      <div className="p-4 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800">
+        <div className="flex items-start gap-2 mb-2">
+          <Info className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+          <h4 className="font-semibold text-gray-900 dark:text-white">Interpretation</h4>
+        </div>
+        <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+          {interpretation}
+        </p>
+        
+        {strong_numbers.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-purple-200 dark:border-purple-800">
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Strong Numbers:
+            </p>
+            <div className="flex gap-2">
+              {strong_numbers.map((num) => (
+                <span
+                  key={num}
+                  className="px-2 py-1 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold"
+                >
+                  {num}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {missing_numbers.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-purple-200 dark:border-purple-800">
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Missing Numbers (Areas to Develop):
+            </p>
+            <div className="flex gap-2">
+              {missing_numbers.map((num) => (
+                <span
+                  key={num}
+                  className="px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold"
+                >
+                  {num}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </GlassCard>
+  );
+}
+

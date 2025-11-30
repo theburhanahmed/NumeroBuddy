@@ -120,7 +120,7 @@ function CheckoutForm({ plan, onSuccess, onError }: StripeFormProps) {
             Processing...
           </>
         ) : (
-          `Subscribe to ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`
+          `Subscribe to ${plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : 'Premium'} Plan`
         )}
       </Button>
     </form>
