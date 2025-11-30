@@ -47,9 +47,10 @@ export default function CombineReportsPage() {
     try {
       setLoading(true);
       const data = await peopleAPI.getPeople();
-      setPeople(data);
+      setPeople(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Failed to fetch people:', error);
+      setPeople([]);
     } finally {
       setLoading(false);
     }
@@ -58,13 +59,17 @@ export default function CombineReportsPage() {
   const fetchTemplates = async () => {
     try {
       const data = await reportAPI.getReportTemplates();
-      setTemplates(data);
+      setTemplates(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Failed to fetch templates:', error);
+      setTemplates([]);
     }
   };
 
   const addCombination = (personId: string, templateId: string) => {
+    if (!Array.isArray(people) || !Array.isArray(templates)) {
+      return;
+    }
     const person = people.find(p => p.id === personId);
     const template = templates.find(t => t.id === templateId);
     
@@ -208,7 +213,7 @@ export default function CombineReportsPage() {
                 </GlassCard>
               ) : (
                 <div className="space-y-4">
-                  {people.map((person) => (
+                  {Array.isArray(people) && people.map((person) => (
                     <motion.div
                       key={person.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -247,7 +252,7 @@ export default function CombineReportsPage() {
                               }}
                             >
                               <option value="">Choose template...</option>
-                              {templates.map(template => (
+                              {Array.isArray(templates) && templates.map(template => (
                                 <option key={template.id} value={template.id}>
                                   {template.name}
                                 </option>
@@ -280,7 +285,7 @@ export default function CombineReportsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {templates.map((template) => (
+                  {Array.isArray(templates) && templates.map((template) => (
                     <motion.div
                       key={template.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -316,7 +321,7 @@ export default function CombineReportsPage() {
                               }}
                             >
                               <option value="">Choose person...</option>
-                              {people.map(person => (
+                              {Array.isArray(people) && people.map(person => (
                                 <option key={person.id} value={person.id}>
                                   {person.name}
                                 </option>

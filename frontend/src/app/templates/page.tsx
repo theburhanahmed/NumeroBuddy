@@ -34,9 +34,10 @@ export default function TemplatesPage() {
     try {
       setLoading(true);
       const data = await reportAPI.getReportTemplates();
-      setTemplates(data);
+      setTemplates(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Failed to fetch templates:', error);
+      setTemplates([]);
     } finally {
       setLoading(false);
     }

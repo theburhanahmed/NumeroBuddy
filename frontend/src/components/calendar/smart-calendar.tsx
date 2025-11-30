@@ -37,7 +37,7 @@ export function SmartCalendar({ className = '', onDateSelect }: SmartCalendarPro
         calendarAPI.getDateInsight(new Date().toISOString().split('T')[0])
       ]);
       
-      setEvents(eventsData);
+      setEvents(Array.isArray(eventsData) ? eventsData : []);
       setDateInsight(insightData);
     } catch (error) {
       console.error('Failed to load calendar data:', error);
@@ -83,7 +83,7 @@ export function SmartCalendar({ className = '', onDateSelect }: SmartCalendarPro
 
   const getEventsForDate = (day: number) => {
     const dateStr = new Date(year, month, day).toISOString().split('T')[0];
-    return events.filter(e => e.event_date === dateStr);
+    return Array.isArray(events) ? events.filter(e => e.event_date === dateStr) : [];
   };
 
   const getPersonalDayNumber = (day: number) => {

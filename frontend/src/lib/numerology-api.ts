@@ -485,7 +485,12 @@ export const peopleAPI = {
    */
   async getPeople(): Promise<Person[]> {
     const response = await apiClient.get('/people/');
-    return response.data;
+    // Handle paginated response
+    if (response.data && 'results' in response.data) {
+      return response.data.results;
+    }
+    // Fallback for non-paginated response
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   /**
@@ -567,7 +572,7 @@ export const reportAPI = {
   async getReportTemplates(): Promise<ReportTemplate[]> {
     const response = await apiClient.get('/report-templates/');
     // Handle paginated response
-    if (response.data && response.data.results) {
+    if (response.data && 'results' in response.data) {
       return response.data.results;
     }
     // Fallback for non-paginated response
@@ -604,7 +609,12 @@ export const reportAPI = {
    */
   async getGeneratedReports(): Promise<GeneratedReport[]> {
     const response = await apiClient.get('/reports/');
-    return response.data;
+    // Handle paginated response
+    if (response.data && 'results' in response.data) {
+      return response.data.results;
+    }
+    // Fallback for non-paginated response
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   /**
@@ -808,7 +818,12 @@ export const calendarAPI = {
     if (startDate) params.start_date = startDate;
     if (endDate) params.end_date = endDate;
     const response = await apiClient.get('/calendar/events/', { params });
-    return response.data;
+    // Handle paginated response
+    if (response.data && 'results' in response.data) {
+      return response.data.results;
+    }
+    // Fallback for non-paginated response
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   /**

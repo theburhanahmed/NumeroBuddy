@@ -33,26 +33,30 @@ function GenerateReportContent() {
   const fetchPeople = useCallback(async () => {
     try {
       const data = await peopleAPI.getPeople();
-      const peopleWithSelection = data.map(person => ({
+      const peopleArray = Array.isArray(data) ? data : [];
+      const peopleWithSelection = peopleArray.map(person => ({
         ...person,
         selected: false
       }));
       setPeople(peopleWithSelection);
     } catch (error) {
       console.error('Failed to fetch people:', error);
+      setPeople([]);
     }
   }, []);
 
   const fetchTemplates = useCallback(async () => {
     try {
       const data = await reportAPI.getReportTemplates();
-      const templatesWithSelection = data.map(template => ({
+      const templatesArray = Array.isArray(data) ? data : [];
+      const templatesWithSelection = templatesArray.map(template => ({
         ...template,
         selected: false
       }));
       setTemplates(templatesWithSelection);
     } catch (error) {
       console.error('Failed to fetch templates:', error);
+      setTemplates([]);
     }
   }, []);
 
@@ -67,48 +71,54 @@ function GenerateReportContent() {
       const templateId = searchParams.get('template');
       
       if (personId) {
-        setPeople(prev => prev.map(p => 
+        setPeople(prev => Array.isArray(prev) ? prev.map(p => 
           p.id === personId ? { ...p, selected: true } : p
-        ));
+        ) : []);
       }
       
       if (templateId) {
-        setTemplates(prev => prev.map(t => 
+        setTemplates(prev => Array.isArray(prev) ? prev.map(t => 
           t.id === templateId ? { ...t, selected: true } : t
-        ));
+        ) : []);
       }
     }
   }, [searchParams, fetchPeople, fetchTemplates]);
 
   const togglePersonSelection = (personId: string) => {
-    setPeople(prev => prev.map(person => 
+    setPeople(prev => Array.isArray(prev) ? prev.map(person => 
       person.id === personId 
         ? { ...person, selected: !person.selected } 
         : person
-    ));
+    ) : []);
   };
 
   const toggleTemplateSelection = (templateId: string) => {
-    setTemplates(prev => prev.map(template => 
+    setTemplates(prev => Array.isArray(prev) ? prev.map(template => 
       template.id === templateId 
         ? { ...template, selected: !template.selected } 
         : template
-    ));
+    ) : []);
   };
 
   const toggleAllPeople = () => {
+    if (!Array.isArray(people)) {
+      return;
+    }
     const allSelected = people.every(p => p.selected);
-    setPeople(prev => prev.map(p => ({ ...p, selected: !allSelected })));
+    setPeople(prev => Array.isArray(prev) ? prev.map(p => ({ ...p, selected: !allSelected })) : []);
   };
 
   const toggleAllTemplates = () => {
+    if (!Array.isArray(templates)) {
+      return;
+    }
     const allSelected = templates.every(t => t.selected);
-    setTemplates(prev => prev.map(t => ({ ...t, selected: !allSelected })));
+    setTemplates(prev => Array.isArray(prev) ? prev.map(t => ({ ...t, selected: !allSelected })) : []);
   };
 
   const handleGenerateReports = async () => {
-    const selectedPeople = people.filter(p => p.selected);
-    const selectedTemplates = templates.filter(t => t.selected);
+    const selectedPeople = Array.isArray(people) ? people.filter(p => p.selected) : [];
+    const selectedTemplates = Array.isArray(templates) ? templates.filter(t => t.selected) : [];
     
     if (selectedPeople.length === 0 || selectedTemplates.length === 0) {
       setGenerationStatus('error');
@@ -158,8 +168,8 @@ function GenerateReportContent() {
     router.push('/templates');
   };
 
-  const selectedPeopleCount = people.filter(p => p.selected).length;
-  const selectedTemplatesCount = templates.filter(t => t.selected).length;
+  const selectedPeopleCount = Array.isArray(people) ? people.filter(p => p.selected).length : 0;
+  const selectedTemplatesCount = Array.isArray(templates) ? templates.filter(t => t.selected).length : 0;
   const totalReportsToGenerate = selectedPeopleCount * selectedTemplatesCount;
 
   return (
@@ -255,7 +265,7 @@ function GenerateReportContent() {
                 </GlassCard>
               ) : (
                 <div className="space-y-4">
-                  {people.map((person) => (
+                  {Array.isArray(people) && people.map((person) => (
                     <motion.div
                       key={person.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -311,7 +321,7 @@ function GenerateReportContent() {
                   size="sm"
                   onClick={toggleAllTemplates}
                 >
-                  {templates.length > 0 && templates.every(t => t.selected) ? 'Deselect All' : 'Select All'}
+                  {Array.isArray(templates) && templates.length > 0 && templates.every(t => t.selected) ? 'Deselect All' : 'Select All'}
                 </GlassButton>
               </div>
 
@@ -326,7 +336,7 @@ function GenerateReportContent() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {templates.map((template) => (
+                  {Array.isArray(templates) && templates.map((template) => (
                     <motion.div
                       key={template.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -399,13 +409,13 @@ function GenerateReportContent() {
                 <div>
                   <p className="text-gray-600 dark:text-gray-400 text-sm">Selected People</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {selectedPeopleCount} of {people.length}
+                    {selectedPeopleCount} of {Array.isArray(people) ? people.length : 0}
                   </p>
                 </div>
                 <div>
                   <p className="text-gray-600 dark:text-gray-400 text-sm">Selected Templates</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {selectedTemplatesCount} of {templates.length}
+                    {selectedTemplatesCount} of {Array.isArray(templates) ? templates.length : 0}
                   </p>
                 </div>
                 <div>

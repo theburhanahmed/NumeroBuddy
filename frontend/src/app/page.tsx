@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   SparklesIcon, 
@@ -572,24 +573,24 @@ export default function Home() {
               <h3 className="font-semibold mb-4 text-lg">Legal</h3>
               <ul className="space-y-3 text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link href="/terms-of-service" className="hover:text-white transition-colors">
                     Terms of Service
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link href="/privacy-policy" className="hover:text-white transition-colors">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link href="/cookie-policy" className="hover:text-white transition-colors">
                     Cookie Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link href="/disclaimer" className="hover:text-white transition-colors">
                     Disclaimer
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

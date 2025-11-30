@@ -17,7 +17,13 @@ import {
   LogOut,
   Settings,
   Activity,
-  Zap
+  Zap,
+  FileText,
+  BookOpen,
+  Bot,
+  CreditCard,
+  Info,
+  Lightbulb
 } from 'lucide-react';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
@@ -26,6 +32,9 @@ import { InsightsPanel } from '@/components/dashboard/insights-panel';
 import { CoPilotWidget } from '@/components/co-pilot/co-pilot-widget';
 import { SmartCalendar } from '@/components/calendar/smart-calendar';
 import { dashboardAPI, numerologyAPI, DashboardOverview, DailyReading, NumerologyProfile } from '@/lib/numerology-api';
+import { featureDescriptions, getFeatureDescription } from '@/lib/feature-descriptions';
+import { FeatureHelp } from '@/components/ui/feature-help';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -85,8 +94,9 @@ export default function DashboardPage() {
   const numerologyProfile = dashboardData.numerology_profile;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
+    <TooltipProvider>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
@@ -144,6 +154,8 @@ export default function DashboardPage() {
               icon={<Zap className="w-6 h-6" />}
               color="from-purple-500 to-pink-600"
               onClick={() => router.push('/daily-reading')}
+              helpText={featureDescriptions['daily-reading'].detailed}
+              description="Your personalized daily guidance based on numerology"
             >
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -164,6 +176,11 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 </div>
+                <FeatureHelp 
+                  variant="inline"
+                  size="sm"
+                  content="Your Personal Day Number reflects the numerological energy of today. Each day has its own vibration that influences your experiences."
+                />
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                     Today&apos;s Affirmation
@@ -202,36 +219,42 @@ export default function DashboardPage() {
               title="Quick Actions"
               icon={<Zap className="w-6 h-6" />}
               color="from-blue-500 to-cyan-600"
+              helpText="Quick access to the most commonly used features. Click any action to jump directly to that feature."
             >
               <div className="space-y-3">
-                <button
-                  onClick={() => router.push('/birth-chart')}
-                  className="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3"
-                >
-                  <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">View Birth Chart</span>
-                </button>
-                <button
-                  onClick={() => router.push('/compatibility')}
-                  className="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3"
-                >
-                  <Heart className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Check Compatibility</span>
-                </button>
-                <button
-                  onClick={() => router.push('/ai-chat')}
-                  className="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3"
-                >
-                  <MessageCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Chat with AI</span>
-                </button>
-                <button
-                  onClick={() => router.push('/remedies')}
-                  className="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3"
-                >
-                  <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">View Remedies</span>
-                </button>
+                {[
+                  { key: 'birth-chart', icon: Sparkles, color: 'text-blue-600 dark:text-blue-400' },
+                  { key: 'daily-reading', icon: Calendar, color: 'text-purple-600 dark:text-purple-400' },
+                  { key: 'ai-chat', icon: MessageCircle, color: 'text-pink-600 dark:text-pink-400' },
+                  { key: 'compatibility', icon: Heart, color: 'text-red-600 dark:text-red-400' },
+                  { key: 'people', icon: Users, color: 'text-cyan-600 dark:text-cyan-400' },
+                  { key: 'reports', icon: FileText, color: 'text-orange-600 dark:text-orange-400' },
+                  { key: 'remedies', icon: TrendingUp, color: 'text-green-600 dark:text-green-400' },
+                  { key: 'decisions', icon: Lightbulb, color: 'text-emerald-600 dark:text-emerald-400' }
+                ].map((action) => {
+                  const feature = getFeatureDescription(action.key);
+                  if (!feature) return null;
+                  const Icon = action.icon;
+                  return (
+                    <button
+                      key={action.key}
+                      onClick={() => router.push(feature.path)}
+                      className="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-start gap-3 group"
+                    >
+                      <Icon className={`w-5 h-5 ${action.color} mt-0.5 flex-shrink-0`} />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-medium text-gray-900 dark:text-white block group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {feature.short.split('.')[0]}
+                        </span>
+                        {feature.short.length > 50 && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block line-clamp-1">
+                            {feature.short.substring(feature.short.indexOf('.') + 1).trim()}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </DashboardWidget>
           </div>
@@ -301,73 +324,296 @@ export default function DashboardPage() {
               </GlassCard>
             </div>
 
-            {/* Features Grid */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Your Numerology Tools</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {[
-                  {
-                    title: "Birth Chart",
-                    description: "View your numerology profile",
-                    icon: <Sparkles className="w-6 h-6" />,
-                    path: "/birth-chart",
-                    color: "from-blue-500 to-purple-600"
-                  },
-                  {
-                    title: "Daily Reading",
-                    description: "Your personalized guidance",
-                    icon: <Calendar className="w-6 h-6" />,
-                    path: "/daily-reading",
-                    color: "from-purple-500 to-pink-600"
-                  },
-                  {
-                    title: "AI Numerologist",
-                    description: "Chat with our AI expert",
-                    icon: <MessageCircle className="w-6 h-6" />,
-                    path: "/ai-chat",
-                    color: "from-pink-500 to-red-600"
-                  },
-                  {
-                    title: "Life Path Analysis",
-                    description: "Deep dive into your purpose",
-                    icon: <Star className="w-6 h-6" />,
-                    path: "/life-path",
-                    color: "from-indigo-500 to-purple-600"
-                  },
-                  {
-                    title: "Compatibility Checker",
-                    description: "Analyze relationships",
-                    icon: <Heart className="w-6 h-6" />,
-                    path: "/compatibility",
-                    color: "from-red-500 to-pink-600"
-                  },
-                  {
-                    title: "Personalized Remedies",
-                    description: "Custom recommendations",
-                    icon: <TrendingUp className="w-6 h-6" />,
-                    path: "/remedies",
-                    color: "from-green-500 to-teal-600"
-                  }
-                ].map((feature, index) => (
-                  <motion.div
-                    key={feature.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 + index * 0.1 }}
-                    whileHover={{ y: -5 }}
-                  >
-                    <DashboardWidget
-                      title={feature.title}
-                      icon={feature.icon}
-                      color={feature.color}
-                      onClick={() => router.push(feature.path)}
-                    >
-                      <p className="text-sm">{feature.description}</p>
-                    </DashboardWidget>
-                  </motion.div>
-                ))}
+            {/* Features Grid - Organized by Categories */}
+            <div className="space-y-8">
+                {/* Core Tools */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Core Tools</h2>
+                    <FeatureHelp
+                      variant="icon"
+                      size="sm"
+                      title="Core Tools"
+                      content="Essential numerology tools for understanding your personal numbers and daily guidance. These features form the foundation of your numerology journey."
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {['birth-chart', 'daily-reading', 'life-path'].map((key, index) => {
+                      const feature = getFeatureDescription(key);
+                      if (!feature) return null;
+                      const Icon = feature.icon;
+                      return (
+                        <motion.div
+                          key={key}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 + index * 0.1 }}
+                          whileHover={{ y: -5 }}
+                        >
+                          <DashboardWidget
+                            title={feature.short.split('.')[0]}
+                            icon={<Icon className="w-6 h-6" />}
+                            color={feature.color}
+                            description={feature.short}
+                            helpText={feature.detailed}
+                            onClick={() => router.push(feature.path)}
+                          >
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{feature.short}</p>
+                            <ul className="text-xs text-gray-500 dark:text-gray-500 space-y-1">
+                              {feature.benefits.slice(0, 2).map((benefit, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                  <span className="text-blue-500 mt-1">•</span>
+                                  <span>{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </DashboardWidget>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* AI & Intelligence */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">AI & Intelligence</h2>
+                    <FeatureHelp
+                      variant="icon"
+                      size="sm"
+                      title="AI & Intelligence"
+                      content="AI-powered features that provide instant insights, answer questions, and help you make better decisions using numerology."
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {['ai-chat', 'decisions'].map((key, index) => {
+                      const feature = getFeatureDescription(key);
+                      if (!feature) return null;
+                      const Icon = feature.icon;
+                      return (
+                        <motion.div
+                          key={key}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5 + index * 0.1 }}
+                          whileHover={{ y: -5 }}
+                        >
+                          <DashboardWidget
+                            title={feature.short.split('.')[0]}
+                            icon={<Icon className="w-6 h-6" />}
+                            color={feature.color}
+                            description={feature.short}
+                            helpText={feature.detailed}
+                            onClick={() => router.push(feature.path)}
+                          >
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{feature.short}</p>
+                            <ul className="text-xs text-gray-500 dark:text-gray-500 space-y-1">
+                              {feature.benefits.slice(0, 2).map((benefit, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                  <span className="text-blue-500 mt-1">•</span>
+                                  <span>{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </DashboardWidget>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Relationships */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Relationships</h2>
+                    <FeatureHelp
+                      variant="icon"
+                      size="sm"
+                      title="Relationships"
+                      content="Tools for analyzing relationships, managing multiple people's profiles, and understanding compatibility through numerology."
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {['compatibility', 'people'].map((key, index) => {
+                      const feature = getFeatureDescription(key);
+                      if (!feature) return null;
+                      const Icon = feature.icon;
+                      return (
+                        <motion.div
+                          key={key}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.6 + index * 0.1 }}
+                          whileHover={{ y: -5 }}
+                        >
+                          <DashboardWidget
+                            title={feature.short.split('.')[0]}
+                            icon={<Icon className="w-6 h-6" />}
+                            color={feature.color}
+                            description={feature.short}
+                            helpText={feature.detailed}
+                            onClick={() => router.push(feature.path)}
+                          >
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{feature.short}</p>
+                            <ul className="text-xs text-gray-500 dark:text-gray-500 space-y-1">
+                              {feature.benefits.slice(0, 2).map((benefit, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                  <span className="text-blue-500 mt-1">•</span>
+                                  <span>{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </DashboardWidget>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Reports & Analysis */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Reports & Analysis</h2>
+                    <FeatureHelp
+                      variant="icon"
+                      size="sm"
+                      title="Reports & Analysis"
+                      content="Create comprehensive numerology reports, browse templates, and generate detailed analyses for yourself or others."
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {['reports', 'templates', 'numerology-report'].map((key, index) => {
+                      const feature = getFeatureDescription(key);
+                      if (!feature) return null;
+                      const Icon = feature.icon;
+                      return (
+                        <motion.div
+                          key={key}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.7 + index * 0.1 }}
+                          whileHover={{ y: -5 }}
+                        >
+                          <DashboardWidget
+                            title={feature.short.split('.')[0]}
+                            icon={<Icon className="w-6 h-6" />}
+                            color={feature.color}
+                            description={feature.short}
+                            helpText={feature.detailed}
+                            onClick={() => router.push(feature.path)}
+                          >
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{feature.short}</p>
+                            <ul className="text-xs text-gray-500 dark:text-gray-500 space-y-1">
+                              {feature.benefits.slice(0, 2).map((benefit, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                  <span className="text-blue-500 mt-1">•</span>
+                                  <span>{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </DashboardWidget>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Services */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Services</h2>
+                    <FeatureHelp
+                      variant="icon"
+                      size="sm"
+                      title="Services"
+                      content="Additional services including expert consultations, personalized remedies, and subscription management."
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {['consultations', 'remedies'].map((key, index) => {
+                      const feature = getFeatureDescription(key);
+                      if (!feature) return null;
+                      const Icon = feature.icon;
+                      return (
+                        <motion.div
+                          key={key}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.8 + index * 0.1 }}
+                          whileHover={{ y: -5 }}
+                        >
+                          <DashboardWidget
+                            title={feature.short.split('.')[0]}
+                            icon={<Icon className="w-6 h-6" />}
+                            color={feature.color}
+                            description={feature.short}
+                            helpText={feature.detailed}
+                            onClick={() => router.push(feature.path)}
+                          >
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{feature.short}</p>
+                            <ul className="text-xs text-gray-500 dark:text-gray-500 space-y-1">
+                              {feature.benefits.slice(0, 2).map((benefit, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                  <span className="text-blue-500 mt-1">•</span>
+                                  <span>{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </DashboardWidget>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Account */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Account</h2>
+                    <FeatureHelp
+                      variant="icon"
+                      size="sm"
+                      title="Account"
+                      content="Manage your account settings, subscription, and profile information."
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {['subscription', 'profile'].map((key, index) => {
+                      const feature = getFeatureDescription(key);
+                      if (!feature) return null;
+                      const Icon = feature.icon;
+                      return (
+                        <motion.div
+                          key={key}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.9 + index * 0.1 }}
+                          whileHover={{ y: -5 }}
+                        >
+                          <DashboardWidget
+                            title={feature.short.split('.')[0]}
+                            icon={<Icon className="w-6 h-6" />}
+                            color={feature.color}
+                            description={feature.short}
+                            helpText={feature.detailed}
+                            onClick={() => router.push(feature.path)}
+                          >
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{feature.short}</p>
+                            <ul className="text-xs text-gray-500 dark:text-gray-500 space-y-1">
+                              {feature.benefits.slice(0, 2).map((benefit, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                  <span className="text-blue-500 mt-1">•</span>
+                                  <span>{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </DashboardWidget>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
           </div>
         </div>
 
@@ -401,7 +647,8 @@ export default function DashboardPage() {
             </GlassCard>
           </motion.div>
         )}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

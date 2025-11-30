@@ -38,9 +38,10 @@ export default function BulkGenerateReportsPage() {
     try {
       setLoading(true);
       const data = await peopleAPI.getPeople();
-      setPeople(data);
+      setPeople(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Failed to fetch people:', error);
+      setPeople([]);
     } finally {
       setLoading(false);
     }
@@ -49,9 +50,10 @@ export default function BulkGenerateReportsPage() {
   const fetchTemplates = async () => {
     try {
       const data = await reportAPI.getReportTemplates();
-      setTemplates(data);
+      setTemplates(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Failed to fetch templates:', error);
+      setTemplates([]);
     }
   };
 
@@ -72,6 +74,9 @@ export default function BulkGenerateReportsPage() {
   };
 
   const handleSelectAllPeople = () => {
+    if (!Array.isArray(people)) {
+      return;
+    }
     if (selectedPeople.length === people.length) {
       setSelectedPeople([]);
     } else {
@@ -80,6 +85,9 @@ export default function BulkGenerateReportsPage() {
   };
 
   const handleSelectAllTemplates = () => {
+    if (!Array.isArray(templates)) {
+      return;
+    }
     if (selectedTemplates.length === templates.length) {
       setSelectedTemplates([]);
     } else {
@@ -190,7 +198,7 @@ export default function BulkGenerateReportsPage() {
                   size="sm"
                   onClick={handleSelectAllPeople}
                 >
-                  {selectedPeople.length === people.length ? 'Deselect All' : 'Select All'}
+                  {Array.isArray(people) && selectedPeople.length === people.length ? 'Deselect All' : 'Select All'}
                 </GlassButton>
               </div>
 
@@ -215,7 +223,7 @@ export default function BulkGenerateReportsPage() {
                 </GlassCard>
               ) : (
                 <div className="space-y-4">
-                  {people.map((person) => (
+                  {Array.isArray(people) && people.map((person) => (
                     <motion.div
                       key={person.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -274,7 +282,7 @@ export default function BulkGenerateReportsPage() {
                   size="sm"
                   onClick={handleSelectAllTemplates}
                 >
-                  {selectedTemplates.length === templates.length ? 'Deselect All' : 'Select All'}
+                  {Array.isArray(templates) && selectedTemplates.length === templates.length ? 'Deselect All' : 'Select All'}
                 </GlassButton>
               </div>
 
@@ -289,7 +297,7 @@ export default function BulkGenerateReportsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {templates.map((template) => (
+                  {Array.isArray(templates) && templates.map((template) => (
                     <motion.div
                       key={template.id}
                       initial={{ opacity: 0, y: 10 }}

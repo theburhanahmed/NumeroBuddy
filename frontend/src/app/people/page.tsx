@@ -33,6 +33,11 @@ export default function PeoplePage() {
   }, []);
 
   useEffect(() => {
+    if (!Array.isArray(people)) {
+      setFilteredPeople([]);
+      return;
+    }
+    
     if (searchTerm) {
       const filtered = people.filter(person => 
         person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -48,12 +53,15 @@ export default function PeoplePage() {
     try {
       setLoading(true);
       const data = await peopleAPI.getPeople();
-      setPeople(data);
-      setFilteredPeople(data);
+      const peopleArray = Array.isArray(data) ? data : [];
+      setPeople(peopleArray);
+      setFilteredPeople(peopleArray);
       setError('');
     } catch (err) {
       console.error('Failed to fetch people:', err);
       setError('Failed to load people');
+      setPeople([]);
+      setFilteredPeople([]);
     } finally {
       setLoading(false);
     }

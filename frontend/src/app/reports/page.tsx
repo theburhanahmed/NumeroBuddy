@@ -42,9 +42,10 @@ export default function ReportsPage() {
     try {
       setLoading(true);
       const data = await reportAPI.getGeneratedReports();
-      setReports(data);
+      setReports(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Failed to fetch reports:', error);
+      setReports([]);
     } finally {
       setLoading(false);
     }
@@ -53,18 +54,20 @@ export default function ReportsPage() {
   const fetchPeople = async () => {
     try {
       const data = await peopleAPI.getPeople();
-      setPeople(data);
+      setPeople(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Failed to fetch people:', error);
+      setPeople([]);
     }
   };
 
   const fetchTemplates = async () => {
     try {
       const data = await reportAPI.getReportTemplates();
-      setTemplates(data);
+      setTemplates(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Failed to fetch templates:', error);
+      setTemplates([]);
     }
   };
 
@@ -108,11 +111,13 @@ export default function ReportsPage() {
     }
   };
 
-  const filteredReports = reports.filter(report => 
-    report.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (filterPerson === '' || people.find(p => p.id === report.person)?.name === filterPerson) &&
-    (filterTemplate === '' || templates.find(t => t.id === report.template)?.name === filterTemplate)
-  );
+  const filteredReports = Array.isArray(reports) 
+    ? reports.filter(report => 
+        report.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (filterPerson === '' || (Array.isArray(people) && people.find(p => p.id === report.person)?.name === filterPerson)) &&
+        (filterTemplate === '' || (Array.isArray(templates) && templates.find(t => t.id === report.template)?.name === filterTemplate))
+      )
+    : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
@@ -163,7 +168,7 @@ export default function ReportsPage() {
                 onChange={(e) => setFilterPerson(e.target.value)}
               >
                 <option value="">All People</option>
-                {people.map(person => (
+                {Array.isArray(people) && people.map(person => (
                   <option key={person.id} value={person.name}>{person.name}</option>
                 ))}
               </select>
@@ -180,7 +185,7 @@ export default function ReportsPage() {
                 onChange={(e) => setFilterTemplate(e.target.value)}
               >
                 <option value="">All Templates</option>
-                {templates.map(template => (
+                {Array.isArray(templates) && templates.map(template => (
                   <option key={template.id} value={template.name}>{template.name}</option>
                 ))}
               </select>
@@ -213,7 +218,7 @@ export default function ReportsPage() {
                 </div>
                 <div>
                   <p className="text-gray-600 dark:text-gray-400 text-sm">People</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{people.length}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{Array.isArray(people) ? people.length : 0}</p>
                 </div>
               </div>
             </GlassCard>
@@ -285,7 +290,7 @@ export default function ReportsPage() {
                           </p>
                         </div>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                          {templates.find(t => t.id === report.template)?.name || 'Unknown Template'}
+                          {(Array.isArray(templates) && templates.find(t => t.id === report.template)?.name) || 'Unknown Template'}
                         </span>
                       </div>
                       
