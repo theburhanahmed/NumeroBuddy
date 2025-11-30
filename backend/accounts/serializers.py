@@ -13,9 +13,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     confirm_password = serializers.CharField(write_only=True)
     
+    # Profile fields
+    date_of_birth = serializers.DateField(required=False, allow_null=True)
+    gender = serializers.ChoiceField(
+        choices=UserProfile.GENDER_CHOICES,
+        required=False,
+        allow_null=True
+    )
+    timezone = serializers.CharField(max_length=50, required=False, default='Asia/Kolkata')
+    location = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
+    
     class Meta:
         model = User
-        fields = ['email', 'phone', 'full_name', 'password', 'confirm_password']
+        fields = [
+            'email', 'phone', 'full_name', 'password', 'confirm_password',
+            'date_of_birth', 'gender', 'timezone', 'location'
+        ]
     
     def validate(self, attrs):
         """Validate registration data."""
@@ -28,13 +41,36 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
-        """Create user and send OTP."""
+        """Create user, profile, and send OTP."""
+        # Extract profile fields
+        profile_data = {
+            'date_of_birth': validated_data.pop('date_of_birth', None),
+            'gender': validated_data.pop('gender', None),
+            'timezone': validated_data.pop('timezone', 'Asia/Kolkata'),
+            'location': validated_data.pop('location', None),
+        }
+        
+        # Extract password and confirm_password
         validated_data.pop('confirm_password')
         password = validated_data.pop('password')
         
+        # Create user
         user = User.objects.create(**validated_data)
         user.set_password(password)
         user.save()
+        
+        # Create user profile with provided details
+        # The signal will create an empty profile, so we update it with the provided data
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        for key, value in profile_data.items():
+            if value is not None:
+                setattr(profile, key, value)
+        profile.save()
+        
+        # Mark profile as completed if date_of_birth is provided
+        if profile.date_of_birth:
+            profile.profile_completed_at = timezone.now()
+            profile.save()
         
         # Generate and send OTP
         from .utils import generate_otp, send_otp_email

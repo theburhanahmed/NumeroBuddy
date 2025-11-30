@@ -11,7 +11,9 @@ import {
   EyeOffIcon,
   MailIcon,
   LockIcon,
-  UserIcon
+  UserIcon,
+  CalendarIcon,
+  MapPinIcon
 } from 'lucide-react';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
@@ -30,6 +32,10 @@ export default function RegisterPage() {
     full_name: '',
     password: '',
     confirmPassword: '',
+    date_of_birth: '',
+    gender: '' as 'male' | 'female' | 'other' | 'prefer_not_to_say' | '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata',
+    location: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,6 +67,10 @@ export default function RegisterPage() {
         full_name: formData.full_name,
         password: formData.password,
         confirm_password: formData.confirmPassword,
+        date_of_birth: formData.date_of_birth || undefined,
+        gender: formData.gender || undefined,
+        timezone: formData.timezone,
+        location: formData.location || undefined,
       });
       
       toast({
@@ -87,7 +97,7 @@ export default function RegisterPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-lg"
       >
         <div className="text-center mb-8">
           <motion.div 
@@ -105,7 +115,7 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <GlassCard variant="elevated" className="p-8">
+        <GlassCard variant="elevated" className="p-8 max-h-[90vh] overflow-y-auto">
           <form onSubmit={handleSubmit}>
             <div className="space-y-6">
               <div className="space-y-2">
@@ -215,6 +225,105 @@ export default function RegisterPage() {
                       <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
                     )}
                   </button>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                  Profile Information (Optional)
+                </h3>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="date_of_birth" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Date of Birth
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <CalendarIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="date_of_birth"
+                    type="date"
+                    value={formData.date_of_birth}
+                    onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                    disabled={loading}
+                    max={new Date().toISOString().split('T')[0]}
+                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Gender
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <UserIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <select
+                    id="gender"
+                    value={formData.gender}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as any })}
+                    disabled={loading}
+                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                    <option value="prefer_not_to_say">Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Timezone
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MapPinIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <select
+                    id="timezone"
+                    value={formData.timezone}
+                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                    disabled={loading}
+                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none"
+                  >
+                    <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                    <option value="America/New_York">America/New_York (EST)</option>
+                    <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+                    <option value="Europe/London">Europe/London (GMT)</option>
+                    <option value="Europe/Paris">Europe/Paris (CET)</option>
+                    <option value="Asia/Dubai">Asia/Dubai (GST)</option>
+                    <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+                    <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                    <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+                    <option value="America/Toronto">America/Toronto (EST)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Location
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MapPinIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="location"
+                    type="text"
+                    placeholder="City, Country"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    disabled={loading}
+                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  />
                 </div>
               </div>
 

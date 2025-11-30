@@ -124,7 +124,12 @@ export const authAPI = {
     email?: string;
     phone?: string;
     password: string;
+    confirm_password: string;
     full_name: string;
+    date_of_birth?: string;
+    gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+    timezone?: string;
+    location?: string;
   }) => apiClient.post('/auth/register/', data),
 
   verifyOTP: (data: { email?: string; phone?: string; otp: string }) =>

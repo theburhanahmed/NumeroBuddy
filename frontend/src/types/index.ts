@@ -40,6 +40,10 @@ export interface RegisterData {
   password: string;
   confirm_password: string;
   full_name: string;
+  date_of_birth?: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  timezone?: string;
+  location?: string;
 }
 
 export interface LoginData {
