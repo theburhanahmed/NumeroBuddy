@@ -221,8 +221,10 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon': '10/minute',
-        'user': '100/minute',
+        'user': '300/minute',  # Increased from 100 to handle frequent polling
         'ai_chat': '20/hour',
+        'profile': '200/minute',  # Higher limit for profile endpoint
+        'notifications': '200/minute',  # Higher limit for notifications endpoint
     },
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'utils.exceptions.custom_exception_handler',

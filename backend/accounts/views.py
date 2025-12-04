@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.throttling import UserRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken as JWTRefreshToken
 from django.utils import timezone
 from django.db import transaction
@@ -410,10 +411,16 @@ def password_reset_token_confirm(request):
 
 # User Profile Views
 
+class ProfileRateThrottle(UserRateThrottle):
+    """Custom throttle for profile endpoint."""
+    rate = '200/minute'
+
+
 class UserProfileView(generics.RetrieveUpdateAPIView):
     """Get and update user profile."""
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ProfileRateThrottle]
     
     def get_object(self):
         # Type checker issues are suppressed with # type: ignore comments
@@ -605,6 +612,11 @@ def delete_notification(request, notification_id):
             {'error': 'Notification not found'}, 
             status=status.HTTP_404_NOT_FOUND
         )
+
+
+class NotificationRateThrottle(UserRateThrottle):
+    """Custom throttle for notifications endpoint."""
+    rate = '200/minute'
 
 
 @api_view(['GET'])
