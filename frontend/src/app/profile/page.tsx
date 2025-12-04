@@ -25,12 +25,22 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, loading, refreshUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [initialFormData, setInitialFormData] = useState({
+    full_name: '',
+    date_of_birth: '',
+    gender: '',
+    timezone: '',
+    location: '',
+    bio: ''
+  });
   
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     }
   }, [user, loading, router]);
+
   const [formData, setFormData] = useState({
     full_name: '',
     date_of_birth: '',
@@ -41,42 +51,130 @@ export default function ProfilePage() {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
 
+  // Fetch profile data on component mount
   useEffect(() => {
-    if (user) {
-      setFormData({
-        full_name: user.full_name || '',
-        date_of_birth: '',
-        gender: '',
-        timezone: '',
-        location: '',
-        bio: ''
-      });
-    }
-  }, [user]);
+    const fetchProfile = async () => {
+      if (!user || loading) return;
+      
+      setProfileLoading(true);
+      try {
+        const response = await userAPI.getProfile();
+        // Handle DRF response structure - could be response.data directly or nested
+        const profileData = response.data.user || response.data;
+        
+        // Format date_of_birth for date input (YYYY-MM-DD)
+        const formattedDate = profileData.date_of_birth 
+          ? new Date(profileData.date_of_birth).toISOString().split('T')[0]
+          : '';
+        
+        const profileFormData = {
+          full_name: profileData.full_name || user.full_name || '',
+          date_of_birth: formattedDate,
+          gender: profileData.gender || '',
+          timezone: profileData.timezone || 'Asia/Kolkata',
+          location: profileData.location || '',
+          bio: profileData.bio || ''
+        };
+        
+        setFormData(profileFormData);
+        setInitialFormData(profileFormData);
+      } catch (err: any) {
+        console.error('Failed to fetch profile:', err);
+        // Fallback to user data from auth context
+        setFormData({
+          full_name: user.full_name || '',
+          date_of_birth: '',
+          gender: '',
+          timezone: 'Asia/Kolkata',
+          location: '',
+          bio: ''
+        });
+        toast({
+          title: 'Warning',
+          description: 'Could not load full profile data. Some fields may be empty.',
+          variant: 'destructive',
+        });
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [user, loading, toast]);
 
   const handleSave = async () => {
     setSaving(true);
     setError(null);
+    setFieldErrors({});
     
     try {
-      await userAPI.updateProfile(formData);
+      // Prepare payload - only send non-empty values or values that have changed
+      const payload: Record<string, any> = {};
+      
+      if (formData.full_name.trim()) {
+        payload.full_name = formData.full_name.trim();
+      }
+      if (formData.date_of_birth) {
+        payload.date_of_birth = formData.date_of_birth;
+      }
+      if (formData.gender) {
+        payload.gender = formData.gender;
+      }
+      if (formData.timezone) {
+        payload.timezone = formData.timezone;
+      }
+      if (formData.location !== undefined) {
+        payload.location = formData.location.trim() || null;
+      }
+      if (formData.bio !== undefined) {
+        payload.bio = formData.bio.trim() || null;
+      }
+      
+      const response = await userAPI.updateProfile(payload);
+      
+      // Refresh user data
       await refreshUser();
+      
+      // Update initial form data to reflect saved state
+      setInitialFormData({ ...formData });
       setIsEditing(false);
+      
       toast({
         title: 'Success',
         description: 'Profile updated successfully.',
       });
-    } catch (err) {
-      setError('Failed to update profile. Please try again.');
+    } catch (err: any) {
       console.error('Profile update error:', err);
+      
+      // Handle field-level errors
+      if (err.response?.data?.field_errors) {
+        setFieldErrors(err.response.data.field_errors);
+        const errorMessages = Object.values(err.response.data.field_errors).flat();
+        setError(errorMessages.join(', ') || 'Validation failed. Please check the fields.');
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else {
+        setError('Failed to update profile. Please try again.');
+      }
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    // Reset form to initial values
+    setFormData({ ...initialFormData });
+    setFieldErrors({});
+    setError(null);
+    setIsEditing(false);
   };
 
   const handleExportData = async () => {
@@ -132,7 +230,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
         <div className="max-w-4xl mx-auto">
@@ -184,7 +282,7 @@ export default function ProfilePage() {
                 <>
                   <GlassButton 
                     variant="secondary" 
-                    onClick={() => setIsEditing(false)}
+                    onClick={handleCancel}
                     icon={<X className="w-5 h-5" />}
                   >
                     Cancel
@@ -210,9 +308,20 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {error && (
+          {(error || Object.keys(fieldErrors).length > 0) && (
             <div className="mb-6 p-4 rounded-2xl bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800">
-              <p className="text-red-800 dark:text-red-200">{error}</p>
+              {error && (
+                <p className="text-red-800 dark:text-red-200 mb-2">{error}</p>
+              )}
+              {Object.keys(fieldErrors).length > 0 && (
+                <ul className="list-disc list-inside text-red-800 dark:text-red-200 space-y-1">
+                  {Object.entries(fieldErrors).map(([field, message]) => (
+                    <li key={field}>
+                      <strong>{field}:</strong> {Array.isArray(message) ? message.join(', ') : message}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
 
@@ -283,16 +392,29 @@ export default function ProfilePage() {
                       Your full name as it appears on official documents
                     </p>
                     {isEditing ? (
-                      <input
-                        type="text"
-                        value={formData.full_name}
-                        onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                        className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                        placeholder="Enter your full name"
-                      />
+                      <>
+                        <input
+                          type="text"
+                          value={formData.full_name}
+                          onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                          className={`w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all ${
+                            fieldErrors.full_name || fieldErrors['user.full_name']
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-white/20 dark:border-gray-700/30 focus:ring-purple-500 focus:border-transparent'
+                          }`}
+                          placeholder="Enter your full name"
+                        />
+                        {(fieldErrors.full_name || fieldErrors['user.full_name']) && (
+                          <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+                            {Array.isArray(fieldErrors.full_name || fieldErrors['user.full_name'])
+                              ? (fieldErrors.full_name || fieldErrors['user.full_name']).join(', ')
+                              : fieldErrors.full_name || fieldErrors['user.full_name']}
+                          </p>
+                        )}
+                      </>
                     ) : (
                       <p className="text-gray-900 dark:text-white">
-                        {user.full_name}
+                        {formData.full_name || user.full_name || 'Not provided'}
                       </p>
                     )}
                   </div>
@@ -306,15 +428,30 @@ export default function ProfilePage() {
                         Required for accurate numerology calculations
                       </p>
                       {isEditing ? (
-                        <input
-                          type="date"
-                          value={formData.date_of_birth}
-                          onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
-                          className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                        />
+                        <>
+                          <input
+                            type="date"
+                            value={formData.date_of_birth}
+                            onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
+                            className={`w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all ${
+                              fieldErrors.date_of_birth
+                                ? 'border-red-500 focus:ring-red-500'
+                                : 'border-white/20 dark:border-gray-700/30 focus:ring-purple-500 focus:border-transparent'
+                            }`}
+                          />
+                          {fieldErrors.date_of_birth && (
+                            <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+                              {Array.isArray(fieldErrors.date_of_birth)
+                                ? fieldErrors.date_of_birth.join(', ')
+                                : fieldErrors.date_of_birth}
+                            </p>
+                          )}
+                        </>
                       ) : (
                         <p className="text-gray-900 dark:text-white">
-                          Not provided
+                          {formData.date_of_birth 
+                            ? new Date(formData.date_of_birth).toLocaleDateString()
+                            : 'Not provided'}
                         </p>
                       )}
                     </div>

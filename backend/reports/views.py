@@ -352,13 +352,3 @@ def export_generated_report_pdf(request, report_id):
     buffer.close()
     response.write(pdf)
     return response
-
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def health_check(request):
-    """Health check endpoint."""
-    return Response({
-        'status': 'healthy',
-        'timestamp': timezone.now().isoformat()
-    }, status=status.HTTP_200_OK)

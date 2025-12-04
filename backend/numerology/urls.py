@@ -35,4 +35,38 @@ urlpatterns = [
     
     # Lo Shu Grid
     path('numerology/lo-shu-grid/', views.get_lo_shu_grid, name='lo-shu-grid'),
+    
+    # Raj Yog Detection
+    path('numerology/raj-yog/', views.get_raj_yog_detection, name='raj-yog-detection'),
+    path('numerology/raj-yog/<uuid:person_id>/', views.get_raj_yog_detection, name='person-raj-yog-detection'),
+    path('numerology/raj-yog/explanation/', views.generate_raj_yog_explanation, name='raj-yog-explanation'),
+    path('numerology/raj-yog/explanation/<uuid:person_id>/', views.generate_raj_yog_explanation, name='person-raj-yog-explanation'),
+    
+    # Explanations
+    path('numerology/explanations/<uuid:explanation_id>/', views.get_explanation, name='get-explanation'),
+    
+    # Name Numerology endpoints
+    path('name-numerology/generate/', views.generate_name_numerology, name='generate-name-numerology'),
+    path('name-numerology/preview/', views.preview_name_numerology, name='preview-name-numerology'),
+    path('name-numerology/<uuid:user_id>/<uuid:report_id>/', views.get_name_report, name='get-name-report'),
+    path('name-numerology/<uuid:user_id>/latest/', views.get_latest_name_report, name='get-latest-name-report'),
+    
+    # Weekly Reports
+    path('numerology/weekly-report/', views.get_weekly_report, name='weekly-report'),
+    path('numerology/weekly-report/<str:week_start_date_str>/', views.get_weekly_report, name='weekly-report-date'),
+    path('numerology/weekly-report/<uuid:person_id>/', views.get_weekly_report, name='person-weekly-report'),
+    path('numerology/weekly-report/<uuid:person_id>/<str:week_start_date_str>/', views.get_weekly_report, name='person-weekly-report-date'),
+    
+    # Yearly Reports
+    path('numerology/yearly-report/', views.get_yearly_report, name='yearly-report'),
+    path('numerology/yearly-report/<int:year>/', views.get_yearly_report, name='yearly-report-year'),
+    path('numerology/yearly-report/<uuid:person_id>/', views.get_yearly_report, name='person-yearly-report'),
+    path('numerology/yearly-report/<uuid:person_id>/<int:year>/', views.get_yearly_report, name='person-yearly-report-year'),
+    
+    # Phone Numerology endpoints
+    path('phone-numerology/generate/', views.generate_phone_numerology, name='generate-phone-numerology'),
+    path('phone-numerology/preview/', views.preview_phone_numerology, name='preview-phone-numerology'),
+    path('phone-numerology/<uuid:user_id>/<uuid:report_id>/', views.get_phone_report, name='get-phone-report'),
+    path('phone-numerology/<uuid:user_id>/latest/', views.get_latest_phone_report, name='get-latest-phone-report'),
+    path('phone-numerology/compatibility/', views.check_phone_compatibility, name='check-phone-compatibility'),
 ]

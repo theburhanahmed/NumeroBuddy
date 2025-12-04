@@ -14,7 +14,4 @@ urlpatterns = [
     path('reports/', views.get_generated_reports, name='get-generated-reports'),
     path('reports/<uuid:report_id>/', views.get_generated_report, name='get-generated-report'),
     path('reports/<uuid:report_id>/pdf/', views.export_generated_report_pdf, name='export-generated-report-pdf'),
-    
-    # Health check
-    path('health/', views.health_check, name='health-check'),
 ]

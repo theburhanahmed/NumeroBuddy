@@ -31,15 +31,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       const response = await userAPI.getProfile();
-      const userData = response.data.user;
+      // Handle DRF response structure - could be response.data directly or nested
+      const profileData = response.data.user || response.data;
+      
+      // Construct user object from profile data and existing user state
+      // Profile endpoint returns profile fields, but we need User type fields
+      // So we merge with existing user data or construct minimal user object
+      const currentUser = user || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : null);
+      
+      const userData = {
+        ...currentUser,
+        email: profileData.email || currentUser?.email,
+        full_name: profileData.full_name || currentUser?.full_name,
+        // Keep other user fields from current state
+      };
+      
       setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
     } catch (error) {
       console.error('Failed to refresh user:', error);
       // Don't automatically logout on profile fetch failure
       // The user might still have valid tokens but the profile endpoint is temporarily unavailable
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     // Check if user is logged in on mount

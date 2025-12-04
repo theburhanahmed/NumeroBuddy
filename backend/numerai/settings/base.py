@@ -322,6 +322,14 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'numerology.tasks.send_daily_reading_notifications',
         'schedule': crontab(hour='7', minute='5'),  # Run 5 minutes after readings are generated
     },
+    'generate-weekly-reports': {
+        'task': 'numerology.tasks.generate_weekly_reports',
+        'schedule': crontab(hour='8', minute='0', day_of_week='sunday'),  # Run weekly on Sunday at 8:00 AM UTC
+    },
+    'generate-yearly-reports': {
+        'task': 'numerology.tasks.generate_yearly_reports',
+        'schedule': crontab(hour='9', minute='0', month_of_year='1', day_of_month='1'),  # Run annually on Jan 1 at 9:00 AM UTC
+    },
     'cleanup-expired-otps': {
         'task': 'accounts.tasks.cleanup_expired_otps',
         'schedule': timedelta(hours=1),  # Run hourly

@@ -2,11 +2,12 @@
 Daily reading content generator for NumerAI.
 Enhanced with personalization based on user numerology profiles.
 """
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from datetime import date
 import random
 from .numerology import NumerologyCalculator
 from .interpretations import get_interpretation
+from .models import RajYogDetection
 
 
 class DailyReadingGenerator:
@@ -388,13 +389,21 @@ class DailyReadingGenerator:
         }
     
     @classmethod
-    def generate_personalized_reading(cls, personal_day_number: int, user_profile: Dict) -> Dict[str, Any]:
+    def generate_personalized_reading(
+        cls,
+        personal_day_number: int,
+        user_profile: Dict,
+        user=None,
+        include_raj_yog: bool = True
+    ) -> Dict[str, Any]:
         """
         Generate personalized daily reading content based on user's numerology profile.
         
         Args:
             personal_day_number: Personal day number (1-9)
             user_profile: Dictionary containing user's numerology numbers
+            user: User instance (optional, for Raj Yog detection)
+            include_raj_yog: Whether to include Raj Yog insights
         
         Returns:
             Dictionary with personalized reading content
@@ -439,6 +448,24 @@ class DailyReadingGenerator:
                 logging.warning(f"Failed to get interpretation for life path {life_path}: {str(e)}")
                 # Continue without the life path insight
                 pass
+        
+        # Add Raj Yog insights if requested and user is provided
+        if include_raj_yog and user:
+            try:
+                detection = RajYogDetection.objects.filter(user=user, person=None).first()
+                if detection and detection.is_detected:
+                    personalized_elements['raj_yog_status'] = 'detected'
+                    personalized_elements['raj_yog_insight'] = (
+                        f"Your {detection.yog_name} (strength: {detection.strength_score}/100) "
+                        f"brings auspicious energy today. This is an excellent day to focus on "
+                        f"activities aligned with your Raj Yog strengths."
+                    )
+                else:
+                    personalized_elements['raj_yog_status'] = 'not_detected'
+            except Exception as e:
+                import logging
+                logging.warning(f"Failed to get Raj Yog detection: {str(e)}")
+                personalized_elements['raj_yog_status'] = 'unknown'
         
         # Combine base reading with personalized elements
         return {**base_reading, **personalized_elements}

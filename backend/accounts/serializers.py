@@ -234,11 +234,35 @@ class PasswordResetTokenConfirmSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for user profile."""
     email = serializers.EmailField(source='user.email', read_only=True)
+    full_name = serializers.CharField(
+        source='user.full_name',
+        max_length=100,
+        required=False,
+        allow_blank=False
+    )
     
     class Meta:
         model = UserProfile
-        fields = ['email', 'date_of_birth', 'gender', 'timezone', 'location', 'profile_picture_url', 'bio']
+        fields = ['email', 'full_name', 'date_of_birth', 'gender', 'timezone', 'location', 'profile_picture_url', 'bio']
         read_only_fields = ['email']
+    
+    def update(self, instance, validated_data):
+        """Update both UserProfile and User model fields."""
+        # Extract user-related fields
+        user_data = validated_data.pop('user', {})
+        
+        # Update User model if full_name is provided
+        if 'full_name' in user_data:
+            user = instance.user
+            user.full_name = user_data['full_name']
+            user.save(update_fields=['full_name', 'updated_at'])
+        
+        # Update UserProfile fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
 
 
 class DeviceTokenSerializer(serializers.ModelSerializer):

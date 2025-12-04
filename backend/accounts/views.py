@@ -8,7 +8,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import RefreshToken as JWTRefreshToken
 from django.utils import timezone
+from django.db import transaction
 from datetime import timedelta
+import logging
 from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken, Notification
 from .serializers import (
     UserRegistrationSerializer, OTPVerificationSerializer, ResendOTPSerializer,
@@ -19,6 +21,8 @@ from .serializers import (
 )
 from .utils import generate_otp, send_otp_email, generate_secure_token, send_password_reset_email
 import os
+
+logger = logging.getLogger(__name__)
 
 
 # Authentication Views
@@ -414,6 +418,97 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         # Type checker issues are suppressed with # type: ignore comments
         return self.request.user.profile  # type: ignore
+    
+    def get(self, request, *args, **kwargs):
+        """Retrieve user profile with consistent response format."""
+        try:
+            profile = self.get_object()
+            serializer = self.get_serializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            logger.error(f'profile_not_found', extra={
+                'user_id': str(request.user.id),
+                'error': 'UserProfile does not exist'
+            })
+            return Response(
+                {'error': 'Profile not found. Please contact support.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f'profile_get_error', extra={
+                'user_id': str(request.user.id),
+                'error': str(e)
+            }, exc_info=True)
+            return Response(
+                {'error': 'Failed to retrieve profile'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def update(self, request, *args, **kwargs):
+        """Update user profile with transaction handling."""
+        import time
+        start_time = time.time()
+        user_id = str(request.user.id)
+        
+        try:
+            profile = self.get_object()
+            serializer = self.get_serializer(profile, data=request.data, partial=True)
+            
+            if not serializer.is_valid():
+                logger.warning('profile_update_validation_failed', extra={
+                    'user_id': user_id,
+                    'fields': list(request.data.keys()),
+                    'errors': serializer.errors
+                })
+                return Response(
+                    {
+                        'error': 'Validation failed',
+                        'field_errors': serializer.errors
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Log update start
+            fields_to_update = list(request.data.keys())
+            logger.info('profile_update_started', extra={
+                'user_id': user_id,
+                'fields': fields_to_update
+            })
+            
+            # Use transaction to ensure atomicity
+            with transaction.atomic():
+                serializer.save()
+            
+            # Log success
+            duration = time.time() - start_time
+            logger.info('profile_update_success', extra={
+                'user_id': user_id,
+                'fields': fields_to_update,
+                'duration_seconds': round(duration, 3)
+            })
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            duration = time.time() - start_time
+            logger.error('profile_update_error', extra={
+                'user_id': user_id,
+                'fields': list(request.data.keys()) if request.data else [],
+                'error': str(e),
+                'duration_seconds': round(duration, 3)
+            }, exc_info=True)
+            
+            return Response(
+                {
+                    'error': 'Failed to update profile',
+                    'detail': str(e) if str(e) else 'An unexpected error occurred'
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def patch(self, request, *args, **kwargs):
+        """Handle PATCH requests (partial update)."""
+        return self.update(request, *args, **kwargs)
 
 
 @api_view(['POST'])

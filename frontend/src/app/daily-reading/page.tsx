@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { numerologyAPI } from '@/lib/numerology-api';
-import { DailyReading } from '@/types/numerology';
+import { DailyReading, RajYogDetection } from '@/types/numerology';
 import { ReadingCard } from '@/components/numerology/reading-card';
+import { RajYogBadge } from '@/components/numerology/raj-yog-badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
@@ -22,6 +23,7 @@ export default function DailyReadingPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedReading, setSelectedReading] = useState<DailyReading | null>(null);
+  const [rajYogDetection, setRajYogDetection] = useState<RajYogDetection | null>(null);
 
   const fetchTodayReading = useCallback(async () => {
     try {
@@ -74,6 +76,17 @@ export default function DailyReadingPage() {
     }
   }, [toast]);
 
+  const fetchRajYogDetection = useCallback(async () => {
+    try {
+      const detection = await numerologyAPI.getRajYogDetection();
+      setRajYogDetection(detection);
+    } catch (error: any) {
+      console.error('Failed to load Raj Yog detection:', error);
+      // Don't show error toast for Raj Yog - it's optional
+      setRajYogDetection(null);
+    }
+  }, []);
+
   useEffect(() => {
     if (!user) {
       router.push('/login');
@@ -82,7 +95,8 @@ export default function DailyReadingPage() {
 
     fetchTodayReading();
     fetchReadingHistory();
-  }, [user, router, fetchTodayReading, fetchReadingHistory]);
+    fetchRajYogDetection();
+  }, [user, router, fetchTodayReading, fetchReadingHistory, fetchRajYogDetection]);
 
   useEffect(() => {
     if (isToday(selectedDate)) {
@@ -206,10 +220,41 @@ Affirmation: "${todayReading.affirmation}"`;
         </p>
       </div>
 
+      {/* Raj Yog Badge - Show prominently for today's reading */}
+      {isToday(selectedDate) && rajYogDetection && (
+        <div className="max-w-3xl mx-auto mb-6 flex justify-center">
+          <RajYogBadge detection={rajYogDetection} size="lg" showDetails={true} />
+        </div>
+      )}
+
       {/* Current Reading */}
       {selectedReading ? (
         <div className="max-w-3xl mx-auto">
           <ReadingCard reading={selectedReading} isToday={isToday(selectedDate)} />
+          
+          {/* Show Raj Yog insight if available in reading */}
+          {selectedReading.raj_yog_insight && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+              <h3 className="font-semibold text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2">
+                <span>✨</span> Raj Yog Insight
+              </h3>
+              <p className="text-amber-800 dark:text-amber-200 text-sm">
+                {selectedReading.raj_yog_insight}
+              </p>
+            </div>
+          )}
+          
+          {/* Show LLM explanation if available */}
+          {selectedReading.llm_explanation && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+              <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2 flex items-center gap-2">
+                <span>🤖</span> AI-Powered Insight
+              </h3>
+              <p className="text-purple-800 dark:text-purple-200 text-sm whitespace-pre-wrap">
+                {selectedReading.llm_explanation}
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="max-w-3xl mx-auto text-center p-8 border-2 border-dashed rounded-lg">

@@ -502,6 +502,208 @@ class NumerologyCalculator:
         
         return " ".join(interpretation_parts)
     
+    def detect_raj_yog(self, life_path: int, destiny: int, soul_urge: Optional[int] = None, 
+                       personality: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Detect Raj Yog combinations in numerology profile.
+        
+        Raj Yog indicates auspicious combinations that bring success, leadership, 
+        prosperity, and spiritual growth.
+        
+        Major Raj Yog combinations:
+        - Leadership Raj Yog: Life Path 1 + Destiny 8
+        - Spiritual Raj Yog: Life Path 7 + Destiny 9
+        - Material Raj Yog: Life Path 8 + Destiny 1
+        - Creative Raj Yog: Life Path 3 + Destiny 6
+        - Service Raj Yog: Life Path 6 + Destiny 3
+        - Harmony Raj Yog: Life Path 2 + Destiny 7
+        - Freedom Raj Yog: Life Path 5 + Destiny 5
+        - Builder Raj Yog: Life Path 4 + Destiny 4
+        - Humanitarian Raj Yog: Life Path 9 + Destiny 9
+        - Master Number Raj Yog: Any combination with 11, 22, or 33
+        
+        Args:
+            life_path: Life Path Number
+            destiny: Destiny Number (Expression Number)
+            soul_urge: Soul Urge Number (optional)
+            personality: Personality Number (optional)
+        
+        Returns:
+            Dictionary with detection results including:
+            - is_detected: Boolean
+            - yog_type: Type of Raj Yog
+            - yog_name: Name of the Raj Yog
+            - strength_score: Score from 0-100
+            - detected_combinations: List of detected combinations
+            - contributing_numbers: Dict of contributing numbers
+        """
+        # Normalize master numbers for comparison (keep original for display)
+        lp_normalized = self._reduce_to_single_digit(life_path, preserve_master=False)
+        dest_normalized = self._reduce_to_single_digit(destiny, preserve_master=False)
+        
+        detected_combinations = []
+        contributing_numbers = {
+            'life_path': life_path,
+            'destiny': destiny,
+        }
+        
+        if soul_urge is not None:
+            contributing_numbers['soul_urge'] = soul_urge
+        if personality is not None:
+            contributing_numbers['personality'] = personality
+        
+        strength_score = 0
+        yog_type = None
+        yog_name = None
+        
+        # Check for Master Number Raj Yog (highest priority)
+        if life_path in self.MASTER_NUMBERS or destiny in self.MASTER_NUMBERS:
+            detected_combinations.append({
+                'type': 'master',
+                'name': 'Master Number Raj Yog',
+                'numbers': {'life_path': life_path, 'destiny': destiny},
+                'description': 'Powerful combination with master numbers indicating spiritual mastery and high potential'
+            })
+            strength_score = 90
+            yog_type = 'master'
+            yog_name = 'Master Number Raj Yog'
+        
+        # Leadership Raj Yog: Life Path 1 + Destiny 8
+        if lp_normalized == 1 and dest_normalized == 8:
+            detected_combinations.append({
+                'type': 'leadership',
+                'name': 'Leadership Raj Yog',
+                'numbers': {'life_path': life_path, 'destiny': destiny},
+                'description': 'Natural leadership abilities with material success and authority'
+            })
+            if strength_score < 85:
+                strength_score = 85
+                yog_type = 'leadership'
+                yog_name = 'Leadership Raj Yog'
+        
+        # Material Raj Yog: Life Path 8 + Destiny 1 (reverse of Leadership)
+        if lp_normalized == 8 and dest_normalized == 1:
+            detected_combinations.append({
+                'type': 'material',
+                'name': 'Material Raj Yog',
+                'numbers': {'life_path': life_path, 'destiny': destiny},
+                'description': 'Material abundance and success with leadership qualities'
+            })
+            if strength_score < 80:
+                strength_score = 80
+                yog_type = 'material'
+                yog_name = 'Material Raj Yog'
+        
+        # Spiritual Raj Yog: Life Path 7 + Destiny 9
+        if lp_normalized == 7 and dest_normalized == 9:
+            detected_combinations.append({
+                'type': 'spiritual',
+                'name': 'Spiritual Raj Yog',
+                'numbers': {'life_path': life_path, 'destiny': destiny},
+                'description': 'Deep spiritual wisdom combined with humanitarian service'
+            })
+            if strength_score < 85:
+                strength_score = 85
+                yog_type = 'spiritual'
+                yog_name = 'Spiritual Raj Yog'
+        
+        # Creative Raj Yog: Life Path 3 + Destiny 6
+        if lp_normalized == 3 and dest_normalized == 6:
+            detected_combinations.append({
+                'type': 'creative',
+                'name': 'Creative Raj Yog',
+                'numbers': {'life_path': life_path, 'destiny': destiny},
+                'description': 'Creative expression combined with nurturing and service'
+            })
+            if strength_score < 75:
+                strength_score = 75
+                yog_type = 'creative'
+                yog_name = 'Creative Raj Yog'
+        
+        # Service Raj Yog: Life Path 6 + Destiny 3 (reverse of Creative)
+        if lp_normalized == 6 and dest_normalized == 3:
+            detected_combinations.append({
+                'type': 'service',
+                'name': 'Service Raj Yog',
+                'numbers': {'life_path': life_path, 'destiny': destiny},
+                'description': 'Service and nurturing combined with creative expression'
+            })
+            if strength_score < 75:
+                strength_score = 75
+                yog_type = 'service'
+                yog_name = 'Service Raj Yog'
+        
+        # Harmony Raj Yog: Life Path 2 + Destiny 7
+        if lp_normalized == 2 and dest_normalized == 7:
+            detected_combinations.append({
+                'type': 'other',
+                'name': 'Harmony Raj Yog',
+                'numbers': {'life_path': life_path, 'destiny': destiny},
+                'description': 'Diplomatic harmony combined with spiritual wisdom'
+            })
+            if strength_score < 70:
+                strength_score = 70
+                yog_type = 'other'
+                yog_name = 'Harmony Raj Yog'
+        
+        # Additional combinations that sum to 9 (completion)
+        if lp_normalized + dest_normalized == 9 or (lp_normalized + dest_normalized) % 9 == 0:
+            if not detected_combinations:  # Only if no other Raj Yog detected
+                detected_combinations.append({
+                    'type': 'other',
+                    'name': 'Completion Raj Yog',
+                    'numbers': {'life_path': life_path, 'destiny': destiny},
+                    'description': 'Numbers that sum to 9 indicate completion and fulfillment'
+                })
+                if strength_score < 65:
+                    strength_score = 65
+                    yog_type = 'other'
+                    yog_name = 'Completion Raj Yog'
+        
+        # Check for complementary numbers (1-8, 2-7, 3-6, 4-5)
+        complementary_pairs = [
+            (1, 8), (8, 1),
+            (2, 7), (7, 2),
+            (3, 6), (6, 3),
+            (4, 5), (5, 4),
+        ]
+        
+        if (lp_normalized, dest_normalized) in complementary_pairs:
+            if not detected_combinations:  # Only if no other Raj Yog detected
+                pair_name = f"Complementary Raj Yog ({lp_normalized}-{dest_normalized})"
+                detected_combinations.append({
+                    'type': 'other',
+                    'name': pair_name,
+                    'numbers': {'life_path': life_path, 'destiny': destiny},
+                    'description': f'Complementary numbers {lp_normalized} and {dest_normalized} create balance and harmony'
+                })
+                if strength_score < 60:
+                    strength_score = 60
+                    yog_type = 'other'
+                    yog_name = pair_name
+        
+        # Boost strength if soul_urge or personality also align
+        if soul_urge is not None:
+            su_normalized = self._reduce_to_single_digit(soul_urge, preserve_master=False)
+            if su_normalized == lp_normalized or su_normalized == dest_normalized:
+                strength_score = min(100, strength_score + 5)
+        
+        if personality is not None:
+            pn_normalized = self._reduce_to_single_digit(personality, preserve_master=False)
+            if pn_normalized == lp_normalized or pn_normalized == dest_normalized:
+                strength_score = min(100, strength_score + 5)
+        
+        is_detected = len(detected_combinations) > 0
+        
+        return {
+            'is_detected': is_detected,
+            'yog_type': yog_type,
+            'yog_name': yog_name,
+            'strength_score': strength_score,
+            'detected_combinations': detected_combinations,
+            'contributing_numbers': contributing_numbers,
+        }
+    
     def calculate_all(self, full_name: str, birth_date: date) -> Dict[str, Any]:
         """
         Calculate all numerology numbers at once.

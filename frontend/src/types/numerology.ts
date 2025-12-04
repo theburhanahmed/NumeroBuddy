@@ -72,6 +72,10 @@ export interface DailyReading {
   warning: string;
   affirmation: string;
   actionable_tip: string;
+  raj_yog_status?: string | null;
+  raj_yog_insight?: string | null;
+  llm_explanation?: string | null;
+  explanation_id?: string | null;
   generated_at: string;
 }
 
@@ -212,4 +216,122 @@ export interface NumerologyReport {
   challenge_title: string;
   pinnacle_cycle: PinnacleCycle[];
   summary: string;
+}
+
+export interface RajYogDetection {
+  id: string;
+  is_detected: boolean;
+  yog_type: 'leadership' | 'spiritual' | 'material' | 'creative' | 'service' | 'master' | 'other' | null;
+  yog_name: string | null;
+  strength_score: number;
+  contributing_numbers: {
+    life_path: number;
+    destiny: number;
+    soul_urge?: number;
+    personality?: number;
+  };
+  detected_combinations: Array<{
+    type: string;
+    name: string;
+    numbers: Record<string, number>;
+    description: string;
+  }>;
+  calculation_system: 'pythagorean' | 'chaldean';
+  detected_at: string;
+  updated_at: string;
+}
+
+export interface Explanation {
+  id: string;
+  explanation_type: 'raj_yog' | 'daily' | 'weekly' | 'yearly' | 'number' | 'general';
+  title: string;
+  content: string;
+  llm_provider: string | null;
+  llm_model: string | null;
+  tokens_used: number | null;
+  cost: number | null;
+  context_data: Record<string, any>;
+  is_cached: boolean;
+  generated_at: string;
+  expires_at: string | null;
+}
+
+export interface WeeklyReport {
+  id: string;
+  week_start_date: string;
+  week_end_date: string;
+  week_number: number;
+  year: number;
+  weekly_number: number;
+  personal_year_number: number;
+  personal_month_number: number;
+  main_theme: string;
+  weekly_summary: string;
+  daily_insights: Array<{
+    date: string;
+    day_name: string;
+    personal_day_number: number;
+    lucky_number: number | null;
+    lucky_color: string | null;
+    activity: string | null;
+    affirmation: string | null;
+    raj_yog_status: string | null;
+  }>;
+  weekly_trends: {
+    most_common_day_number: number | null;
+    number_frequency: Record<number, number>;
+    raj_yog_days: number;
+    total_days: number;
+    energy_pattern: {
+      high: number;
+      medium: number;
+      low: number;
+    };
+    dominant_energy: 'high' | 'medium' | 'low';
+  };
+  recommendations: string[];
+  challenges: string[];
+  opportunities: string[];
+  raj_yog_status: string | null;
+  raj_yog_insights: string | null;
+  llm_summary: string | null;
+  explanation_id: string | null;
+  generated_at: string;
+  updated_at: string;
+}
+
+export interface YearlyReport {
+  id: string;
+  year: number;
+  personal_year_number: number;
+  personal_year_cycle: 'beginning' | 'middle' | 'end';
+  annual_overview: string;
+  major_themes: string[];
+  month_by_month: Record<string, {
+    month_name: string;
+    personal_month_number: number;
+    theme: string;
+    description: string;
+  }>;
+  key_dates: Array<{
+    date: string;
+    type: string;
+    description: string;
+    importance: 'high' | 'medium' | 'low';
+  }>;
+  opportunities: string[];
+  challenges: string[];
+  recommendations: string[];
+  annual_raj_yog_status: string | null;
+  raj_yog_patterns: Array<{
+    type: string;
+    description: string;
+    strength: number;
+    active_weeks: number;
+  }>;
+  raj_yog_insights: string | null;
+  llm_overview: string | null;
+  explanation_id: string | null;
+  generated_at: string;
+  updated_at: string;
 }

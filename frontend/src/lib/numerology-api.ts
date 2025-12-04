@@ -225,6 +225,85 @@ export interface NumerologyReport {
   summary: string;
 }
 
+export interface RectificationSuggestion {
+  type: 'gemstone' | 'color' | 'ritual' | 'mantra' | 'dietary' | 'exercise';
+  title: string;
+  description: string;
+  recommendation: string;
+  priority: 'high' | 'medium' | 'low';
+  reason: string;
+}
+
+export interface SubscriptionFeatureAccess {
+  birth_date_numerology: boolean;
+  basic_interpretations: boolean;
+  name_numerology: boolean;
+  phone_numerology: boolean;
+  lo_shu_grid: boolean;
+  rectification_suggestions: boolean;
+  detailed_analysis: boolean;
+  compatibility_insights: boolean;
+  raj_yog_analysis: boolean;
+  yearly_forecast: boolean;
+  expert_recommendations: boolean;
+}
+
+export interface FullNumerologyReport {
+  user_profile: {
+    full_name: string;
+    email: string;
+    date_of_birth: string | null;
+    calculation_date: string | null;
+  };
+  subscription_tier: 'free' | 'basic' | 'premium' | 'elite';
+  available_features: SubscriptionFeatureAccess;
+  birth_date_numerology: NumerologyProfile | null;
+  birth_date_interpretations: Record<string, any>;
+  name_numerology: NameReport | null;
+  name_numerology_available: boolean;
+  phone_numerology: PhoneReport | null;
+  phone_numerology_available: boolean;
+  lo_shu_grid: LoShuGrid | null;
+  lo_shu_grid_available: boolean;
+  rectification_suggestions: RectificationSuggestion[];
+  rectification_suggestions_available: boolean;
+  detailed_analysis: Record<string, any> | null;
+  detailed_analysis_available: boolean;
+  compatibility_insights: Array<{
+    partner_name: string;
+    compatibility_score: number;
+    relationship_type: string;
+    strengths: string[];
+    challenges: string[];
+    advice: string;
+  }> | null;
+  compatibility_insights_available: boolean;
+  raj_yog_analysis: {
+    is_detected: boolean;
+    yog_type: string | null;
+    yog_name: string | null;
+    strength_score: number;
+    contributing_numbers: Record<string, number>;
+    detected_combinations: Array<any>;
+  } | null;
+  raj_yog_analysis_available: boolean;
+  yearly_forecast: {
+    year: number;
+    personal_year_number: number;
+    annual_overview: string;
+    major_themes: string[];
+    opportunities: string[];
+    challenges: string[];
+  } | null;
+  yearly_forecast_available: boolean;
+  expert_recommendations: Array<{
+    type: string;
+    title: string;
+    description: string;
+  }> | null;
+  expert_recommendations_available: boolean;
+}
+
 // New type definitions for multi-person numerology
 export interface Person {
   id: string;
@@ -273,6 +352,124 @@ export interface GeneratedReport {
   content: any;
   generated_at: string;
   expires_at: string | null;
+}
+
+export interface RajYogDetection {
+  id: string;
+  is_detected: boolean;
+  yog_type: 'leadership' | 'spiritual' | 'material' | 'creative' | 'service' | 'master' | 'other' | null;
+  yog_name: string | null;
+  strength_score: number;
+  contributing_numbers: {
+    life_path: number;
+    destiny: number;
+    soul_urge?: number;
+    personality?: number;
+  };
+  detected_combinations: Array<{
+    type: string;
+    name: string;
+    numbers: Record<string, number>;
+    description: string;
+  }>;
+  calculation_system: 'pythagorean' | 'chaldean';
+  detected_at: string;
+  updated_at: string;
+}
+
+export interface Explanation {
+  id: string;
+  explanation_type: 'raj_yog' | 'daily' | 'weekly' | 'yearly' | 'number' | 'general';
+  title: string;
+  content: string;
+  llm_provider: string | null;
+  llm_model: string | null;
+  tokens_used: number | null;
+  cost: number | null;
+  context_data: Record<string, any>;
+  is_cached: boolean;
+  generated_at: string;
+  expires_at: string | null;
+}
+
+export interface WeeklyReport {
+  id: string;
+  week_start_date: string;
+  week_end_date: string;
+  week_number: number;
+  year: number;
+  weekly_number: number;
+  personal_year_number: number;
+  personal_month_number: number;
+  main_theme: string;
+  weekly_summary: string;
+  daily_insights: Array<{
+    date: string;
+    day_name: string;
+    personal_day_number: number;
+    lucky_number: number | null;
+    lucky_color: string | null;
+    activity: string | null;
+    affirmation: string | null;
+    raj_yog_status: string | null;
+  }>;
+  weekly_trends: {
+    most_common_day_number: number | null;
+    number_frequency: Record<number, number>;
+    raj_yog_days: number;
+    total_days: number;
+    energy_pattern: {
+      high: number;
+      medium: number;
+      low: number;
+    };
+    dominant_energy: 'high' | 'medium' | 'low';
+  };
+  recommendations: string[];
+  challenges: string[];
+  opportunities: string[];
+  raj_yog_status: string | null;
+  raj_yog_insights: string | null;
+  llm_summary: string | null;
+  explanation_id: string | null;
+  generated_at: string;
+  updated_at: string;
+}
+
+export interface YearlyReport {
+  id: string;
+  year: number;
+  personal_year_number: number;
+  personal_year_cycle: 'beginning' | 'middle' | 'end';
+  annual_overview: string;
+  major_themes: string[];
+  month_by_month: Record<string, {
+    month_name: string;
+    personal_month_number: number;
+    theme: string;
+    description: string;
+  }>;
+  key_dates: Array<{
+    date: string;
+    type: string;
+    description: string;
+    importance: 'high' | 'medium' | 'low';
+  }>;
+  opportunities: string[];
+  challenges: string[];
+  recommendations: string[];
+  annual_raj_yog_status: string | null;
+  raj_yog_patterns: Array<{
+    type: string;
+    description: string;
+    strength: number;
+    active_weeks: number;
+  }>;
+  raj_yog_insights: string | null;
+  llm_overview: string | null;
+  explanation_id: string | null;
+  generated_at: string;
+  updated_at: string;
 }
 
 // API methods
@@ -398,9 +595,9 @@ export const numerologyAPI = {
   },
 
   /**
-   * Get full numerology report.
+   * Get full numerology report (combines birth date, name, and phone numerology).
    */
-  async getFullNumerologyReport(): Promise<NumerologyReport> {
+  async getFullNumerologyReport(): Promise<FullNumerologyReport> {
     const response = await apiClient.get('/numerology/full-report/');
     return response.data;
   },
@@ -410,6 +607,329 @@ export const numerologyAPI = {
    */
   async getLoShuGrid(): Promise<LoShuGrid> {
     const response = await apiClient.get('/numerology/lo-shu-grid/');
+    return response.data;
+  },
+
+  /**
+   * Get Raj Yog detection for the current user or a specific person.
+   */
+  async getRajYogDetection(personId?: string): Promise<RajYogDetection> {
+    const url = personId 
+      ? `/numerology/raj-yog/${personId}/`
+      : '/numerology/raj-yog/';
+    const response = await apiClient.get(url);
+    return response.data;
+  },
+
+  /**
+   * Generate LLM explanation for Raj Yog detection.
+   */
+  async generateRajYogExplanation(personId?: string): Promise<Explanation> {
+    const url = personId
+      ? `/numerology/raj-yog/explanation/${personId}/`
+      : '/numerology/raj-yog/explanation/';
+    const response = await apiClient.post(url);
+    return response.data;
+  },
+
+  /**
+   * Get a specific explanation by ID.
+   */
+  async getExplanation(explanationId: string): Promise<Explanation> {
+    const response = await apiClient.get(`/numerology/explanations/${explanationId}/`);
+    return response.data;
+  },
+
+  /**
+   * Get weekly report for the current user or a specific person.
+   */
+  async getWeeklyReport(weekStartDate?: string, personId?: string): Promise<WeeklyReport> {
+    let url = '/numerology/weekly-report/';
+    if (personId && weekStartDate) {
+      url = `/numerology/weekly-report/${personId}/${weekStartDate}/`;
+    } else if (personId) {
+      url = `/numerology/weekly-report/${personId}/`;
+    } else if (weekStartDate) {
+      url = `/numerology/weekly-report/${weekStartDate}/`;
+    }
+    const response = await apiClient.get(url);
+    return response.data;
+  },
+
+  /**
+   * Get yearly report for the current user or a specific person.
+   */
+  async getYearlyReport(year?: number, personId?: string): Promise<YearlyReport> {
+    let url = '/numerology/yearly-report/';
+    if (personId && year) {
+      url = `/numerology/yearly-report/${personId}/${year}/`;
+    } else if (personId) {
+      url = `/numerology/yearly-report/${personId}/`;
+    } else if (year) {
+      url = `/numerology/yearly-report/${year}/`;
+    }
+    const response = await apiClient.get(url);
+    return response.data;
+  }
+};
+
+// Name Numerology API types and methods
+export interface NameNumerologyNumbers {
+  expression: {
+    raw_total: number;
+    reduced: number;
+    reduction_steps: number[];
+  };
+  soul_urge: {
+    raw_total: number;
+    reduced: number;
+    reduction_steps: number[];
+    letters: string[];
+  };
+  personality: {
+    raw_total: number;
+    reduced: number;
+    reduction_steps: number[];
+    letters: string[];
+  };
+  name_vibration: number;
+}
+
+export interface NameReport {
+  id: string;
+  user: string;
+  name: string;
+  name_type: 'birth' | 'current' | 'nickname';
+  system: 'pythagorean' | 'chaldean';
+  normalized_name: string;
+  numbers: NameNumerologyNumbers;
+  breakdown: Array<{
+    letter: string;
+    value: number;
+    is_vowel: boolean;
+    is_consonant: boolean;
+  }>;
+  explanation: {
+    short_summary: string;
+    long_explanation: string;
+    action_points: string[];
+    confidence_notes: string;
+  } | null;
+  explanation_error: string | null;
+  computed_at: string;
+  version: number;
+}
+
+export interface NamePreview {
+  normalized_name: string;
+  numbers: NameNumerologyNumbers;
+  breakdown: Array<{
+    letter: string;
+    value: number;
+    is_vowel: boolean;
+    is_consonant: boolean;
+  }>;
+  word_totals: Array<{
+    word: string;
+    raw_total: number;
+    reduced: number;
+  }>;
+}
+
+export const nameNumerologyAPI = {
+  /**
+   * Generate name numerology report (queues task).
+   */
+  async generateReport(data: {
+    name: string;
+    name_type: 'birth' | 'current' | 'nickname';
+    system: 'pythagorean' | 'chaldean';
+    transliterate?: boolean;
+    force_refresh?: boolean;
+  }): Promise<{ job_id: string; status: string }> {
+    const response = await apiClient.post('/name-numerology/generate/', data);
+    return response.data;
+  },
+
+  /**
+   * Preview name numerology results without persisting.
+   */
+  async preview(data: {
+    name: string;
+    system: 'pythagorean' | 'chaldean';
+    transliterate?: boolean;
+  }): Promise<NamePreview> {
+    const response = await apiClient.post('/name-numerology/preview/', data);
+    return response.data;
+  },
+
+  /**
+   * Get a specific name report by ID.
+   */
+  async getReport(userId: string, reportId: string): Promise<NameReport> {
+    const response = await apiClient.get(`/name-numerology/${userId}/${reportId}/`);
+    return response.data;
+  },
+
+  /**
+   * Get the latest name report for a user.
+   */
+  async getLatestReport(
+    userId: string,
+    nameType?: string,
+    system?: string
+  ): Promise<NameReport | null> {
+    try {
+      const params: any = {};
+      if (nameType) params.name_type = nameType;
+      if (system) params.system = system;
+      const response = await apiClient.get(`/name-numerology/${userId}/latest/`, { params });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+};
+
+// Phone Numerology API types and methods
+export interface PhoneComputed {
+  digits: string[];
+  evidence_map: {
+    E1: string;
+    E2: string;
+    E3: string;
+    E4: string;
+    E5: string;
+  };
+  core_number: {
+    raw_total: number;
+    reduced: number;
+    reduction_steps: number[];
+  };
+  positional_sequence: Array<{
+    position: number;
+    digit: string;
+    running_total: number;
+    running_reduced: number;
+  }>;
+  pair_sums: Array<{
+    pair: string;
+    raw: number;
+    reduced: number;
+  }>;
+  repeated_digits: Record<string, number>;
+  dominant_digit: string | null;
+}
+
+export interface PhoneReport {
+  id: string;
+  user: string;
+  phone_raw: string;
+  phone_e164: string;
+  phone_e164_display: string;
+  country: string | null;
+  method: 'core' | 'full' | 'compatibility';
+  computed: PhoneComputed;
+  explanation: {
+    short_summary: string;
+    long_explanation: string;
+    action_points: string[];
+    confidence_notes: string;
+  } | null;
+  explanation_error: string | null;
+  computed_at: string;
+  version: number;
+}
+
+export interface PhonePreview {
+  phone_e164: string;
+  phone_display: string;
+  country: string | null;
+  computed: PhoneComputed;
+}
+
+export interface PhoneCompatibility {
+  compatibility_score: number;
+  core_number_1: number;
+  core_number_2: number;
+  difference: number;
+  base_score: number;
+  shared_digits_modifier: number;
+  shared_digits: string[];
+}
+
+export const phoneNumerologyAPI = {
+  /**
+   * Generate phone numerology report (queues task).
+   */
+  async generateReport(data: {
+    phone_number: string;
+    country_hint?: string;
+    method?: 'core' | 'full' | 'compatibility';
+    persist?: boolean;
+    force_refresh?: boolean;
+    convert_vanity?: boolean;
+  }): Promise<{ job_id: string; status: string }> {
+    const response = await apiClient.post('/phone-numerology/generate/', data);
+    return response.data;
+  },
+
+  /**
+   * Preview phone numerology results without persisting.
+   */
+  async preview(data: {
+    phone_number: string;
+    country_hint?: string;
+    method?: 'core' | 'full' | 'compatibility';
+    convert_vanity?: boolean;
+  }): Promise<PhonePreview> {
+    const response = await apiClient.post('/phone-numerology/preview/', data);
+    return response.data;
+  },
+
+  /**
+   * Get a specific phone report by ID.
+   */
+  async getReport(userId: string, reportId: string): Promise<PhoneReport> {
+    const response = await apiClient.get(`/phone-numerology/${userId}/${reportId}/`);
+    return response.data;
+  },
+
+  /**
+   * Get the latest phone report for a user.
+   */
+  async getLatestReport(
+    userId: string,
+    method?: string
+  ): Promise<PhoneReport | null> {
+    try {
+      const params: any = {};
+      if (method) params.method = method;
+      const response = await apiClient.get(`/phone-numerology/${userId}/latest/`, { params });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Check compatibility between two phone numbers.
+   */
+  async checkCompatibility(data: {
+    phone1?: string;
+    phone2?: string;
+    user_id1?: string;
+    user_id2?: string;
+    country_hint?: string;
+    convert_vanity?: boolean;
+  }): Promise<PhoneCompatibility> {
+    const response = await apiClient.post('/phone-numerology/compatibility/', data);
     return response.data;
   }
 };

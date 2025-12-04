@@ -6,13 +6,22 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
 from django.http import HttpResponse
+from django.conf import settings
 from datetime import timedelta, date, datetime
-from .models import NumerologyProfile, DailyReading, CompatibilityCheck, Remedy, RemedyTracking, Person, PersonNumerologyProfile
+from .models import (
+    NumerologyProfile, DailyReading, CompatibilityCheck, Remedy, RemedyTracking,
+    Person, PersonNumerologyProfile, RajYogDetection, Explanation, NameReport,
+    WeeklyReport, YearlyReport, PhoneReport
+)
 from .serializers import (
     NumerologyProfileSerializer, DailyReadingSerializer, BirthChartSerializer,
     LifePathAnalysisSerializer, CompatibilityCheckSerializer, RemedySerializer, RemedyTrackingSerializer,
-    PersonSerializer, PersonNumerologyProfileSerializer, NumerologyReportSerializer
+    PersonSerializer, PersonNumerologyProfileSerializer, NumerologyReportSerializer,
+    RajYogDetectionSerializer, ExplanationSerializer, NameNumerologyGenerateSerializer, NameReportSerializer,
+    WeeklyReportSerializer, YearlyReportSerializer, PhoneNumerologyGenerateSerializer, PhoneReportSerializer,
+    FullNumerologyReportSerializer
 )
 from .utils import generate_otp, send_otp_email, generate_secure_token
 from .numerology import NumerologyCalculator, validate_name, validate_birth_date
@@ -20,6 +29,9 @@ from .compatibility import CompatibilityAnalyzer
 from .interpretations import get_interpretation, get_all_interpretations
 from .reading_generator import DailyReadingGenerator
 from .cache import NumerologyCache
+from .name_numerology import compute_name_numbers
+from .tasks import generate_name_report, generate_phone_report
+from .phone_numerology import sanitize_and_validate_phone, compute_phone_numerology, compute_compatibility_score
 import os
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
@@ -878,7 +890,11 @@ def track_remedy(request, remedy_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_full_numerology_report(request):
-    """Get comprehensive numerology report."""
+    """Get comprehensive full numerology report combining birth date, name, and phone numerology."""
+    from .subscription_utils import get_user_subscription_tier, get_available_features, can_access_feature
+    from .remedy_generator import generate_rectification_suggestions
+    from .serializers import FullNumerologyReportSerializer
+    
     user = request.user
     
     try:
@@ -889,13 +905,22 @@ def get_full_numerology_report(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
+        # Get subscription tier and available features
+        subscription_tier = get_user_subscription_tier(user)
+        available_features = get_available_features(user)
+        
         # Get user's full name safely
         user_full_name = user.full_name if hasattr(user, 'full_name') and user.full_name else "User"
         if user_full_name == "User" and hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
             user_full_name = user.profile.full_name
         
-        # Get all interpretations
-        interpretations = {}
+        # Get user birth date safely
+        user_birth_date = None
+        if hasattr(user, 'profile') and hasattr(user.profile, 'date_of_birth'):
+            user_birth_date = user.profile.date_of_birth
+        
+        # Birth date numerology (always available)
+        birth_date_interpretations = {}
         number_fields = [
             'life_path_number', 'destiny_number', 'soul_urge_number', 'personality_number',
             'attitude_number', 'maturity_number', 'balance_number',
@@ -905,56 +930,157 @@ def get_full_numerology_report(request):
         for field in number_fields:
             number_value = getattr(profile, field)
             try:
-                interpretations[field] = get_interpretation(number_value)
+                birth_date_interpretations[field] = get_interpretation(number_value)
             except ValueError:
-                interpretations[field] = None
+                birth_date_interpretations[field] = None
         
-        # Get compatibility analysis
-        compatibility_data = []
-        if hasattr(user, 'compatibility_checks'):
-            recent_checks = user.compatibility_checks.order_by('-created_at')[:3]
-            for check in recent_checks:
-                compatibility_data.append({
-                    'partner_name': check.partner_name,
-                    'compatibility_score': check.compatibility_score,
-                    'relationship_type': check.relationship_type
+        # Name numerology (subscription-gated)
+        name_report = None
+        if can_access_feature(user, 'name_numerology'):
+            name_report = NameReport.objects.filter(user=user).order_by('-computed_at').first()
+        
+        # Phone numerology (subscription-gated)
+        phone_report = None
+        if can_access_feature(user, 'phone_numerology'):
+            phone_report = PhoneReport.objects.filter(user=user).order_by('-computed_at').first()
+        
+        # Lo Shu Grid (subscription-gated)
+        lo_shu_grid = None
+        if can_access_feature(user, 'lo_shu_grid') and profile.lo_shu_grid:
+            lo_shu_grid = profile.lo_shu_grid
+        
+        # Rectification suggestions (subscription-gated)
+        rectification_suggestions = []
+        if can_access_feature(user, 'rectification_suggestions'):
+            rectification_suggestions = generate_rectification_suggestions(
+                profile=profile,
+                name_report=name_report,
+                phone_report=phone_report,
+                subscription_tier=subscription_tier
+            )
+        
+        # Detailed analysis (subscription-gated)
+        detailed_analysis = None
+        if can_access_feature(user, 'detailed_analysis'):
+            detailed_analysis = {
+                'life_path_analysis': birth_date_interpretations.get('life_path_number', {}),
+                'destiny_analysis': birth_date_interpretations.get('destiny_number', {}),
+                'soul_urge_analysis': birth_date_interpretations.get('soul_urge_number', {}),
+                'personality_analysis': birth_date_interpretations.get('personality_number', {}),
+            }
+        
+        # Compatibility insights (subscription-gated)
+        compatibility_insights = []
+        if can_access_feature(user, 'compatibility_insights'):
+            if hasattr(user, 'compatibility_checks'):
+                recent_checks = user.compatibility_checks.order_by('-created_at')[:5]
+                for check in recent_checks:
+                    compatibility_insights.append({
+                        'partner_name': check.partner_name,
+                        'compatibility_score': check.compatibility_score,
+                        'relationship_type': check.relationship_type,
+                        'strengths': check.strengths,
+                        'challenges': check.challenges,
+                        'advice': check.advice,
+                    })
+        
+        # Raj Yog analysis (elite only)
+        raj_yog_analysis = None
+        if can_access_feature(user, 'raj_yog_analysis'):
+            try:
+                raj_yog = RajYogDetection.objects.filter(user=user).order_by('-detected_at').first()
+                if raj_yog:
+                    raj_yog_analysis = {
+                        'is_detected': raj_yog.is_detected,
+                        'yog_type': raj_yog.yog_type,
+                        'yog_name': raj_yog.yog_name,
+                        'strength_score': raj_yog.strength_score,
+                        'contributing_numbers': raj_yog.contributing_numbers,
+                        'detected_combinations': raj_yog.detected_combinations,
+                    }
+            except Exception:
+                pass
+        
+        # Yearly forecast (elite only)
+        yearly_forecast = None
+        if can_access_feature(user, 'yearly_forecast'):
+            try:
+                from datetime import date
+                current_year = date.today().year
+                yearly_report = YearlyReport.objects.filter(user=user, year=current_year).first()
+                if yearly_report:
+                    yearly_forecast = {
+                        'year': yearly_report.year,
+                        'personal_year_number': yearly_report.personal_year_number,
+                        'annual_overview': yearly_report.annual_overview,
+                        'major_themes': yearly_report.major_themes,
+                        'opportunities': yearly_report.opportunities,
+                        'challenges': yearly_report.challenges,
+                    }
+            except Exception:
+                pass
+        
+        # Expert recommendations (elite only)
+        expert_recommendations = []
+        if can_access_feature(user, 'expert_recommendations'):
+            # This would typically come from expert consultations or AI analysis
+            # For now, provide general recommendations based on profile
+            if profile.karmic_debt_number:
+                expert_recommendations.append({
+                    'type': 'karmic_debt',
+                    'title': f'Address Karmic Debt {profile.karmic_debt_number}',
+                    'description': 'Consider consulting with a numerology expert to understand and work through your karmic debt.',
+                })
+            if profile.life_path_number in [11, 22, 33]:
+                expert_recommendations.append({
+                    'type': 'master_number',
+                    'title': f'Master Number Guidance',
+                    'description': 'Master numbers require special understanding. Consider expert consultation for deeper insights.',
                 })
         
-        # Get remedy tracking data
-        remedy_tracking_data = []
-        if hasattr(user, 'remedy_trackings'):
-            recent_trackings = user.remedy_trackings.order_by('-date')[:7]
-            for tracking in recent_trackings:
-                remedy_tracking_data.append({
-                    'remedy_title': tracking.remedy.title,
-                    'date': tracking.date,
-                    'is_completed': tracking.is_completed
-                })
-        
-        # Get user birth date safely
-        user_birth_date = None
-        if hasattr(user, 'profile') and hasattr(user.profile, 'date_of_birth'):
-            user_birth_date = user.profile.date_of_birth
-        
-        serializer = NumerologyReportSerializer({
+        # Build response data
+        report_data = {
             'user_profile': {
                 'full_name': user_full_name,
                 'email': user.email,
-                'date_of_birth': user_birth_date,
-                'calculation_date': profile.calculated_at
+                'date_of_birth': user_birth_date.isoformat() if user_birth_date else None,
+                'calculation_date': profile.calculated_at.isoformat() if profile.calculated_at else None,
             },
-            'numerology_profile': profile,
-            'interpretations': interpretations,
-            'compatibility_data': compatibility_data,
-            'remedy_tracking_data': remedy_tracking_data
-        })
+            'subscription_tier': subscription_tier,
+            'available_features': available_features,
+            'birth_date_numerology': profile,
+            'birth_date_interpretations': birth_date_interpretations,
+            'name_numerology': name_report,
+            'name_numerology_available': can_access_feature(user, 'name_numerology'),
+            'phone_numerology': phone_report,
+            'phone_numerology_available': can_access_feature(user, 'phone_numerology'),
+            'lo_shu_grid': lo_shu_grid,
+            'lo_shu_grid_available': can_access_feature(user, 'lo_shu_grid'),
+            'rectification_suggestions': rectification_suggestions,
+            'rectification_suggestions_available': can_access_feature(user, 'rectification_suggestions'),
+            'detailed_analysis': detailed_analysis,
+            'detailed_analysis_available': can_access_feature(user, 'detailed_analysis'),
+            'compatibility_insights': compatibility_insights,
+            'compatibility_insights_available': can_access_feature(user, 'compatibility_insights'),
+            'raj_yog_analysis': raj_yog_analysis,
+            'raj_yog_analysis_available': can_access_feature(user, 'raj_yog_analysis'),
+            'yearly_forecast': yearly_forecast,
+            'yearly_forecast_available': can_access_feature(user, 'yearly_forecast'),
+            'expert_recommendations': expert_recommendations,
+            'expert_recommendations_available': can_access_feature(user, 'expert_recommendations'),
+        }
         
+        serializer = FullNumerologyReportSerializer(report_data)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     except Exception as e:
-        return Response({
+        import traceback
+        error_response = {
             'error': f'Failed to generate report: {str(e)}'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        }
+        if settings.DEBUG:
+            error_response['traceback'] = traceback.format_exc()
+        return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -1165,11 +1291,716 @@ def get_person_numerology_profile(request, person_id):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_raj_yog_detection(request, person_id=None):
+    """
+    Get Raj Yog detection for user or specific person.
+    
+    If person_id is provided, detects Raj Yog for that person.
+    Otherwise, detects for the authenticated user.
+    """
+    user = request.user
+    
+    try:
+        # Get numerology profile
+        if person_id:
+            person = Person.objects.get(id=person_id, user=user)
+            try:
+                profile = PersonNumerologyProfile.objects.get(person=person)
+            except PersonNumerologyProfile.DoesNotExist:
+                return Response({
+                    'error': 'Numerology profile not found. Please calculate profile first.'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            life_path = profile.life_path_number
+            destiny = profile.destiny_number
+            soul_urge = profile.soul_urge_number
+            personality = profile.personality_number
+            calculation_system = profile.calculation_system
+            person_obj = person
+        else:
+            try:
+                profile = NumerologyProfile.objects.get(user=user)
+            except NumerologyProfile.DoesNotExist:
+                return Response({
+                    'error': 'Numerology profile not found. Please calculate profile first.'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            life_path = profile.life_path_number
+            destiny = profile.destiny_number
+            soul_urge = profile.soul_urge_number
+            personality = profile.personality_number
+            calculation_system = profile.calculation_system
+            person_obj = None
+        
+        # Detect Raj Yog
+        calculator = NumerologyCalculator(system=calculation_system)
+        raj_yog_data = calculator.detect_raj_yog(
+            life_path=life_path,
+            destiny=destiny,
+            soul_urge=soul_urge,
+            personality=personality
+        )
+        
+        # Get or create Raj Yog detection record
+        detection, created = RajYogDetection.objects.update_or_create(
+            user=user,
+            person=person_obj,
+            defaults={
+                'is_detected': raj_yog_data['is_detected'],
+                'yog_type': raj_yog_data.get('yog_type'),
+                'yog_name': raj_yog_data.get('yog_name'),
+                'strength_score': raj_yog_data.get('strength_score', 0),
+                'contributing_numbers': raj_yog_data.get('contributing_numbers', {}),
+                'detected_combinations': raj_yog_data.get('detected_combinations', []),
+                'calculation_system': calculation_system
+            }
+        )
+        
+        serializer = RajYogDetectionSerializer(detection)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    except Person.DoesNotExist:
+        return Response({'error': 'Person not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': 'Error detecting Raj Yog',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_raj_yog_explanation(request, person_id=None):
+    """
+    Generate LLM explanation for Raj Yog detection.
+    
+    If person_id is provided, generates explanation for that person.
+    Otherwise, generates for the authenticated user.
+    """
+    user = request.user
+    
+    try:
+        from .services.explanation_generator import get_explanation_generator
+        
+        # Get Raj Yog detection
+        if person_id:
+            person = Person.objects.get(id=person_id, user=user)
+            detection = RajYogDetection.objects.filter(user=user, person=person).first()
+            if not detection:
+                return Response({
+                    'error': 'Raj Yog detection not found. Please detect Raj Yog first.'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            profile = PersonNumerologyProfile.objects.get(person=person)
+            numerology_profile = {
+                'life_path_number': profile.life_path_number,
+                'destiny_number': profile.destiny_number,
+                'soul_urge_number': profile.soul_urge_number,
+                'personality_number': profile.personality_number
+            }
+        else:
+            detection = RajYogDetection.objects.filter(user=user, person=None).first()
+            if not detection:
+                return Response({
+                    'error': 'Raj Yog detection not found. Please detect Raj Yog first.'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            profile = NumerologyProfile.objects.get(user=user)
+            numerology_profile = {
+                'life_path_number': profile.life_path_number,
+                'destiny_number': profile.destiny_number,
+                'soul_urge_number': profile.soul_urge_number,
+                'personality_number': profile.personality_number
+            }
+        
+        # Prepare Raj Yog data
+        raj_yog_data = {
+            'is_detected': detection.is_detected,
+            'yog_type': detection.yog_type,
+            'yog_name': detection.yog_name,
+            'strength_score': detection.strength_score,
+            'detected_combinations': detection.detected_combinations,
+            'contributing_numbers': detection.contributing_numbers
+        }
+        
+        # Generate explanation
+        generator = get_explanation_generator()
+        explanation = generator.generate_raj_yog_explanation(
+            user=user,
+            raj_yog_data=raj_yog_data,
+            numerology_profile=numerology_profile
+        )
+        
+        serializer = ExplanationSerializer(explanation)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+    except Person.DoesNotExist:
+        return Response({'error': 'Person not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': 'Error generating explanation',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_explanation(request, explanation_id):
+    """Get a specific explanation by ID."""
+    try:
+        explanation = Explanation.objects.get(id=explanation_id, user=request.user)
+        serializer = ExplanationSerializer(explanation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Explanation.DoesNotExist:
+        return Response({'error': 'Explanation not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_weekly_report(request, week_start_date_str=None, person_id=None):
+    """
+    Get weekly report for user or specific person.
+    
+    If week_start_date_str is provided (YYYY-MM-DD), get report for that week.
+    Otherwise, get report for current week.
+    """
+    user = request.user
+    
+    try:
+        from datetime import datetime as dt
+        from .services.weekly_report_generator import get_weekly_report_generator
+        
+        # Parse week start date
+        if week_start_date_str:
+            week_start_date = dt.strptime(week_start_date_str, '%Y-%m-%d').date()
+        else:
+            # Default to current week (Sunday)
+            today = date.today()
+            days_since_sunday = today.weekday() + 1  # Monday=0, Sunday=6, so +1
+            week_start_date = today - timedelta(days=days_since_sunday % 7)
+        
+        # Get person if specified
+        person = None
+        if person_id:
+            person = Person.objects.get(id=person_id, user=user)
+        
+        # Check if report already exists
+        existing_report = WeeklyReport.objects.filter(
+            user=user,
+            person=person,
+            week_start_date=week_start_date
+        ).first()
+        
+        if existing_report:
+            serializer = WeeklyReportSerializer(existing_report)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Generate new report
+        generator = get_weekly_report_generator()
+        report_data = generator.generate_weekly_report(
+            user=user,
+            week_start_date=week_start_date,
+            person=person
+        )
+        
+        # Create report instance
+        report = WeeklyReport.objects.create(
+            user=user,
+            person=person,
+            **report_data
+        )
+        
+        serializer = WeeklyReportSerializer(report)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+    except Person.DoesNotExist:
+        return Response({'error': 'Person not found'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': 'Error generating weekly report',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_yearly_report(request, year=None, person_id=None):
+    """
+    Get yearly report for user or specific person.
+    
+    If year is provided, get report for that year.
+    Otherwise, get report for current year.
+    """
+    user = request.user
+    
+    try:
+        from .services.yearly_report_generator import get_yearly_report_generator
+        
+        # Use provided year or current year
+        if year is None:
+            year = date.today().year
+        
+        # Get person if specified
+        person = None
+        if person_id:
+            person = Person.objects.get(id=person_id, user=user)
+        
+        # Check if report already exists
+        existing_report = YearlyReport.objects.filter(
+            user=user,
+            person=person,
+            year=year
+        ).first()
+        
+        if existing_report:
+            serializer = YearlyReportSerializer(existing_report)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Generate new report
+        generator = get_yearly_report_generator()
+        report_data = generator.generate_yearly_report(
+            user=user,
+            year=year,
+            person=person
+        )
+        
+        # Create report instance
+        report = YearlyReport.objects.create(
+            user=user,
+            person=person,
+            **report_data
+        )
+        
+        serializer = YearlyReportSerializer(report)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+    except Person.DoesNotExist:
+        return Response({'error': 'Person not found'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': 'Error generating yearly report',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
 @permission_classes([AllowAny])
+@cache_page(30)  # Cache for 30 seconds
 def health_check(request):
-    """Health check endpoint."""
+    """Lightweight health check endpoint with caching."""
     return Response({
-        'status': 'healthy',
-        'timestamp': timezone.now().isoformat()
+        'status': 'healthy'
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_name_numerology(request):
+    """
+    Generate name numerology report.
+    Returns job_id and queues the task.
+    """
+    user = request.user
+    
+    serializer = NameNumerologyGenerateSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    name = serializer.validated_data['name']
+    name_type = serializer.validated_data['name_type']
+    system = serializer.validated_data['system']
+    force_refresh = serializer.validated_data.get('force_refresh', False)
+    
+    # Validate name is not empty
+    if not name or not name.strip():
+        return Response({
+            'error': 'Name cannot be empty'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Queue the task
+        task = generate_name_report.delay(
+            user_id=str(user.id),
+            name=name,
+            name_type=name_type,
+            system=system,
+            force_refresh=force_refresh
+        )
+        
+        return Response({
+            'job_id': task.id,
+            'status': 'queued'
+        }, status=status.HTTP_202_ACCEPTED)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Failed to queue task: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_name_report(request, user_id, report_id):
+    """
+    Get a specific name numerology report by ID.
+    """
+    user = request.user
+    
+    # Verify user owns the report
+    if str(user.id) != str(user_id):
+        return Response({
+            'error': 'Unauthorized'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        report = NameReport.objects.get(id=report_id, user=user)
+        serializer = NameReportSerializer(report)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except NameReport.DoesNotExist:
+        return Response({
+            'error': 'Report not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_latest_name_report(request, user_id):
+    """
+    Get the latest name numerology report for a user.
+    Optionally filter by name_type and system via query params.
+    """
+    user = request.user
+    
+    # Verify user owns the request
+    if str(user.id) != str(user_id):
+        return Response({
+            'error': 'Unauthorized'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    # Get query params
+    name_type = request.query_params.get('name_type')
+    system = request.query_params.get('system')
+    
+    # Build query
+    reports = NameReport.objects.filter(user=user)
+    
+    if name_type:
+        reports = reports.filter(name_type=name_type)
+    if system:
+        reports = reports.filter(system=system)
+    
+    # Get latest
+    report = reports.order_by('-computed_at').first()
+    
+    if not report:
+        return Response({
+            'error': 'No report found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = NameReportSerializer(report)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def preview_name_numerology(request):
+    """
+    Preview name numerology results without persisting.
+    Returns computed numbers and breakdown for immediate UI feedback.
+    """
+    serializer = NameNumerologyGenerateSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    name = serializer.validated_data['name']
+    system = serializer.validated_data['system']
+    transliterate = serializer.validated_data.get('transliterate', True)
+    
+    # Validate name is not empty
+    if not name or not name.strip():
+        return Response({
+            'error': 'Name cannot be empty'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Compute numbers (pure deterministic logic, no persistence)
+        keep_master = True
+        numbers_data = compute_name_numbers(
+            name=name,
+            system=system,
+            keep_master=keep_master
+        )
+        
+        return Response({
+            'normalized_name': numbers_data['normalized_name'],
+            'numbers': numbers_data,
+            'breakdown': numbers_data['breakdown'],
+            'word_totals': numbers_data['word_totals']
+        }, status=status.HTTP_200_OK)
+        
+    except ValueError as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': f'Calculation failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_phone_numerology(request):
+    """
+    Generate phone numerology report.
+    Returns job_id and queues the task.
+    """
+    user = request.user
+    
+    serializer = PhoneNumerologyGenerateSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    phone_number = serializer.validated_data['phone_number']
+    country_hint = serializer.validated_data.get('country_hint')
+    method = serializer.validated_data.get('method', 'core')
+    persist = serializer.validated_data.get('persist', True)
+    force_refresh = serializer.validated_data.get('force_refresh', False)
+    convert_vanity = serializer.validated_data.get('convert_vanity', False)
+    
+    # Validate phone number is not empty
+    if not phone_number or not phone_number.strip():
+        return Response({
+            'error': 'Phone number cannot be empty'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Queue the task
+        task = generate_phone_report.delay(
+            user_id=str(user.id),
+            phone_number=phone_number,
+            country_hint=country_hint,
+            method=method,
+            persist=persist,
+            force_refresh=force_refresh,
+            convert_vanity=convert_vanity
+        )
+        
+        return Response({
+            'job_id': task.id,
+            'status': 'queued'
+        }, status=status.HTTP_202_ACCEPTED)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Failed to queue task: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def preview_phone_numerology(request):
+    """
+    Preview phone numerology results without persisting.
+    Returns computed numbers and breakdown for immediate UI feedback.
+    """
+    serializer = PhoneNumerologyGenerateSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    phone_number = serializer.validated_data['phone_number']
+    country_hint = serializer.validated_data.get('country_hint')
+    method = serializer.validated_data.get('method', 'core')
+    convert_vanity = serializer.validated_data.get('convert_vanity', False)
+    
+    # Validate phone number is not empty
+    if not phone_number or not phone_number.strip():
+        return Response({
+            'error': 'Phone number cannot be empty'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Sanitize and validate
+        validation_result = sanitize_and_validate_phone(
+            phone_number,
+            country_hint=country_hint,
+            convert_vanity=convert_vanity
+        )
+        
+        if not validation_result['valid']:
+            return Response({
+                'error': validation_result['reason']
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Compute numerology (pure deterministic logic, no persistence)
+        computed = compute_phone_numerology(
+            validation_result['e164'],
+            method=method,
+            core_scope='national',  # Default to national
+            keep_master=False
+        )
+        
+        return Response({
+            'phone_e164': validation_result['e164'],
+            'phone_display': PhoneReport.mask_phone(validation_result['e164']),
+            'country': validation_result['country'],
+            'computed': computed
+        }, status=status.HTTP_200_OK)
+        
+    except ValueError as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': f'Calculation failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_phone_report(request, user_id, report_id):
+    """
+    Get a specific phone numerology report by ID.
+    """
+    user = request.user
+    
+    # Verify user owns the report
+    if str(user.id) != str(user_id):
+        return Response({
+            'error': 'Unauthorized'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        report = PhoneReport.objects.get(id=report_id, user=user)
+        serializer = PhoneReportSerializer(report)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PhoneReport.DoesNotExist:
+        return Response({
+            'error': 'Report not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_latest_phone_report(request, user_id):
+    """
+    Get the latest phone numerology report for a user.
+    Optionally filter by method via query params.
+    """
+    user = request.user
+    
+    # Verify user owns the request
+    if str(user.id) != str(user_id):
+        return Response({
+            'error': 'Unauthorized'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    # Get query params
+    method = request.query_params.get('method')
+    
+    # Build query
+    reports = PhoneReport.objects.filter(user=user)
+    
+    if method:
+        reports = reports.filter(method=method)
+    
+    # Get latest
+    report = reports.order_by('-computed_at').first()
+    
+    if not report:
+        return Response({
+            'error': 'No report found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = PhoneReportSerializer(report)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def check_phone_compatibility(request):
+    """
+    Check compatibility between two phone numbers.
+    Accepts two phone numbers or user_ids.
+    """
+    user = request.user
+    
+    phone1 = request.data.get('phone1')
+    phone2 = request.data.get('phone2')
+    user_id1 = request.data.get('user_id1')
+    user_id2 = request.data.get('user_id2')
+    country_hint = request.data.get('country_hint')
+    convert_vanity = request.data.get('convert_vanity', False)
+    
+    # Get phone numbers from user_ids if provided
+    if user_id1:
+        try:
+            latest_report1 = PhoneReport.objects.filter(
+                user_id=user_id1
+            ).order_by('-computed_at').first()
+            if not latest_report1:
+                return Response({
+                    'error': f'No phone report found for user {user_id1}'
+                }, status=status.HTTP_404_NOT_FOUND)
+            phone1 = latest_report1.phone_e164
+        except Exception as e:
+            return Response({
+                'error': f'Error fetching phone for user {user_id1}: {str(e)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+    if user_id2:
+        try:
+            latest_report2 = PhoneReport.objects.filter(
+                user_id=user_id2
+            ).order_by('-computed_at').first()
+            if not latest_report2:
+                return Response({
+                    'error': f'No phone report found for user {user_id2}'
+                }, status=status.HTTP_404_NOT_FOUND)
+            phone2 = latest_report2.phone_e164
+        except Exception as e:
+            return Response({
+                'error': f'Error fetching phone for user {user_id2}: {str(e)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not phone1 or not phone2:
+        return Response({
+            'error': 'Both phone numbers are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Validate both phone numbers
+        validation1 = sanitize_and_validate_phone(phone1, country_hint=country_hint, convert_vanity=convert_vanity)
+        validation2 = sanitize_and_validate_phone(phone2, country_hint=country_hint, convert_vanity=convert_vanity)
+        
+        if not validation1['valid']:
+            return Response({
+                'error': f'Invalid phone number 1: {validation1["reason"]}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not validation2['valid']:
+            return Response({
+                'error': f'Invalid phone number 2: {validation2["reason"]}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Compute compatibility
+        compatibility = compute_compatibility_score(
+            validation1['e164'],
+            validation2['e164'],
+            core_scope='national',
+            keep_master=False
+        )
+        
+        return Response(compatibility, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Compatibility check failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
