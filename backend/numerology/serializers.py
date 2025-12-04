@@ -194,6 +194,39 @@ class RectificationSuggestionSerializer(serializers.Serializer):
     reason = serializers.CharField()
 
 
+class NameReportSerializer(serializers.ModelSerializer):
+    """Serializer for name numerology report."""
+    
+    class Meta:
+        model = NameReport
+        fields = [
+            'id', 'user', 'name', 'name_type', 'system',
+            'normalized_name', 'numbers', 'breakdown',
+            'explanation', 'explanation_error', 'computed_at', 'version'
+        ]
+        read_only_fields = ['id', 'computed_at', 'version']
+
+
+class PhoneReportSerializer(serializers.ModelSerializer):
+    """Serializer for phone numerology report."""
+    
+    # Mask phone number for display
+    phone_e164_display = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = PhoneReport
+        fields = [
+            'id', 'user', 'phone_raw', 'phone_e164', 'phone_e164_display',
+            'country', 'method', 'computed', 'explanation',
+            'explanation_error', 'computed_at', 'version'
+        ]
+        read_only_fields = ['id', 'computed_at', 'version']
+    
+    def get_phone_e164_display(self, obj):
+        """Return masked phone number for display."""
+        return PhoneReport.mask_phone(obj.phone_e164)
+
+
 class FullNumerologyReportSerializer(serializers.Serializer):
     """Serializer for full numerology report combining birth date, name, and phone numerology."""
     # User information
@@ -256,19 +289,6 @@ class NameNumerologyGenerateSerializer(serializers.Serializer):
     force_refresh = serializers.BooleanField(default=False)
 
 
-class NameReportSerializer(serializers.ModelSerializer):
-    """Serializer for name numerology report."""
-    
-    class Meta:
-        model = NameReport
-        fields = [
-            'id', 'user', 'name', 'name_type', 'system',
-            'normalized_name', 'numbers', 'breakdown',
-            'explanation', 'explanation_error', 'computed_at', 'version'
-        ]
-        read_only_fields = ['id', 'computed_at', 'version']
-
-
 class PhoneNumerologyGenerateSerializer(serializers.Serializer):
     """Serializer for phone numerology generation request."""
     phone_number = serializers.CharField(required=True, max_length=50)
@@ -280,23 +300,3 @@ class PhoneNumerologyGenerateSerializer(serializers.Serializer):
     persist = serializers.BooleanField(default=True)
     force_refresh = serializers.BooleanField(default=False)
     convert_vanity = serializers.BooleanField(default=False)
-
-
-class PhoneReportSerializer(serializers.ModelSerializer):
-    """Serializer for phone numerology report."""
-    
-    # Mask phone number for display
-    phone_e164_display = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = PhoneReport
-        fields = [
-            'id', 'user', 'phone_raw', 'phone_e164', 'phone_e164_display',
-            'country', 'method', 'computed', 'explanation',
-            'explanation_error', 'computed_at', 'version'
-        ]
-        read_only_fields = ['id', 'computed_at', 'version']
-    
-    def get_phone_e164_display(self, obj):
-        """Return masked phone number for display."""
-        return PhoneReport.mask_phone(obj.phone_e164)
