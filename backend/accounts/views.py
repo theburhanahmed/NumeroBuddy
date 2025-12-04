@@ -623,11 +623,17 @@ class NotificationRateThrottle(UserRateThrottle):
 @permission_classes([IsAuthenticated])
 def unread_notifications_count(request):
     """Get count of unread notifications."""
-    count = Notification.objects.filter(
-        user=request.user,
-        is_read=False
-    ).count()
-    return Response({'count': count})
+    try:
+        count = Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).count()
+        return Response({'count': count})
+    except Exception as e:
+        # Handle case where notifications table doesn't exist
+        logger.error(f"Error getting unread notifications count: {str(e)}")
+        # Return 0 if table doesn't exist yet (migrations pending)
+        return Response({'count': 0})
 
 
 # Social Authentication Views
