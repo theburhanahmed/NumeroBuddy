@@ -74,18 +74,22 @@ export default function NumerologyReportPage() {
       const reportData = await response.json();
       
       // Create share text
+      const profile = reportData.user_profile || {};
+      const numerology = reportData.birth_date_numerology || {};
+      const interpretations = reportData.birth_date_interpretations || {};
+      
       const shareText = `Check out my numerology report!
 
 ` +
-        `Name: ${reportData.full_name}
+        `Name: ${profile.full_name || 'N/A'}
 ` +
-        `Life Path: ${reportData.life_path_number} - ${reportData.life_path_title}
-` +
-        `Destiny: ${reportData.destiny_number} - ${reportData.destiny_title}
-` +
-        `Soul Urge: ${reportData.soul_urge_number} - ${reportData.soul_urge_title}
+        (numerology.life_path_number ? `Life Path: ${numerology.life_path_number}${interpretations?.life_path_number?.title ? ` - ${interpretations.life_path_number.title}` : ''}
+` : '') +
+        (numerology.destiny_number ? `Destiny: ${numerology.destiny_number}${interpretations?.destiny_number?.title ? ` - ${interpretations.destiny_number.title}` : ''}
+` : '') +
+        (numerology.soul_urge_number ? `Soul Urge: ${numerology.soul_urge_number}${interpretations?.soul_urge_number?.title ? ` - ${interpretations.soul_urge_number.title}` : ''}
+` : '') +
 
-` +
         `Generated on: ${new Date().toLocaleDateString()}`;
       
       if (navigator.share) {
@@ -178,110 +182,104 @@ export default function NumerologyReportPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                      {report.full_name}&apos;s Numerology Report
+                      {report.user_profile.full_name}&apos;s Numerology Report
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Birth Date: {new Date(report.birth_date).toLocaleDateString()}
+                      {report.user_profile.date_of_birth && (
+                        <>Birth Date: {new Date(report.user_profile.date_of_birth).toLocaleDateString()}</>
+                      )}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <FileTextIcon className="w-10 h-10 text-purple-500" />
                     <div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Report ID</p>
-                      <p className="font-mono text-gray-900 dark:text-white">#NR-2024-{report.life_path_number}{report.destiny_number}{Math.floor(Math.random() * 100)}</p>
+                      <p className="font-mono text-gray-900 dark:text-white">
+                        #NR-2024-{report.birth_date_numerology?.life_path_number || 0}{report.birth_date_numerology?.destiny_number || 0}{Math.floor(Math.random() * 100)}
+                      </p>
                     </div>
                   </div>
                 </div>
               </GlassCard>
 
               {/* Core Numbers */}
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Core Numbers</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <CoreNumberCard 
-                    icon={<StarIcon className="w-6 h-6" />}
-                    title="Life Path"
-                    number={report.life_path_number}
-                    description={report.life_path_title}
-                    color="from-blue-500 to-purple-600"
-                  />
-                  
-                  <CoreNumberCard 
-                    icon={<SparklesIcon className="w-6 h-6" />}
-                    title="Destiny"
-                    number={report.destiny_number}
-                    description={report.destiny_title}
-                    color="from-purple-500 to-pink-600"
-                  />
-                  
-                  <CoreNumberCard 
-                    icon={<HeartIcon className="w-6 h-6" />}
-                    title="Soul Urge"
-                    number={report.soul_urge_number}
-                    description={report.soul_urge_title}
-                    color="from-pink-500 to-red-600"
-                  />
-                  
-                  <CoreNumberCard 
-                    icon={<TrendingUpIcon className="w-6 h-6" />}
-                    title="Personality"
-                    number={report.personality_number}
-                    description={report.personality_title}
-                    color="from-green-500 to-teal-600"
-                  />
-                  
-                  <CoreNumberCard 
-                    icon={<CalendarIcon className="w-6 h-6" />}
-                    title="Birthday"
-                    number={report.birthday_number}
-                    description={report.birthday_title}
-                    color="from-amber-500 to-orange-600"
-                  />
-                  
-                  <CoreNumberCard 
-                    icon={<ShieldCheckIcon className="w-6 h-6" />}
-                    title="Challenge"
-                    number={report.challenge_number}
-                    description={report.challenge_title}
-                    color="from-indigo-500 to-purple-600"
-                  />
-                </div>
-              </div>
-
-              {/* Pinnacle Cycles */}
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Pinnacle Cycles</h2>
-                <GlassCard variant="default" className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {Array.isArray(report.pinnacle_cycle) && report.pinnacle_cycle.map((cycle: any, index: number) => (
-                      <div 
-                        key={index} 
-                        className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-2xl text-center"
-                      >
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                          <span className="text-xl font-bold text-white">{cycle.number}</span>
-                        </div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                          Ages {cycle.age}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {cycle.title}
-                        </p>
-                      </div>
-                    ))}
+              {report.birth_date_numerology && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Core Numbers</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <CoreNumberCard 
+                      icon={<StarIcon className="w-6 h-6" />}
+                      title="Life Path"
+                      number={report.birth_date_numerology.life_path_number}
+                      description={report.birth_date_interpretations?.life_path_number?.title || 'Life Path Number'}
+                      color="from-blue-500 to-purple-600"
+                    />
+                    
+                    <CoreNumberCard 
+                      icon={<SparklesIcon className="w-6 h-6" />}
+                      title="Destiny"
+                      number={report.birth_date_numerology.destiny_number}
+                      description={report.birth_date_interpretations?.destiny_number?.title || 'Destiny Number'}
+                      color="from-purple-500 to-pink-600"
+                    />
+                    
+                    <CoreNumberCard 
+                      icon={<HeartIcon className="w-6 h-6" />}
+                      title="Soul Urge"
+                      number={report.birth_date_numerology.soul_urge_number}
+                      description={report.birth_date_interpretations?.soul_urge_number?.title || 'Soul Urge Number'}
+                      color="from-pink-500 to-red-600"
+                    />
+                    
+                    <CoreNumberCard 
+                      icon={<TrendingUpIcon className="w-6 h-6" />}
+                      title="Personality"
+                      number={report.birth_date_numerology.personality_number}
+                      description={report.birth_date_interpretations?.personality_number?.title || 'Personality Number'}
+                      color="from-green-500 to-teal-600"
+                    />
+                    
+                    {report.birth_date_numerology.attitude_number && (
+                      <CoreNumberCard 
+                        icon={<CalendarIcon className="w-6 h-6" />}
+                        title="Attitude"
+                        number={report.birth_date_numerology.attitude_number}
+                        description={report.birth_date_interpretations?.attitude_number?.title || 'Attitude Number'}
+                        color="from-amber-500 to-orange-600"
+                      />
+                    )}
+                    
+                    {report.birth_date_numerology.balance_number && (
+                      <CoreNumberCard 
+                        icon={<ShieldCheckIcon className="w-6 h-6" />}
+                        title="Balance"
+                        number={report.birth_date_numerology.balance_number}
+                        description={report.birth_date_interpretations?.balance_number?.title || 'Balance Number'}
+                        color="from-indigo-500 to-purple-600"
+                      />
+                    )}
                   </div>
-                </GlassCard>
-              </div>
+                </div>
+              )}
 
               {/* Report Summary */}
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Report Summary</h2>
-                <GlassCard variant="default" className="p-6">
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {report.summary}
-                  </p>
-                </GlassCard>
-              </div>
+              {report.detailed_analysis && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Detailed Analysis</h2>
+                  <GlassCard variant="default" className="p-6">
+                    <div className="text-gray-600 dark:text-gray-400 leading-relaxed space-y-4">
+                      {typeof report.detailed_analysis === 'object' && Object.entries(report.detailed_analysis).map(([key, value]) => (
+                        <div key={key}>
+                          <h3 className="font-semibold text-gray-900 dark:text-white mb-2 capitalize">
+                            {key.replace(/_/g, ' ')}
+                          </h3>
+                          <p>{String(value)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4 justify-center py-8">
