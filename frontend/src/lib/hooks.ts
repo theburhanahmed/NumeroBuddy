@@ -13,7 +13,8 @@ import {
   Expert,
   Consultation,
   ConsultationReview,
-  NumerologyReport
+  NumerologyReport,
+  FullNumerologyReport
 } from './numerology-api';
 
 // Hook for life path analysis
@@ -266,7 +267,7 @@ export const useRateConsultation = () => {
 
 // Hook for numerology report
 export const useNumerologyReport = () => {
-  const [report, setReport] = useState<NumerologyReport | null>(null);
+  const [report, setReport] = useState<FullNumerologyReport | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
