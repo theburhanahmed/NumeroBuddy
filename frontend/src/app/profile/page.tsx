@@ -51,7 +51,7 @@ export default function ProfilePage() {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -406,9 +406,10 @@ export default function ProfilePage() {
                         />
                         {(fieldErrors.full_name || fieldErrors['user.full_name']) && (
                           <p className="text-red-600 dark:text-red-400 text-sm mt-1">
-                            {Array.isArray(fieldErrors.full_name || fieldErrors['user.full_name'])
-                              ? (fieldErrors.full_name || fieldErrors['user.full_name']).join(', ')
-                              : fieldErrors.full_name || fieldErrors['user.full_name']}
+                            {(() => {
+                              const nameError: string | string[] = fieldErrors.full_name || fieldErrors['user.full_name'];
+                              return Array.isArray(nameError) ? nameError.join(', ') : nameError;
+                            })()}
                           </p>
                         )}
                       </>
