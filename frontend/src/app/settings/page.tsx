@@ -5,11 +5,11 @@ import { motion } from 'framer-motion';
 import { UserIcon, BellIcon, ShieldIcon, CreditCardIcon, PaletteIcon, GlobeIcon, MailIcon, PhoneIcon, CalendarIcon, SaveIcon, MoonIcon, SunIcon, SparklesIcon } from 'lucide-react';
 import { useTheme } from '@/contexts/theme-context';
 import { useAuth } from '@/contexts/auth-context';
-import { AppNavbar } from '@/components/AppNavbar';
+import { AppNavbar } from '@/components/navigation/app-navbar';
 import { GlassCard } from '@/components/ui/glass-card';
 import { GlassButton } from '@/components/ui/glass-button';
-import { FloatingOrbs } from '@/components/FloatingOrbs';
-import { AmbientParticles } from '@/components/AmbientParticles';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { MagneticCard } from '@/components/ui/magnetic-card';
 import { toast } from 'sonner';
 export default function Settings() {

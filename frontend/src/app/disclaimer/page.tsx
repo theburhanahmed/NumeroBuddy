@@ -8,8 +8,8 @@ import { LandingFooter } from '@/components/landing/landing-footer';
 import { GlassCard } from '@/components/ui/glass-card';
 import { LiquidGlassHero } from '@/components/ui/liquid-glass-hero';
 import { MagneticCard } from '@/components/ui/magnetic-card';
-import { FloatingOrbs } from '@/components/FloatingOrbs';
-import { AmbientParticles } from '@/components/AmbientParticles';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
 export default function Disclaimer() {
   const sections = [{
     title: 'General Information',

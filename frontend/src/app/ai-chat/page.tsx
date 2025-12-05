@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SparklesIcon, SendIcon, BotIcon, UserIcon, MessageSquareIcon } from 'lucide-react';
-import { AppNavbar } from '@/components/AppNavbar';
+import { AppNavbar } from '@/components/navigation/app-navbar';
 import { GlassCard } from '@/components/ui/glass-card';
 import { GlassButton } from '@/components/ui/glass-button';
 import { EmptyState } from '@/components/EmptyState';
-import { FloatingOrbs } from '@/components/FloatingOrbs';
-import { AmbientParticles } from '@/components/AmbientParticles';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { MagneticCard } from '@/components/ui/magnetic-card';
 import { toast } from 'sonner';
 interface Message {

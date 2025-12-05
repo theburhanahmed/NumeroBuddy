@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { UsersIcon, StarIcon, CalendarIcon, ClockIcon, VideoIcon, MessageSquareIcon, CheckCircleIcon, SparklesIcon } from 'lucide-react';
-import { AppNavbar } from '@/components/AppNavbar';
+import { AppNavbar } from '@/components/navigation/app-navbar';
 import { GlassCard } from '@/components/ui/glass-card';
 import { GlassButton } from '@/components/ui/glass-button';
-import { FloatingOrbs } from '@/components/FloatingOrbs';
-import { AmbientParticles } from '@/components/AmbientParticles';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { MagneticCard } from '@/components/ui/magnetic-card';
 import { toast } from 'sonner';
 export default function Consultations() {
