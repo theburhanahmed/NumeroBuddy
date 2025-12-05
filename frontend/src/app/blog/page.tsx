@@ -7,8 +7,8 @@ import { LandingNav } from '@/components/landing/landing-nav';
 import { LandingFooter } from '@/components/landing/landing-footer';
 import { GlassCard } from '@/components/ui/glass-card';
 import { LiquidGlassHero } from '@/components/ui/liquid-glass-hero';
-import { FloatingOrbs } from '@/components/FloatingOrbs';
-import { AmbientParticles } from '@/components/AmbientParticles';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { MagneticCard } from '@/components/ui/magnetic-card';
 export default function Blog() {
   const posts = [{

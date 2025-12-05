@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { StarIcon, SparklesIcon, TrendingUpIcon, HeartIcon, BriefcaseIcon, BookOpenIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { AppNavbar } from '@/components/AppNavbar';
+import { AppNavbar } from '@/components/navigation/app-navbar';
 import { GlassCard } from '@/components/ui/glass-card';
 import { GlassButton } from '@/components/ui/glass-button';
-import { FloatingOrbs } from '@/components/FloatingOrbs';
-import { AmbientParticles } from '@/components/AmbientParticles';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { MagneticCard } from '@/components/ui/magnetic-card';
 export default function LifePathAnalysis() {
   const router = useRouter();
