@@ -12,6 +12,7 @@ import { FloatingOrbs } from '@/components/ui/floating-orbs';
 import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { useForm } from '@/hooks/use-form';
 import { commonValidationRules } from '@/lib/form-validation';
+import { LoginData } from '@/types';
 import { toast } from 'sonner';
 
 export default function Login() {
@@ -39,7 +40,7 @@ export default function Login() {
     },
     onSubmit: async (formValues) => {
       try {
-        await login(formValues);
+        await login(formValues as LoginData);
         toast.success('Welcome back!', {
           description: 'Successfully signed in'
         });
