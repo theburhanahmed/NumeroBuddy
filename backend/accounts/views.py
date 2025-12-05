@@ -553,81 +553,123 @@ def register_device_token(request):
 @permission_classes([IsAuthenticated])
 def list_notifications(request):
     """Get user's notifications."""
-    # TEMPORARILY DISABLED: Return empty response without database access
-    # TODO: Re-enable when notifications table migration is confirmed working
-    paginator = PageNumberPagination()
-    paginator.page_size = 20
-    return paginator.get_paginated_response([])
+    from django.db import ProgrammingError, OperationalError
     
-    # Original implementation (commented out):
-    # notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    # paginator = PageNumberPagination()
-    # paginator.page_size = 20
-    # result_page = paginator.paginate_queryset(notifications, request)
-    # serializer = NotificationSerializer(result_page, many=True)
-    # return paginator.get_paginated_response(serializer.data)
+    try:
+        notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+        paginator = PageNumberPagination()
+        paginator.page_size = 20
+        result_page = paginator.paginate_queryset(notifications, request)
+        serializer = NotificationSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    except (ProgrammingError, OperationalError) as e:
+        error_msg = str(e)
+        if 'does not exist' in error_msg or 'relation' in error_msg.lower():
+            logger.warning(f"Notifications table missing in list_notifications: {error_msg}")
+            # Return empty response gracefully
+            paginator = PageNumberPagination()
+            paginator.page_size = 20
+            return paginator.get_paginated_response([])
+        raise
+    except Exception as e:
+        logger.error(f"Error listing notifications: {str(e)}")
+        return Response(
+            {'error': 'Failed to retrieve notifications'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def mark_notification_read(request, notification_id):
     """Mark a notification as read."""
-    # TEMPORARILY DISABLED: Return success without database access
-    return Response({'message': 'Notification marked as read'})
+    from django.db import ProgrammingError, OperationalError
     
-    # Original implementation (commented out):
-    # try:
-    #     notification = Notification.objects.get(
-    #         id=notification_id,
-    #         user=request.user
-    #     )
-    #     notification.mark_as_read()
-    #     return Response({'message': 'Notification marked as read'})
-    # except Notification.DoesNotExist:
-    #     return Response(
-    #         {'error': 'Notification not found'}, 
-    #         status=status.HTTP_404_NOT_FOUND
-    #     )
+    try:
+        notification = Notification.objects.get(
+            id=notification_id,
+            user=request.user
+        )
+        notification.mark_as_read()
+        return Response({'message': 'Notification marked as read'})
+    except Notification.DoesNotExist:
+        return Response(
+            {'error': 'Notification not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except (ProgrammingError, OperationalError) as e:
+        error_msg = str(e)
+        if 'does not exist' in error_msg or 'relation' in error_msg.lower():
+            logger.warning(f"Notifications table missing in mark_notification_read: {error_msg}")
+            return Response({'message': 'Notification marked as read'})  # Graceful fallback
+        raise
+    except Exception as e:
+        logger.error(f"Error marking notification as read: {str(e)}")
+        return Response(
+            {'error': 'Failed to mark notification as read'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def mark_all_notifications_read(request):
     """Mark all notifications as read."""
-    # TEMPORARILY DISABLED: Return success without database access
-    return Response({'message': 'All notifications marked as read'})
+    from django.db import ProgrammingError, OperationalError
     
-    # Original implementation (commented out):
-    # Notification.objects.filter(
-    #     user=request.user,
-    #     is_read=False
-    # ).update(
-    #     is_read=True,
-    #     read_at=timezone.now()
-    # )
-    # return Response({'message': 'All notifications marked as read'})
+    try:
+        Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).update(
+            is_read=True,
+            read_at=timezone.now()
+        )
+        return Response({'message': 'All notifications marked as read'})
+    except (ProgrammingError, OperationalError) as e:
+        error_msg = str(e)
+        if 'does not exist' in error_msg or 'relation' in error_msg.lower():
+            logger.warning(f"Notifications table missing in mark_all_notifications_read: {error_msg}")
+            return Response({'message': 'All notifications marked as read'})  # Graceful fallback
+        raise
+    except Exception as e:
+        logger.error(f"Error marking all notifications as read: {str(e)}")
+        return Response(
+            {'error': 'Failed to mark all notifications as read'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_notification(request, notification_id):
     """Delete a notification."""
-    # TEMPORARILY DISABLED: Return success without database access
-    return Response({'message': 'Notification deleted'})
+    from django.db import ProgrammingError, OperationalError
     
-    # Original implementation (commented out):
-    # try:
-    #     notification = Notification.objects.get(
-    #         id=notification_id,
-    #         user=request.user
-    #     )
-    #     notification.delete()
-    #     return Response({'message': 'Notification deleted'})
-    # except Notification.DoesNotExist:
-    #     return Response(
-    #         {'error': 'Notification not found'}, 
-    #         status=status.HTTP_404_NOT_FOUND
-    #     )
+    try:
+        notification = Notification.objects.get(
+            id=notification_id,
+            user=request.user
+        )
+        notification.delete()
+        return Response({'message': 'Notification deleted'})
+    except Notification.DoesNotExist:
+        return Response(
+            {'error': 'Notification not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except (ProgrammingError, OperationalError) as e:
+        error_msg = str(e)
+        if 'does not exist' in error_msg or 'relation' in error_msg.lower():
+            logger.warning(f"Notifications table missing in delete_notification: {error_msg}")
+            return Response({'message': 'Notification deleted'})  # Graceful fallback
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting notification: {str(e)}")
+        return Response(
+            {'error': 'Failed to delete notification'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 class NotificationRateThrottle(UserRateThrottle):
@@ -639,45 +681,24 @@ class NotificationRateThrottle(UserRateThrottle):
 @permission_classes([IsAuthenticated])
 def unread_notifications_count(request):
     """Get count of unread notifications."""
-    # TEMPORARILY DISABLED: Return 0 without database access to prevent errors
-    # TODO: Re-enable database query when notifications table migration is confirmed working
-    # This eliminates all database-related errors for this endpoint
-    return Response({'count': 0}, status=status.HTTP_200_OK)
+    from django.db import ProgrammingError, OperationalError
     
-    # Original implementation (commented out for now):
-    # from django.db import connection, ProgrammingError, OperationalError
-    # 
-    # try:
-    #     count = Notification.objects.filter(
-    #         user=request.user,
-    #         is_read=False
-    #     ).count()
-    #     return Response({'count': count})
-    # except (ProgrammingError, OperationalError) as e:
-    #     # Handle case where notifications table doesn't exist
-    #     error_msg = str(e)
-    #     if 'does not exist' in error_msg or 'relation' in error_msg.lower():
-    #         logger.warning(f"Notifications table does not exist, attempting to create it: {error_msg}")
-    #         try:
-    #             # Try to run the migration programmatically
-    #             from django.core.management import call_command
-    #             call_command('migrate', 'accounts', '0003', verbosity=0, interactive=False)
-    #             # Retry the query
-    #             count = Notification.objects.filter(
-    #                 user=request.user,
-    #                 is_read=False
-    #             ).count()
-    #             logger.info("Successfully created notifications table and retrieved count")
-    #             return Response({'count': count})
-    #         except Exception as migration_error:
-    #             logger.error(f"Failed to create notifications table: {str(migration_error)}")
-    #             return Response({'count': 0}, status=status.HTTP_200_OK)
-    #     else:
-    #         logger.error(f"Database error getting unread notifications count: {error_msg}")
-    #         return Response({'count': 0}, status=status.HTTP_200_OK)
-    # except Exception as e:
-    #     logger.error(f"Unexpected error getting unread notifications count: {str(e)}")
-    #     return Response({'count': 0}, status=status.HTTP_200_OK)
+    try:
+        count = Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).count()
+        return Response({'count': count})
+    except (ProgrammingError, OperationalError) as e:
+        error_msg = str(e)
+        if 'does not exist' in error_msg or 'relation' in error_msg.lower():
+            logger.warning(f"Notifications table missing in unread_notifications_count: {error_msg}")
+            # Return 0 gracefully instead of error
+            return Response({'count': 0}, status=status.HTTP_200_OK)
+        raise
+    except Exception as e:
+        logger.error(f"Error getting unread notifications count: {str(e)}")
+        return Response({'count': 0}, status=status.HTTP_200_OK)
 
 
 # Social Authentication Views

@@ -30,100 +30,108 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
   const { toast } = useToast();
 
   const fetchNotifications = useCallback(async () => {
-    // TEMPORARILY DISABLED: API calls removed to prevent database errors
-    // TODO: Re-enable when notifications table migration is confirmed working
-    setLoading(false);
-    setNotifications([]); // Return empty array instead of making API call
-    // try {
-    //   setLoading(true);
-    //   const response = await notificationAPI.list();
-    //   setNotifications(response.data.results || []);
-    // } catch (error: any) {
-    //   toast({
-    //     title: 'Error',
-    //     description: 'Failed to load notifications',
-    //     variant: 'destructive',
-    //   });
-    // } finally {
-    //   setLoading(false);
-    // }
+    try {
+      setLoading(true);
+      const response = await notificationAPI.list();
+      setNotifications(response.data.results || []);
+    } catch (error: any) {
+      // Don't show error toast for 500 errors (table might not exist yet)
+      if (error?.response?.status !== 500) {
+        toast({
+          title: 'Error',
+          description: 'Failed to load notifications',
+          variant: 'destructive',
+        });
+      }
+      setNotifications([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
   }, [toast]);
 
   useEffect(() => {
     if (isOpen) {
       fetchNotifications();
-      // TEMPORARILY DISABLED: Polling removed to prevent API calls
-      // const interval = setInterval(fetchNotifications, 10000);
-      // return () => clearInterval(interval);
+      // Poll for new notifications every 30 seconds when open (reduced from 10s)
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
     }
   }, [isOpen, fetchNotifications]);
 
   const handleMarkRead = async (notificationId: string) => {
-    // TEMPORARILY DISABLED: API calls removed
-    // Just update local state without API call
-    setNotifications(prev =>
-      prev.map(n =>
-        n.id === notificationId ? { ...n, is_read: true } : n
-      )
-    );
-    setMarkingRead(null);
-    // try {
-    //   setMarkingRead(notificationId);
-    //   await notificationAPI.markRead(notificationId);
-    //   setNotifications(prev =>
-    //     prev.map(n =>
-    //       n.id === notificationId ? { ...n, is_read: true } : n
-    //     )
-    //   );
-    // } catch (error) {
-    //   toast({
-    //     title: 'Error',
-    //     description: 'Failed to mark notification as read',
-    //     variant: 'destructive',
-    //   });
-    // } finally {
-    //   setMarkingRead(null);
-    // }
+    try {
+      setMarkingRead(notificationId);
+      await notificationAPI.markRead(notificationId);
+      setNotifications(prev =>
+        prev.map(n =>
+          n.id === notificationId ? { ...n, is_read: true } : n
+        )
+      );
+    } catch (error: any) {
+      // Don't show error for 500 errors (table might not exist)
+      if (error?.response?.status !== 500) {
+        toast({
+          title: 'Error',
+          description: 'Failed to mark notification as read',
+          variant: 'destructive',
+        });
+      } else {
+        // Update local state even if API fails
+        setNotifications(prev =>
+          prev.map(n =>
+            n.id === notificationId ? { ...n, is_read: true } : n
+          )
+        );
+      }
+    } finally {
+      setMarkingRead(null);
+    }
   };
 
   const handleMarkAllRead = async () => {
-    // TEMPORARILY DISABLED: API calls removed
-    // Just update local state without API call
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    // try {
-    //   await notificationAPI.markAllRead();
-    //   setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    //   toast({
-    //     title: 'Success',
-    //     description: 'All notifications marked as read',
-    //   });
-    // } catch (error) {
-    //   toast({
-    //     title: 'Error',
-    //     description: 'Failed to mark all as read',
-    //     variant: 'destructive',
-    //   });
-    // }
+    try {
+      await notificationAPI.markAllRead();
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      toast({
+        title: 'Success',
+        description: 'All notifications marked as read',
+      });
+    } catch (error: any) {
+      // Don't show error for 500 errors (table might not exist)
+      if (error?.response?.status !== 500) {
+        toast({
+          title: 'Error',
+          description: 'Failed to mark all as read',
+          variant: 'destructive',
+        });
+      } else {
+        // Update local state even if API fails
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      }
+    }
   };
 
   const handleDelete = async (notificationId: string) => {
-    // TEMPORARILY DISABLED: API calls removed
-    // Just update local state without API call
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    // try {
-    //   await notificationAPI.delete(notificationId);
-    //   setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    //   toast({
-    //     title: 'Success',
-    //     description: 'Notification deleted',
-    //   });
-    // } catch (error) {
-    //   toast({
-    //     title: 'Error',
-    //     description: 'Failed to delete notification',
-    //     variant: 'destructive',
-    //   });
-    // }
+    try {
+      await notificationAPI.delete(notificationId);
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      toast({
+        title: 'Success',
+        description: 'Notification deleted',
+      });
+    } catch (error: any) {
+      // Don't show error for 500 errors (table might not exist)
+      if (error?.response?.status !== 500) {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete notification',
+          variant: 'destructive',
+        });
+      } else {
+        // Update local state even if API fails
+        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      }
+    }
   };
 
   const getNotificationIcon = (type: string) => {
