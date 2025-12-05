@@ -40,11 +40,28 @@ export default function LoginPage() {
       });
       router.push('/dashboard');
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Login failed. Please try again.',
-        variant: 'destructive',
-      });
+      // Check if account needs verification
+      if (error.requiresVerification) {
+        // Redirect to verification page with email/phone
+        const params = new URLSearchParams();
+        if (error.email) {
+          params.set('email', error.email);
+        }
+        if (error.phone) {
+          params.set('phone', error.phone);
+        }
+        router.push(`/verify-otp?${params.toString()}`);
+        toast({
+          title: 'Verification Required',
+          description: 'Please verify your account to continue.',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message || 'Login failed. Please try again.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }

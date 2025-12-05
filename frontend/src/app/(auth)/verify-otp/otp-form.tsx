@@ -15,9 +15,10 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface OTPFormProps {
   email: string;
+  phone?: string;
 }
 
-export default function OTPForm({ email }: OTPFormProps) {
+export default function OTPForm({ email, phone }: OTPFormProps) {
   const router = useRouter();
   const { verifyOTP } = useAuth();
   const { toast } = useToast();
@@ -30,7 +31,7 @@ export default function OTPForm({ email }: OTPFormProps) {
     setLoading(true);
 
     try {
-      await verifyOTP({ email, otp });
+      await verifyOTP({ email: email || undefined, phone: phone || undefined, otp });
       toast({
         title: 'Success',
         description: 'Account verified successfully!',
@@ -50,10 +51,10 @@ export default function OTPForm({ email }: OTPFormProps) {
   const handleResendOTP = async () => {
     setResending(true);
     try {
-      await authAPI.resendOTP({ email });
+      await authAPI.resendOTP({ email: email || undefined, phone: phone || undefined });
       toast({
         title: 'Success',
-        description: 'OTP has been resent to your email.',
+        description: `OTP has been resent to ${email || phone || 'your account'}.`,
       });
     } catch (error: any) {
       toast({
@@ -77,7 +78,7 @@ export default function OTPForm({ email }: OTPFormProps) {
         </p>
         <p className="font-medium text-gray-900 dark:text-white flex items-center justify-center gap-2 mt-1">
           <MailIcon className="w-4 h-4" />
-          {email || 'your email'}
+          {email || phone || 'your account'}
         </p>
       </div>
       
@@ -127,7 +128,7 @@ export default function OTPForm({ email }: OTPFormProps) {
               size="lg"
               className="w-full"
               onClick={handleResendOTP}
-              disabled={resending || !email}
+              disabled={resending || (!email && !phone)}
             >
               {resending ? (
                 <div className="flex items-center justify-center">

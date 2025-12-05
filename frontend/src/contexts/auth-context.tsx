@@ -193,6 +193,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       // Handle different error response formats
       const errorData = error.response?.data;
+      
+      // Check if account needs verification (403 with ACCOUNT_NOT_VERIFIED code)
+      if (error.response?.status === 403 && errorData?.error?.requires_verification) {
+        // Create a custom error that will trigger redirect
+        const verificationError: any = new Error('Account not verified');
+        verificationError.requiresVerification = true;
+        verificationError.email = errorData.error.email;
+        verificationError.phone = errorData.error.phone;
+        throw verificationError;
+      }
+      
       let errorMessage = 'Login failed';
       
       if (errorData?.error?.message) {

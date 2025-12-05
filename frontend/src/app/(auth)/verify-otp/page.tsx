@@ -10,8 +10,9 @@ import OTPForm from './otp-form';
 function VerifyOTPContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
+  const phone = searchParams.get('phone') || '';
   
-  return <OTPForm email={email} />;
+  return <OTPForm email={email} phone={phone} />;
 }
 
 export default function VerifyOTPPage() {

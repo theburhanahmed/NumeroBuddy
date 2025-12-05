@@ -157,6 +157,33 @@ def resend_otp(request):
 def login(request):
     """Login user and return JWT tokens."""
     serializer = LoginSerializer(data=request.data)
+    
+    # Check for unverified account before validation
+    # This allows us to return user info for redirect
+    email = request.data.get('email')
+    phone = request.data.get('phone')
+    password = request.data.get('password')
+    
+    if email or phone:
+        # Find user to check verification status
+        if email:
+            user = User.objects.filter(email=email).first()
+        else:
+            user = User.objects.filter(phone=phone).first()
+        
+        # If user exists, password is correct, but account is not verified
+        if user and password and user.check_password(password) and not user.is_verified:
+            # Don't increment failed login attempts for unverified accounts
+            return Response({
+                'error': {
+                    'message': 'Account not verified',
+                    'code': 'ACCOUNT_NOT_VERIFIED',
+                    'requires_verification': True,
+                    'email': user.email,
+                    'phone': user.phone,
+                }
+            }, status=status.HTTP_403_FORBIDDEN)
+    
     if serializer.is_valid():
         # Access validated_data safely
         # Type checker issues are suppressed with # type: ignore comments
