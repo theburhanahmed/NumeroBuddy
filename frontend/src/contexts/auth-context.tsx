@@ -191,7 +191,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error?.message || 'Login failed');
+      // Handle different error response formats
+      const errorData = error.response?.data;
+      let errorMessage = 'Login failed';
+      
+      if (errorData?.error?.message) {
+        errorMessage = errorData.error.message;
+        // If there are details, append them
+        if (errorData.error.details) {
+          const details = Array.isArray(errorData.error.details) 
+            ? errorData.error.details.join(', ') 
+            : errorData.error.details;
+          errorMessage = `${errorMessage}: ${details}`;
+        }
+      } else if (errorData?.error) {
+        // Handle non-standard error format
+        errorMessage = typeof errorData.error === 'string' 
+          ? errorData.error 
+          : errorData.error.message || 'Login failed';
+      } else if (errorData?.non_field_errors) {
+        // Handle DRF non-field errors
+        errorMessage = Array.isArray(errorData.non_field_errors)
+          ? errorData.non_field_errors.join(', ')
+          : errorData.non_field_errors;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      throw new Error(errorMessage);
     }
   };
 

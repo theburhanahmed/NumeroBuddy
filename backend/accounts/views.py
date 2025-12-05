@@ -192,7 +192,24 @@ def login(request):
             }
         }, status=status.HTTP_200_OK)
     
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # Format errors for better frontend handling
+    error_messages = []
+    if isinstance(serializer.errors, dict):
+        for field, errors in serializer.errors.items():
+            if isinstance(errors, list):
+                error_messages.extend([f"{field}: {error}" for error in errors])
+            else:
+                error_messages.append(f"{field}: {errors}")
+    else:
+        error_messages = [str(serializer.errors)]
+    
+    return Response({
+        'error': {
+            'message': 'Login failed',
+            'details': error_messages[0] if len(error_messages) == 1 else error_messages,
+            'fields': serializer.errors
+        }
+    }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
