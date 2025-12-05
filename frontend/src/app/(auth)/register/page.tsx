@@ -1,390 +1,515 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SparklesIcon, MailIcon, LockIcon, UserIcon, CalendarIcon, EyeIcon, EyeOffIcon, MoonIcon, SunIcon, CheckCircleIcon, AlertCircleIcon } from 'lucide-react';
+import { useTheme } from '@/contexts/theme-context';
 import { useAuth } from '@/contexts/auth-context';
-import { motion } from 'framer-motion';
-import { 
-  SparklesIcon, 
-  EyeIcon, 
-  EyeOffIcon,
-  MailIcon,
-  LockIcon,
-  UserIcon,
-  CalendarIcon,
-  MapPinIcon
-} from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
-import { GlassButton } from '@/components/glassmorphism/glass-button';
-import { useToast } from '@/components/ui/use-toast';
-import { GoogleSignInButton } from '@/components/auth/google-sign-in-button';
+import { GlassCard } from '@/components/ui/glass-card';
+import { GlassButton } from '@/components/ui/glass-button';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
+import { toast } from 'sonner';
 
-export default function RegisterPage() {
+export default function Signup() {
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   const { register } = useAuth();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    full_name: '',
     password: '',
-    confirmPassword: '',
-    date_of_birth: '',
-    gender: '' as 'male' | 'female' | 'other' | 'prefer_not_to_say' | '',
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata',
-    location: '',
+    birthDate: ''
   });
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    password: '',
+    birthDate: ''
+  });
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false,
+    password: false,
+    birthDate: false
+  });
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateName = (name: string) => {
+    return name.trim().length >= 2;
+  };
+
+  const validatePassword = (password: string) => {
+    return password.length >= 6;
+  };
+
+  const validateBirthDate = (date: string) => {
+    if (!date) return false;
+    const birthDate = new Date(date);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    return age >= 13 && age <= 120;
+  };
+
+  const handleBlur = (field: keyof typeof formData) => {
+    setTouched({ ...touched, [field]: true });
+    let error = '';
+    switch (field) {
+      case 'name':
+        if (!formData.name) {
+          error = 'Name is required';
+        } else if (!validateName(formData.name)) {
+          error = 'Name must be at least 2 characters';
+        }
+        break;
+      case 'email':
+        if (!formData.email) {
+          error = 'Email is required';
+        } else if (!validateEmail(formData.email)) {
+          error = 'Please enter a valid email';
+        }
+        break;
+      case 'password':
+        if (!formData.password) {
+          error = 'Password is required';
+        } else if (!validatePassword(formData.password)) {
+          error = 'Password must be at least 6 characters';
+        }
+        break;
+      case 'birthDate':
+        if (!formData.birthDate) {
+          error = 'Birth date is required';
+        } else if (!validateBirthDate(formData.birthDate)) {
+          error = 'You must be at least 13 years old';
+        }
+        break;
+    }
+    setErrors({ ...errors, [field]: error });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (touched[name as keyof typeof touched]) {
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const allTouched = {
+      name: true,
+      email: true,
+      password: true,
+      birthDate: true
+    };
+    setTouched(allTouched);
 
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: 'Error',
-        description: 'Passwords do not match',
-        variant: 'destructive',
-      });
+    const newErrors = {
+      name: !formData.name ? 'Name is required' : !validateName(formData.name) ? 'Name must be at least 2 characters' : '',
+      email: !formData.email ? 'Email is required' : !validateEmail(formData.email) ? 'Please enter a valid email' : '',
+      password: !formData.password ? 'Password is required' : !validatePassword(formData.password) ? 'Password must be at least 6 characters' : '',
+      birthDate: !formData.birthDate ? 'Birth date is required' : !validateBirthDate(formData.birthDate) ? 'You must be at least 13 years old' : ''
+    };
+    setErrors(newErrors);
+    const hasErrors = Object.values(newErrors).some(error => error !== '');
+    if (hasErrors) {
+      toast.error('Please fix all errors before submitting');
       return;
     }
-
-    if (formData.password.length < 8) {
-      toast({
-        title: 'Error',
-        description: 'Password must be at least 8 characters',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setLoading(true);
-
+    setIsLoading(true);
     try {
       await register({
+        full_name: formData.name,
         email: formData.email,
-        full_name: formData.full_name,
         password: formData.password,
-        confirm_password: formData.confirmPassword,
-        date_of_birth: formData.date_of_birth || undefined,
-        gender: formData.gender || undefined,
-        timezone: formData.timezone,
-        location: formData.location || undefined,
+        date_of_birth: formData.birthDate
       });
-      
-      toast({
-        title: 'Success',
-        description: 'Registration successful! Please check your email for OTP.',
+      toast.success('Account created successfully!', {
+        description: 'Welcome to NumerAI'
       });
-      
-      // Redirect to OTP verification page
-      router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
+      router.push('/verify-otp');
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Registration failed. Please try again.',
-        variant: 'destructive',
+      toast.error('Signup failed', {
+        description: error.message || 'Please try again'
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-lg"
-      >
-        <div className="text-center mb-8">
-          <motion.div 
-            className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+    <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 transition-colors duration-500 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+      <AmbientParticles />
+      <FloatingOrbs />
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Theme Toggle */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-end mb-4"
+        >
+          <motion.button
+            onClick={toggleTheme}
+            className="p-3 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20"
+            whileHover={{ scale: 1.1, rotate: 180 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.3 }}
           >
-            <SparklesIcon className="w-8 h-8 text-white" />
+            {theme === 'light' ? (
+              <MoonIcon className="w-5 h-5 text-white" />
+            ) : (
+              <SunIcon className="w-5 h-5 text-yellow-400" />
+            )}
+          </motion.button>
+        </motion.div>
+
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-center mb-8"
+        >
+          <motion.div
+            className="flex items-center justify-center gap-2 mb-2 cursor-pointer"
+            whileHover={{ scale: 1.05 }}
+            onClick={() => router.push('/')}
+          >
+            <motion.div
+              className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"
+              animate={{ rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <SparklesIcon className="w-7 h-7 text-white" />
+            </motion.div>
+            <span className="text-3xl font-bold text-white">NumerAI</span>
           </motion.div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Create an Account
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Enter your information to get started
+          <p className="text-white/70">
+            Begin your personalized numerology journey
           </p>
-        </div>
+        </motion.div>
 
-        <GlassCard variant="elevated" className="p-8 max-h-[90vh] overflow-y-auto">
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <UserIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="full_name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    required
-                    disabled={loading}
-                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MailIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                    disabled={loading}
-                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <LockIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
-                    disabled={loading}
-                    minLength={8}
-                    className="w-full pl-10 pr-10 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    {showPassword ? (
-                      <EyeOffIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
-                    ) : (
-                      <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+        {/* Signup Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <GlassCard variant="liquid-premium" className="p-6 sm:p-8">
+            <div className="liquid-glass-content">
+              <h2 className="text-2xl font-bold text-white mb-6">
+                Create Account
+              </h2>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Name Input */}
+                <div>
+                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60" />
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur('name')}
+                      className={`w-full pl-10 pr-10 py-3 bg-white/10 backdrop-blur-xl border ${
+                        touched.name && errors.name
+                          ? 'border-red-500'
+                          : touched.name && !errors.name && formData.name
+                          ? 'border-green-500'
+                          : 'border-white/20'
+                      } rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-white/50`}
+                      placeholder="John Doe"
+                    />
+                    {touched.name && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      >
+                        {errors.name ? (
+                          <AlertCircleIcon className="w-5 h-5 text-red-500" />
+                        ) : formData.name ? (
+                          <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                        ) : null}
+                      </motion.div>
                     )}
-                  </button>
-                </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Must be at least 8 characters
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <LockIcon className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    required
-                    disabled={loading}
-                    className="w-full pl-10 pr-10 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOffIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
-                    ) : (
-                      <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                  <AnimatePresence>
+                    {touched.name && errors.name && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-2 text-sm text-red-400 flex items-center gap-1"
+                      >
+                        <AlertCircleIcon className="w-4 h-4" />
+                        {errors.name}
+                      </motion.p>
                     )}
-                  </button>
+                  </AnimatePresence>
+                </div>
+
+                {/* Email Input */}
+                <div>
+                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <MailIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60" />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur('email')}
+                      className={`w-full pl-10 pr-10 py-3 bg-white/10 backdrop-blur-xl border ${
+                        touched.email && errors.email
+                          ? 'border-red-500'
+                          : touched.email && !errors.email && formData.email
+                          ? 'border-green-500'
+                          : 'border-white/20'
+                      } rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-white/50`}
+                      placeholder="your@email.com"
+                    />
+                    {touched.email && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      >
+                        {errors.email ? (
+                          <AlertCircleIcon className="w-5 h-5 text-red-500" />
+                        ) : formData.email ? (
+                          <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                        ) : null}
+                      </motion.div>
+                    )}
+                  </div>
+                  <AnimatePresence>
+                    {touched.email && errors.email && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-2 text-sm text-red-400 flex items-center gap-1"
+                      >
+                        <AlertCircleIcon className="w-4 h-4" />
+                        {errors.email}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Birth Date Input */}
+                <div>
+                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                    Birth Date
+                  </label>
+                  <div className="relative">
+                    <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60" />
+                    <input
+                      type="date"
+                      name="birthDate"
+                      value={formData.birthDate}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur('birthDate')}
+                      className={`w-full pl-10 pr-10 py-3 bg-white/10 backdrop-blur-xl border ${
+                        touched.birthDate && errors.birthDate
+                          ? 'border-red-500'
+                          : touched.birthDate && !errors.birthDate && formData.birthDate
+                          ? 'border-green-500'
+                          : 'border-white/20'
+                      } rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-white/50`}
+                    />
+                    {touched.birthDate && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      >
+                        {errors.birthDate ? (
+                          <AlertCircleIcon className="w-5 h-5 text-red-500" />
+                        ) : formData.birthDate ? (
+                          <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                        ) : null}
+                      </motion.div>
+                    )}
+                  </div>
+                  <AnimatePresence>
+                    {touched.birthDate && errors.birthDate && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-2 text-sm text-red-400 flex items-center gap-1"
+                      >
+                        <AlertCircleIcon className="w-4 h-4" />
+                        {errors.birthDate}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Password Input */}
+                <div>
+                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur('password')}
+                      className={`w-full pl-10 pr-20 py-3 bg-white/10 backdrop-blur-xl border ${
+                        touched.password && errors.password
+                          ? 'border-red-500'
+                          : touched.password && !errors.password && formData.password
+                          ? 'border-green-500'
+                          : 'border-white/20'
+                      } rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-white/50`}
+                      placeholder="••••••••"
+                    />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                      {touched.password && (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                          {errors.password ? (
+                            <AlertCircleIcon className="w-5 h-5 text-red-500" />
+                          ) : formData.password ? (
+                            <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                          ) : null}
+                        </motion.div>
+                      )}
+                      <motion.button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-white/60 hover:text-white/90"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {showPassword ? (
+                          <EyeOffIcon className="w-5 h-5" />
+                        ) : (
+                          <EyeIcon className="w-5 h-5" />
+                        )}
+                      </motion.button>
+                    </div>
+                  </div>
+                  <AnimatePresence>
+                    {touched.password && errors.password && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-2 text-sm text-red-400 flex items-center gap-1"
+                      >
+                        <AlertCircleIcon className="w-4 h-4" />
+                        {errors.password}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Submit Button */}
+                <GlassButton
+                  type="submit"
+                  variant="liquid"
+                  size="md"
+                  className="w-full glass-glow"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <motion.div
+                      className="flex items-center gap-2"
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <motion.div
+                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      />
+                      Creating account...
+                    </motion.div>
+                  ) : (
+                    'Create Account'
+                  )}
+                </GlassButton>
+              </form>
+
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/20"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white/5 backdrop-blur-xl text-white/60 rounded-full">
+                    Or continue with
+                  </span>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
-                  Profile Information (Optional)
-                </h3>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="date_of_birth" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Date of Birth
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <CalendarIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="date_of_birth"
-                    type="date"
-                    value={formData.date_of_birth}
-                    onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                    disabled={loading}
-                    max={new Date().toISOString().split('T')[0]}
-                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+              {/* Social Signup */}
+              <div className="grid grid-cols-2 gap-3">
+                <GlassButton variant="secondary" size="sm">
+                  <img
+                    src="https://www.google.com/favicon.ico"
+                    alt=""
+                    className="w-5 h-5 mr-2"
                   />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Gender
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <UserIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <select
-                    id="gender"
-                    value={formData.gender}
-                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as any })}
-                    disabled={loading}
-                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none"
-                  >
-                    <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                    <option value="prefer_not_to_say">Prefer not to say</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Timezone
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MapPinIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <select
-                    id="timezone"
-                    value={formData.timezone}
-                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                    disabled={loading}
-                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none"
-                  >
-                    <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
-                    <option value="America/New_York">America/New_York (EST)</option>
-                    <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
-                    <option value="Europe/London">Europe/London (GMT)</option>
-                    <option value="Europe/Paris">Europe/Paris (CET)</option>
-                    <option value="Asia/Dubai">Asia/Dubai (GST)</option>
-                    <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
-                    <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
-                    <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
-                    <option value="America/Toronto">America/Toronto (EST)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Location
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MapPinIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="location"
-                    type="text"
-                    placeholder="City, Country"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    disabled={loading}
-                    className="w-full pl-10 pr-3 py-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  Google
+                </GlassButton>
+                <GlassButton variant="secondary" size="sm">
+                  <img
+                    src="https://www.facebook.com/favicon.ico"
+                    alt=""
+                    className="w-5 h-5 mr-2"
                   />
-                </div>
+                  Facebook
+                </GlassButton>
               </div>
 
-              <GlassButton
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                    Creating account...
-                  </div>
-                ) : (
-                  "Create account"
-                )}
-              </GlassButton>
+              {/* Login Link */}
+              <p className="text-center mt-6 text-white/70">
+                Already have an account?{' '}
+                <motion.button
+                  onClick={() => router.push('/login')}
+                  className="text-purple-300 hover:text-purple-200 font-semibold transition-colors"
+                  whileHover={{ x: 2 }}
+                >
+                  Sign in
+                </motion.button>
+              </p>
             </div>
-          </form>
+          </GlassCard>
+        </motion.div>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white/70 dark:bg-gray-900/70 text-gray-500 dark:text-gray-400">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <GoogleSignInButton mode="register" />
-            </div>
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
-              <Link 
-                href="/login" 
-                className="font-medium text-purple-600 dark:text-purple-400 hover:underline"
-              >
-                Login
-              </Link>
-            </p>
-          </div>
-        </GlassCard>
-
-        <div className="mt-6 text-center">
-          <Link 
-            href="/" 
-            className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
-          >
-            ← Back to home
-          </Link>
-        </div>
-      </motion.div>
+        {/* Back to Home */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          onClick={() => router.push('/')}
+          className="w-full mt-4 text-center text-white/70 hover:text-white transition-colors"
+          whileHover={{ x: -4 }}
+        >
+          ← Back to home
+        </motion.button>
+      </div>
     </div>
   );
 }

@@ -1,129 +1,159 @@
 'use client';
 
+import React, { Children } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck } from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
+import { ShieldCheckIcon, LockIcon } from 'lucide-react';
+import { LandingNav } from '@/components/LandingNav';
+import { LandingFooter } from '@/components/LandingFooter';
+import { GlassCard } from '@/components/ui/glass-card';
+import { LiquidGlassHero } from '@/components/LiquidGlassHero';
+import { MagneticCard } from '@/components/MagneticCard';
+import { FloatingOrbs } from '@/components/FloatingOrbs';
+import { AmbientParticles } from '@/components/AmbientParticles';
+export default function PrivacyPolicy() {
+  const sections = [{
+    title: '1. Information We Collect',
+    icon: <LockIcon className="w-6 h-6" />,
+    content: 'We collect information that you provide directly to us, including when you create an account, use our services, or communicate with us.',
+    items: ['Personal information (name, email, birth date)', 'Account credentials and preferences', 'Payment information (processed securely)', 'Usage data and analytics', 'Device and browser information']
+  }, {
+    title: '2. How We Use Your Information',
+    icon: <ShieldCheckIcon className="w-6 h-6" />,
+    content: 'We use the information we collect to provide, maintain, and improve our services, and to communicate with you.',
+    items: ['Generate personalized numerology reports', 'Process your transactions and subscriptions', 'Send you updates and marketing communications', 'Improve our services and develop new features', 'Protect against fraud and abuse']
+  }, {
+    title: '3. Information Sharing',
+    icon: <ShieldCheckIcon className="w-6 h-6" />,
+    content: 'We do not sell your personal information. We may share your information only in the following circumstances:',
+    items: ['With your consent or at your direction', 'With service providers who assist our operations', 'To comply with legal obligations', 'To protect our rights and prevent fraud', 'In connection with a business transfer']
+  }, {
+    title: '4. Data Security',
+    icon: <LockIcon className="w-6 h-6" />,
+    content: 'We implement appropriate technical and organizational measures to protect your personal information.',
+    items: ['Encryption of data in transit and at rest', 'Regular security assessments and updates', 'Access controls and authentication', 'Secure payment processing', 'Regular backups and disaster recovery']
+  }, {
+    title: '5. Your Rights and Choices',
+    icon: <ShieldCheckIcon className="w-6 h-6" />,
+    content: 'You have certain rights regarding your personal information, including:',
+    items: ['Access and review your information', 'Correct or update your information', 'Delete your account and data', 'Opt-out of marketing communications', 'Export your data']
+  }, {
+    title: '6. Cookies and Tracking',
+    icon: <LockIcon className="w-6 h-6" />,
+    content: 'We use cookies and similar tracking technologies to collect information about your browsing activities.',
+    items: ['Essential cookies for site functionality', 'Analytics cookies to understand usage', 'Preference cookies to remember settings', 'You can control cookies through browser settings']
+  }, {
+    title: "7. Children's Privacy",
+    icon: <ShieldCheckIcon className="w-6 h-6" />,
+    content: 'Our services are not intended for children under 13. We do not knowingly collect information from children.'
+  }, {
+    title: '8. International Data Transfers',
+    icon: <LockIcon className="w-6 h-6" />,
+    content: 'Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place.'
+  }, {
+    title: '9. Changes to This Policy',
+    icon: <ShieldCheckIcon className="w-6 h-6" />,
+    content: 'We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page.'
+  }];
+  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 relative overflow-hidden">
+      <AmbientParticles />
+      <FloatingOrbs />
+      <LandingNav />
 
-export default function PrivacyPolicyPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <GlassCard className="p-8 md:p-12">
-            <div className="flex items-center gap-4 mb-8">
-              <ShieldCheck className="w-8 h-8 text-purple-400" />
-              <h1 className="text-4xl font-bold text-white">Privacy Policy</h1>
+      {/* Hero Section */}
+      <LiquidGlassHero title="Privacy Policy" subtitle="Your privacy is important to us. Learn how we collect, use, and protect your information." compact />
+
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pb-16 relative z-10">
+        {/* Last Updated */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} className="mb-8">
+          <MagneticCard variant="liquid" className="p-4">
+            <div className="liquid-glass-content flex items-center gap-3">
+              <ShieldCheckIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  Last Updated
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  {new Date().toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+                </p>
+              </div>
             </div>
-            
-            <div className="prose prose-invert max-w-none text-gray-300 space-y-6">
-              <p className="text-sm text-gray-400">Last updated: {new Date().toLocaleDateString()}</p>
-              
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">1. Information We Collect</h2>
-                <p>
-                  We collect information that you provide directly to us, including:
-                </p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Personal information such as name, email address, and birth date</li>
-                  <li>Account information and preferences</li>
-                  <li>Payment information for subscription services</li>
-                  <li>Usage data and interactions with our service</li>
-                </ul>
-              </section>
+          </MagneticCard>
+        </motion.div>
 
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">2. How We Use Your Information</h2>
-                <p>We use the information we collect to:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Provide, maintain, and improve our services</li>
-                  <li>Process transactions and send related information</li>
-                  <li>Send technical notices and support messages</li>
-                  <li>Respond to your comments and questions</li>
-                  <li>Monitor and analyze trends and usage</li>
-                </ul>
-              </section>
+        {/* Sections */}
+        <div className="space-y-6">
+          {sections.map((section, index) => <motion.div key={index} initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          delay: index * 0.1
+        }}>
+              <MagneticCard variant="liquid-premium" className="p-6 md:p-8">
+                <div className="liquid-glass-content">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                      {section.icon}
+                    </div>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                      {section.title}
+                    </h2>
+                  </div>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                    {section.content}
+                  </p>
+                  {section.items && <ul className="space-y-2">
+                      {section.items.map((item, i) => <li key={i} className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
+                          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full flex-shrink-0 mt-2"></span>
+                          <span>{item}</span>
+                        </li>)}
+                    </ul>}
+                </div>
+              </MagneticCard>
+            </motion.div>)}
+        </div>
 
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">3. Information Sharing</h2>
-                <p>
-                  We do not sell, trade, or rent your personal information to third parties. We may share your information
-                  only in the following circumstances:
-                </p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>With your explicit consent</li>
-                  <li>To comply with legal obligations</li>
-                  <li>To protect our rights and safety</li>
-                  <li>With service providers who assist us in operating our service</li>
-                </ul>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">4. Data Security</h2>
-                <p>
-                  We implement appropriate technical and organizational security measures to protect your personal information.
-                  However, no method of transmission over the internet or electronic storage is 100% secure.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">5. Your Rights</h2>
-                <p>You have the right to:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Access your personal information</li>
-                  <li>Correct inaccurate data</li>
-                  <li>Request deletion of your data</li>
-                  <li>Object to processing of your data</li>
-                  <li>Request data portability</li>
-                </ul>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">6. Cookies and Tracking</h2>
-                <p>
-                  We use cookies and similar tracking technologies to track activity on our service and hold certain information.
-                  You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">7. Third-Party Services</h2>
-                <p>
-                  Our service may contain links to third-party websites or services. We are not responsible for
-                  the privacy practices of these third parties. We encourage you to read their privacy policies.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">8. {"Children's"} Privacy</h2>
-                <p>
-                  Our service is not intended for children under the age of 13. We do not knowingly collect
-                  personal information from children under 13.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">9. Changes to Privacy Policy</h2>
-                <p>
-                  We may update our Privacy Policy from time to time. We will notify you of any changes by posting
-                  the new Privacy Policy on this page and updating the {'"Last updated"'} date.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">10. Contact Us</h2>
-                <p>
-                  If you have any questions about this Privacy Policy, please contact us through our support channels.
-                </p>
-              </section>
+        {/* Contact Section */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.9
+      }} className="mt-8">
+          <MagneticCard variant="liquid-premium" className="p-6 md:p-8 bg-gradient-to-br from-green-100/50 to-emerald-100/50 dark:from-green-500/20 dark:to-emerald-500/20">
+            <div className="liquid-glass-content text-center">
+              <ShieldCheckIcon className="w-12 h-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                Questions About Your Privacy?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                If you have any questions about this Privacy Policy or our data
+                practices, please contact us at{' '}
+                <a href="mailto:privacy@numerai.com" className="text-green-600 dark:text-green-400 hover:underline font-semibold">
+                  privacy@numerai.com
+                </a>
+              </p>
             </div>
-          </GlassCard>
+          </MagneticCard>
         </motion.div>
       </div>
-    </div>
-  );
-}
 
+      <LandingFooter />
+    </div>;
+}

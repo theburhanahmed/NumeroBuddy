@@ -1,38 +1,27 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/auth-context';
-import { useTheme } from '@/contexts/theme-context';
-import { 
-  Home, 
-  User, 
-  Calendar, 
-  Sparkles, 
-  LogOut, 
-  MessageCircle,
-  Heart,
-  TrendingUp,
-  Users,
-  FileText,
-  MoonIcon,
-  SunIcon,
-  BookOpen,
-  Bot,
-  Settings
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { GlassButton } from '@/components/glassmorphism/glass-button';
-import { NotificationBadge } from '@/components/notifications/notification-badge';
-import { NotificationCenter } from '@/components/notifications/notification-center';
-import { LanguageSelector } from '@/components/language-selector';
-import { useState, useRef, useEffect } from 'react';
+import { AppNavbar } from '@/components/navigation/app-navbar';
+import { LandingNav } from '@/components/landing/landing-nav';
 
 export function Navigation() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
+  
+  // Use LandingNav for landing page, AppNavbar for authenticated pages
+  const isLandingPage = pathname === '/';
+  
+  if (isLandingPage) {
+    return <LandingNav />;
+  }
+  
+  if (user) {
+    return <AppNavbar />;
+  }
+  
+  // For unauthenticated pages (login, register, etc.), show nothing or minimal nav
+  return null;
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);

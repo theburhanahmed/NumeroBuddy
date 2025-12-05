@@ -194,3 +194,5 @@ class ProfileIntegrationTests(TransactionTestCase):
         self.assertIn('error', response.data or {})
         self.assertIn('field_errors', response.data or {})
 
+
+

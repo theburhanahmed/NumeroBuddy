@@ -1,353 +1,559 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { 
-  FileTextIcon, 
-  DownloadIcon, 
-  ShareIcon,
-  SparklesIcon,
-  StarIcon,
-  HeartIcon,
-  TrendingUpIcon,
-  UsersIcon,
-  ShieldCheckIcon,
-  CalendarIcon
-} from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
-import { GlassButton } from '@/components/glassmorphism/glass-button';
-import { useNumerologyReport } from '@/lib/hooks';
-
-export default function NumerologyReportPage() {
-  const router = useRouter();
-  const { report, loading, error } = useNumerologyReport();
-
-  const handleDownload = async () => {
-    try {
-      // Create a link to the PDF endpoint
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/numerology/full-report/pdf/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to download PDF');
-      }
-      
-      // Create a blob from the response
-      const blob = await response.blob();
-      
-      // Create a download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `numerology_report_${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      
-      alert("Report downloaded successfully!");
-    } catch (error) {
-      console.error('Download failed:', error);
-      alert("Failed to download report. Please try again.");
+import React, { useState, Component } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SparklesIcon, StarIcon, HeartIcon, BriefcaseIcon, TrendingUpIcon, CalendarIcon, DownloadIcon, CheckCircleIcon, AlertCircleIcon, ShieldIcon, ZapIcon, TypeIcon, PhoneIcon, ArrowRightIcon } from 'lucide-react';
+import { PageLayout } from '@/components/ui/page-layout';
+import { GlassCard } from '@/components/ui/glass-card';
+import { GlassButton } from '@/components/ui/glass-button';
+import { MagneticCard } from '@/components/MagneticCard';
+import { SubscriptionGate } from '@/components/SubscriptionGate';
+import { SubscriptionPricingCards } from '@/components/SubscriptionPricingCards';
+import { useSubscription, SubscriptionTier } from '@/contexts/SubscriptionContext';
+import { toast } from 'sonner';
+type ReportStep = 'input' | 'subscription' | 'report';
+export default function NumerologyReport() {
+  const {
+    tier,
+    setTier,
+    hasAccess,
+    usageLimits,
+    canUseFeature,
+    incrementUsage
+  } = useSubscription();
+  const [currentStep, setCurrentStep] = useState<ReportStep>('input');
+  const [selectedTier, setSelectedTier] = useState<SubscriptionTier | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    birthDate: '',
+    phoneNumber: ''
+  });
+  const handleGenerateReport = () => {
+    if (!formData.name || !formData.birthDate) {
+      toast.error('Please fill in required fields');
+      return;
     }
-  };
-
-  const handleShare = async () => {
-    try {
-      // Get the current user's report data
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/numerology/full-report/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+    // Check if user can generate report
+    if (!canUseFeature('monthlyReports')) {
+      toast.error('Monthly report limit reached', {
+        description: 'Upgrade to generate more reports'
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch report data');
-      }
-      
-      const reportData = await response.json();
-      
-      // Create share text
-      const profile = reportData.user_profile || {};
-      const numerology = reportData.birth_date_numerology || {};
-      const interpretations = reportData.birth_date_interpretations || {};
-      
-      const shareText = `Check out my numerology report!
-
-` +
-        `Name: ${profile.full_name || 'N/A'}
-` +
-        (numerology.life_path_number ? `Life Path: ${numerology.life_path_number}${interpretations?.life_path_number?.title ? ` - ${interpretations.life_path_number.title}` : ''}
-` : '') +
-        (numerology.destiny_number ? `Destiny: ${numerology.destiny_number}${interpretations?.destiny_number?.title ? ` - ${interpretations.destiny_number.title}` : ''}
-` : '') +
-        (numerology.soul_urge_number ? `Soul Urge: ${numerology.soul_urge_number}${interpretations?.soul_urge_number?.title ? ` - ${interpretations.soul_urge_number.title}` : ''}
-` : '') +
-
-        `Generated on: ${new Date().toLocaleDateString()}`;
-      
-      if (navigator.share) {
-        await navigator.share({
-          title: 'My Numerology Report',
-          text: shareText,
-        });
-      } else {
-        // Fallback: Copy to clipboard
-        await navigator.clipboard.writeText(shareText);
-        alert("Report details copied to clipboard!");
-      }
-    } catch (error) {
-      console.error('Share failed:', error);
-      alert("Failed to share report. Please try again.");
+      return;
     }
+    setCurrentStep('subscription');
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+  const handleSelectTier = (newTier: SubscriptionTier) => {
+    setSelectedTier(newTier);
+  };
+  const handleConfirmSubscription = () => {
+    if (!selectedTier) return;
+    // Update tier and increment usage
+    setTier(selectedTier);
+    incrementUsage('monthlyReports');
+    toast.success('Report generated!', {
+      description: `Your ${selectedTier} report is ready`
+    });
+    setCurrentStep('report');
+  };
+  const handleDownload = () => {
+    if (!hasAccess('full-numerology-report')) {
+      toast.error('Premium feature', {
+        description: 'Upgrade to Premium to download your full report'
+      });
+      return;
+    }
+    toast.success('Report downloaded successfully!');
+  };
+  const handleStartOver = () => {
+    setCurrentStep('input');
+    setSelectedTier(null);
+    setFormData({
+      name: '',
+      birthDate: '',
+      phoneNumber: ''
+    });
+  };
+  return <PageLayout>
+      {/* Page Header */}
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 border-b border-gray-200 dark:border-white/10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <motion.div animate={{
+            rotate: [0, 5, -5, 0]
+          }} transition={{
+            duration: 3,
+            repeat: Infinity
+          }}>
+              <SparklesIcon className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            </motion.div>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Numerology Report
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-white dark:via-purple-300 dark:to-blue-300 bg-clip-text text-transparent">
+                Complete Numerology Report
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Your complete numerology profile and insights
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {currentStep === 'input' && 'Enter your information'}
+                {currentStep === 'subscription' && 'Choose your subscription'}
+                {currentStep === 'report' && 'Your personalized report'}
               </p>
-            </div>
-            
-            <div className="flex gap-3">
-              <GlassButton 
-                variant="secondary" 
-                onClick={handleShare}
-                icon={<ShareIcon className="w-5 h-5" />}
-              >
-                Share
-              </GlassButton>
-              <GlassButton 
-                variant="primary" 
-                onClick={handleDownload}
-                icon={<DownloadIcon className="w-5 h-5" />}
-              >
-                Download
-              </GlassButton>
             </div>
           </div>
-
-          {loading ? (
-            <div className="space-y-6">
-              <GlassCard variant="default" className="p-8 h-48 animate-pulse">
-                <div className="h-8 bg-white/50 dark:bg-gray-800/50 rounded w-1/3 mb-4"></div>
-                <div className="h-6 bg-white/50 dark:bg-gray-800/50 rounded w-1/2"></div>
-              </GlassCard>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <GlassCard key={item} variant="default" className="p-6 h-40 animate-pulse">
-                    <div className="h-6 bg-white/50 dark:bg-gray-800/50 rounded w-1/2 mb-3"></div>
-                    <div className="h-8 bg-white/50 dark:bg-gray-800/50 rounded w-3/4 mb-3"></div>
-                    <div className="h-4 bg-white/50 dark:bg-gray-800/50 rounded"></div>
-                  </GlassCard>
-                ))}
-              </div>
-            </div>
-          ) : error ? (
-            <GlassCard variant="default" className="p-12 text-center">
-              <FileTextIcon className="w-12 h-12 text-red-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Error Loading Report</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {error}
-              </p>
-              <GlassButton 
-                variant="primary" 
-                onClick={() => router.push('/dashboard')}
-              >
-                Back to Dashboard
+          {currentStep === 'report' && <div className="flex gap-2">
+              <GlassButton variant="ghost" size="sm" onClick={handleStartOver}>
+                New Report
               </GlassButton>
-            </GlassCard>
-          ) : report ? (
-            <div className="space-y-8">
-              {/* Report Header */}
-              <GlassCard variant="elevated" className="p-8">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                  <div>
+              <GlassButton variant="liquid" size="sm" icon={<DownloadIcon className="w-4 h-4" />} onClick={handleDownload} className="glass-glow">
+                <span className="hidden sm:inline">Download</span>
+              </GlassButton>
+            </div>}
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        <AnimatePresence mode="wait">
+          {/* Step 1: Input Form */}
+          {currentStep === 'input' && <motion.div key="input" initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} exit={{
+          opacity: 0,
+          y: -20
+        }} className="max-w-2xl mx-auto">
+              <MagneticCard variant="liquid-premium" className="card-padding-lg">
+                <div className="liquid-glass-content">
+                  <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                      {report.user_profile.full_name}&apos;s Numerology Report
+                      Enter Your Information
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400">
-                      {report.user_profile.date_of_birth && (
-                        <>Birth Date: {new Date(report.user_profile.date_of_birth).toLocaleDateString()}</>
-                      )}
+                      We'll generate a comprehensive numerology report based on
+                      your details
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <FileTextIcon className="w-10 h-10 text-purple-500" />
+
+                  <div className="space-y-6">
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Report ID</p>
-                      <p className="font-mono text-gray-900 dark:text-white">
-                        #NR-2024-{report.birth_date_numerology?.life_path_number || 0}{report.birth_date_numerology?.destiny_number || 0}{Math.floor(Math.random() * 100)}
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <input type="text" value={formData.name} onChange={e => setFormData({
+                    ...formData,
+                    name: e.target.value
+                  })} placeholder="Enter your full name" className="w-full px-4 py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-gray-300 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white placeholder-gray-500" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Birth Date <span className="text-red-500">*</span>
+                      </label>
+                      <input type="date" value={formData.birthDate} onChange={e => setFormData({
+                    ...formData,
+                    birthDate: e.target.value
+                  })} className="w-full px-4 py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-gray-300 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Phone Number{' '}
+                        <span className="text-gray-400">(Optional)</span>
+                      </label>
+                      <input type="tel" value={formData.phoneNumber} onChange={e => setFormData({
+                    ...formData,
+                    phoneNumber: e.target.value
+                  })} placeholder="+1 (555) 123-4567" className="w-full px-4 py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-gray-300 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white placeholder-gray-500" />
+                    </div>
+
+                    {/* Usage Limits Display */}
+                    <div className="p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                        Your Current Limits (
+                        {tier.charAt(0).toUpperCase() + tier.slice(1)} Plan):
                       </p>
-                    </div>
-                  </div>
-                </div>
-              </GlassCard>
-
-              {/* Core Numbers */}
-              {report.birth_date_numerology && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Core Numbers</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <CoreNumberCard 
-                      icon={<StarIcon className="w-6 h-6" />}
-                      title="Life Path"
-                      number={report.birth_date_numerology.life_path_number}
-                      description={report.birth_date_interpretations?.life_path_number?.title || 'Life Path Number'}
-                      color="from-blue-500 to-purple-600"
-                    />
-                    
-                    <CoreNumberCard 
-                      icon={<SparklesIcon className="w-6 h-6" />}
-                      title="Destiny"
-                      number={report.birth_date_numerology.destiny_number}
-                      description={report.birth_date_interpretations?.destiny_number?.title || 'Destiny Number'}
-                      color="from-purple-500 to-pink-600"
-                    />
-                    
-                    <CoreNumberCard 
-                      icon={<HeartIcon className="w-6 h-6" />}
-                      title="Soul Urge"
-                      number={report.birth_date_numerology.soul_urge_number}
-                      description={report.birth_date_interpretations?.soul_urge_number?.title || 'Soul Urge Number'}
-                      color="from-pink-500 to-red-600"
-                    />
-                    
-                    <CoreNumberCard 
-                      icon={<TrendingUpIcon className="w-6 h-6" />}
-                      title="Personality"
-                      number={report.birth_date_numerology.personality_number}
-                      description={report.birth_date_interpretations?.personality_number?.title || 'Personality Number'}
-                      color="from-green-500 to-teal-600"
-                    />
-                    
-                    {report.birth_date_numerology.attitude_number && (
-                      <CoreNumberCard 
-                        icon={<CalendarIcon className="w-6 h-6" />}
-                        title="Attitude"
-                        number={report.birth_date_numerology.attitude_number}
-                        description={report.birth_date_interpretations?.attitude_number?.title || 'Attitude Number'}
-                        color="from-amber-500 to-orange-600"
-                      />
-                    )}
-                    
-                    {report.birth_date_numerology.balance_number && (
-                      <CoreNumberCard 
-                        icon={<ShieldCheckIcon className="w-6 h-6" />}
-                        title="Balance"
-                        number={report.birth_date_numerology.balance_number}
-                        description={report.birth_date_interpretations?.balance_number?.title || 'Balance Number'}
-                        color="from-indigo-500 to-purple-600"
-                      />
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Report Summary */}
-              {report.detailed_analysis && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Detailed Analysis</h2>
-                  <GlassCard variant="default" className="p-6">
-                    <div className="text-gray-600 dark:text-gray-400 leading-relaxed space-y-4">
-                      {typeof report.detailed_analysis === 'object' && Object.entries(report.detailed_analysis).map(([key, value]) => (
-                        <div key={key}>
-                          <h3 className="font-semibold text-gray-900 dark:text-white mb-2 capitalize">
-                            {key.replace(/_/g, ' ')}
-                          </h3>
-                          <p>{String(value)}</p>
+                      <div className="space-y-2">
+                        <div>
+                          <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                            <span>Monthly Reports</span>
+                            <span>
+                              {usageLimits.monthlyReports.limit === -1 ? 'Unlimited' : `${usageLimits.monthlyReports.used}/${usageLimits.monthlyReports.limit}`}
+                            </span>
+                          </div>
+                          {usageLimits.monthlyReports.limit !== -1 && <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-purple-500 to-blue-500" style={{
+                          width: `${usageLimits.monthlyReports.used / usageLimits.monthlyReports.limit * 100}%`
+                        }} />
+                            </div>}
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  </GlassCard>
-                </div>
-              )}
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-4 justify-center py-8">
-                <GlassButton 
-                  variant="primary" 
-                  onClick={() => router.push('/ai-chat')}
-                  icon={<SparklesIcon className="w-5 h-5" />}
-                >
-                  Discuss with AI Numerologist
-                </GlassButton>
-                <GlassButton 
-                  variant="secondary" 
-                  onClick={() => router.push('/remedies')}
-                >
-                  View Personalized Remedies
-                </GlassButton>
-                <GlassButton 
-                  variant="ghost" 
-                  onClick={() => router.push('/compatibility')}
-                >
-                  Check Compatibility
-                </GlassButton>
+                    <GlassButton variant="liquid" size="lg" onClick={handleGenerateReport} className="w-full glass-glow" icon={<ArrowRightIcon className="w-5 h-5" />} disabled={!formData.name || !formData.birthDate}>
+                      Continue to Subscription
+                    </GlassButton>
+                  </div>
+                </div>
+              </MagneticCard>
+            </motion.div>}
+
+          {/* Step 2: Subscription Selection */}
+          {currentStep === 'subscription' && <motion.div key="subscription" initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} exit={{
+          opacity: 0,
+          y: -20
+        }}>
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                  Choose Your Subscription
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                  Select the plan that best fits your needs. You can upgrade
+                  anytime.
+                </p>
+              </div>
+
+              <SubscriptionPricingCards onSelectTier={handleSelectTier} selectedTier={selectedTier || undefined} showSelection={true} />
+
+              {selectedTier && <motion.div initial={{
+            opacity: 0,
+            y: 20
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} className="max-w-md mx-auto mt-8">
+                  <GlassButton variant="liquid" size="lg" onClick={handleConfirmSubscription} className="w-full glass-glow" icon={<CheckCircleIcon className="w-5 h-5" />}>
+                    Generate Report with{' '}
+                    {selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1)}
+                  </GlassButton>
+                </motion.div>}
+            </motion.div>}
+
+          {/* Step 3: Report Display */}
+          {currentStep === 'report' && <motion.div key="report" initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} exit={{
+          opacity: 0,
+          y: -20
+        }}>
+              <ReportContent formData={formData} />
+            </motion.div>}
+        </AnimatePresence>
+      </div>
+    </PageLayout>;
+}
+// Report Content Component (keeping existing implementation)
+function ReportContent({
+  formData
+}: {
+  formData: any;
+}) {
+  const {
+    tier
+  } = useSubscription();
+  return <>
+      {/* Subscription Tier Badge */}
+      <motion.div initial={{
+      opacity: 0,
+      y: 20
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} className="mb-6 text-center">
+        <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${tier === 'free' ? 'bg-gray-500/20 text-gray-700 dark:text-gray-300' : tier === 'premium' ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300' : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'}`}>
+          {tier === 'free' && '🆓 Free Report'}
+          {tier === 'premium' && '✨ Premium Report'}
+          {tier === 'enterprise' && '👑 Enterprise Report'}
+        </span>
+      </motion.div>
+
+      {/* Profile Header */}
+      <motion.div initial={{
+      opacity: 0,
+      y: 20
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} transition={{
+      delay: 0.1
+    }}>
+        <GlassCard variant="liquid-premium" className="p-6 md:p-8 mb-6 md:mb-8 bg-gradient-to-br from-blue-500/90 to-purple-600/90 text-white relative overflow-hidden">
+          <div className="liquid-glass-content">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">
+                  {formData.name}
+                </h1>
+                <p className="text-white/80 text-sm md:text-base">
+                  Born:{' '}
+                  {new Date(formData.birthDate).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+                </p>
+              </div>
+              <div className="text-left sm:text-right">
+                <p className="text-xs md:text-sm text-white/80 mb-1">
+                  Report Generated
+                </p>
+                <p className="font-semibold text-sm md:text-base">
+                  {new Date().toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+                </p>
               </div>
             </div>
-          ) : (
-            <GlassCard variant="default" className="p-12 text-center">
-              <FileTextIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Report Available</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                We couldn&apos;t find your numerology report. Please generate a birth chart first.
-              </p>
-              <GlassButton 
-                variant="primary" 
-                onClick={() => router.push('/birth-chart')}
-              >
-                Generate Birth Chart
-              </GlassButton>
-            </GlassCard>
-          )}
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-function CoreNumberCard({ icon, title, number, description, color }: { 
-  icon: React.ReactNode; 
-  title: string; 
-  number: number; 
-  description: string;
-  color: string;
-}) {
-  return (
-    <GlassCard variant="default" className="p-6">
-      <div className="flex items-start gap-4">
-        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-r ${color} flex items-center justify-center text-white flex-shrink-0`}>
-          {icon}
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
-          <div className="flex items-end gap-2 mt-1">
-            <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {number}
-            </span>
-            <span className="text-gray-600 dark:text-gray-400">- {description}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
+              <CoreNumberCard label="Life Path" number="7" delay={0.2} />
+              <CoreNumberCard label="Expression" number="3" delay={0.3} />
+              <CoreNumberCard label="Soul Urge" number="5" delay={0.4} />
+              <CoreNumberCard label="Personality" number="9" delay={0.5} />
+              <CoreNumberCard label="Birth Day" number="6" delay={0.6} />
+            </div>
           </div>
+        </GlassCard>
+      </motion.div>
+
+      {/* Life Path Analysis - Always visible */}
+      <motion.div initial={{
+      opacity: 0,
+      y: 20
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} transition={{
+      delay: 0.2
+    }}>
+        <MagneticCard variant="liquid-premium" className="p-6 md:p-8 mb-6 md:mb-8">
+          <div className="liquid-glass-content">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <StarIcon className="w-6 h-6 md:w-7 md:h-7 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                  Life Path Number 7
+                </h2>
+                <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+                  The Seeker
+                </p>
+              </div>
+            </div>
+            <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              As a Life Path 7, you are a natural seeker of truth and wisdom.
+              You possess a deep, analytical mind and are drawn to understanding
+              the mysteries of life.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <GlassCard variant="liquid" className="p-5 bg-gradient-to-br from-green-500/10 to-emerald-500/10">
+                <div className="liquid-glass-content">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      Strengths
+                    </h3>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                      Analytical and intuitive
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                      Deep thinker
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                      Spiritually aware
+                    </li>
+                  </ul>
+                </div>
+              </GlassCard>
+              <GlassCard variant="liquid" className="p-5 bg-gradient-to-br from-amber-500/10 to-orange-500/10">
+                <div className="liquid-glass-content">
+                  <div className="flex items-center gap-2 mb-3">
+                    <AlertCircleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      Challenges
+                    </h3>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                      Can be overly critical
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                      May isolate yourself
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                      Perfectionist tendencies
+                    </li>
+                  </ul>
+                </div>
+              </GlassCard>
+            </div>
+          </div>
+        </MagneticCard>
+      </motion.div>
+
+      {/* Premium Content - Name Analysis, Phone, Remedies, etc. */}
+      <SubscriptionGate feature="full-numerology-report" requiredTier="premium" showPreview={tier === 'free'}>
+        {/* Additional premium content sections would go here */}
+        <div className="space-y-6">
+          <MagneticCard variant="liquid-premium" className="p-6 md:p-8">
+            <div className="liquid-glass-content">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <TypeIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                    Complete Name Analysis
+                  </h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Expression, Soul Urge & Personality
+                  </p>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="p-6 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-2xl">
+                  <div className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+                    3
+                  </div>
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-2">
+                    Expression
+                  </h3>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Creative communicator with natural gift for self-expression.
+                  </p>
+                </div>
+                <div className="p-6 bg-gradient-to-br from-pink-500/10 to-rose-500/10 rounded-2xl">
+                  <div className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+                    5
+                  </div>
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-2">
+                    Soul Urge
+                  </h3>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Deep desire for freedom and adventure.
+                  </p>
+                </div>
+                <div className="p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-2xl">
+                  <div className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+                    9
+                  </div>
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-2">
+                    Personality
+                  </h3>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Humanitarian and compassionate nature.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </MagneticCard>
         </div>
-      </div>
-    </GlassCard>
-  );
+      </SubscriptionGate>
+
+      {/* Personal Year - Always visible */}
+      <motion.div initial={{
+      opacity: 0,
+      y: 20
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} transition={{
+      delay: 0.8
+    }}>
+        <GlassCard variant="liquid-premium" className="p-6 md:p-8 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+          <div className="liquid-glass-content">
+            <div className="flex items-center gap-3 mb-6">
+              <CalendarIcon className="w-6 h-6 md:w-8 md:h-8 text-purple-600 dark:text-purple-400" />
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                Personal Year 5 Forecast
+              </h2>
+            </div>
+            <p className="text-sm md:text-base text-gray-800 dark:text-gray-200 leading-relaxed mb-6">
+              This is a year of change, freedom, and new experiences. Expect
+              unexpected opportunities and embrace adventure.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+              <ForecastCard label="Key Theme" value="Change & Freedom" delay={0.9} />
+              <ForecastCard label="Focus Areas" value="Travel, New Skills" delay={1.0} />
+              <ForecastCard label="Best Months" value="May, Aug, Nov" delay={1.1} />
+            </div>
+          </div>
+        </GlassCard>
+      </motion.div>
+    </>;
+}
+function CoreNumberCard({
+  label,
+  number,
+  delay
+}: {
+  label: string;
+  number: string;
+  delay: number;
+}) {
+  return <motion.div initial={{
+    opacity: 0,
+    scale: 0.8
+  }} animate={{
+    opacity: 1,
+    scale: 1
+  }} transition={{
+    delay,
+    type: 'spring',
+    stiffness: 200
+  }} className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 md:p-5 text-center border border-white/30" whileHover={{
+    scale: 1.05,
+    y: -4
+  }}>
+      <p className="text-xs md:text-sm text-white/80 mb-2">{label}</p>
+      <p className="text-3xl md:text-4xl font-bold">{number}</p>
+    </motion.div>;
+}
+function ForecastCard({
+  label,
+  value,
+  delay
+}: {
+  label: string;
+  value: string;
+  delay: number;
+}) {
+  return <motion.div initial={{
+    opacity: 0,
+    y: 20
+  }} animate={{
+    opacity: 1,
+    y: 0
+  }} transition={{
+    delay
+  }}>
+      <GlassCard variant="liquid" className="p-4 md:p-5">
+        <div className="liquid-glass-content">
+          <p className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            {label}
+          </p>
+          <p className="text-sm md:text-base text-gray-900 dark:text-white font-medium">
+            {value}
+          </p>
+        </div>
+      </GlassCard>
+    </motion.div>;
 }

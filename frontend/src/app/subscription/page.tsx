@@ -1,275 +1,327 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/auth-context';
 import { motion } from 'framer-motion';
-import { Check, Crown, Sparkles, Zap } from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
-import { GlassButton } from '@/components/glassmorphism/glass-button';
-import StripeForm from '@/components/payment/stripe-form';
-import { SubscriptionManagement } from '@/components/payment/subscription-management';
-import { BillingHistory } from '@/components/payment/billing-history';
-import { paymentsAPI } from '@/lib/api-client';
-import { useToast } from '@/components/ui/use-toast';
-
-const plans = [
-  {
-    id: 'basic',
-    name: 'Basic',
-    price: '$9.99',
-    period: 'month',
-    description: 'Perfect for getting started with numerology',
-    features: [
-      'Daily numerology readings',
-      'Basic birth chart',
-      'Life Path analysis',
-      'AI chat (10 messages/day)',
-    ],
-    icon: <Sparkles className="w-6 h-6" />,
-    color: 'from-blue-500 to-cyan-600',
-  },
-  {
+import { CheckIcon, SparklesIcon, CrownIcon, ZapIcon, ArrowRightIcon, XIcon } from 'lucide-react';
+import { LandingNav } from '@/components/LandingNav';
+import { LandingFooter } from '@/components/LandingFooter';
+import { FloatingOrbs } from '@/components/FloatingOrbs';
+import { AmbientParticles } from '@/components/AmbientParticles';
+import { LiquidGlassHero } from '@/components/LiquidGlassHero';
+import { MagneticCard } from '@/components/MagneticCard';
+import { GlassButton } from '@/components/ui/glass-button';
+type BillingCycle = 'monthly' | 'yearly';
+export default function Pricing() {
+  const router = useRouter();
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
+  const plans = [{
+    id: 'free',
+    name: 'Free',
+    description: 'Perfect for exploring numerology basics',
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    icon: <ZapIcon className="w-6 h-6" />,
+    color: 'from-gray-500 to-slate-600',
+    features: [{
+      text: 'Basic Life Path analysis',
+      included: true
+    }, {
+      text: '3 daily readings per day',
+      included: true
+    }, {
+      text: 'Basic name analysis',
+      included: true
+    }, {
+      text: 'Personal Year forecast',
+      included: true
+    }, {
+      text: 'Community forum access',
+      included: true
+    }, {
+      text: 'Full numerology reports',
+      included: false
+    }, {
+      text: 'AI numerologist chat',
+      included: false
+    }, {
+      text: 'Advanced calculators',
+      included: false
+    }, {
+      text: 'Personalized remedies',
+      included: false
+    }],
+    cta: 'Get Started Free',
+    popular: false
+  }, {
     id: 'premium',
     name: 'Premium',
-    price: '$19.99',
-    period: 'month',
-    description: 'For serious numerology enthusiasts',
-    features: [
-      'Everything in Basic',
-      'Advanced compatibility analysis',
-      'Personalized remedies',
-      'AI chat (unlimited)',
-      'PDF report exports',
-      'Priority support',
-    ],
-    icon: <Zap className="w-6 h-6" />,
-    color: 'from-purple-500 to-pink-600',
-    popular: true,
-  },
-  {
-    id: 'elite',
-    name: 'Elite',
-    price: '$29.99',
-    period: 'month',
-    description: 'Complete numerology experience',
-    features: [
-      'Everything in Premium',
-      'Expert consultations',
-      'Multi-person analysis',
-      'Custom report templates',
-      'Advanced analytics',
-      '24/7 priority support',
-    ],
-    icon: <Crown className="w-6 h-6" />,
-    color: 'from-yellow-500 to-orange-600',
-  },
-];
-
-export default function SubscriptionPage() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | 'elite'>('premium');
-  const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
-  const [loadingStatus, setLoadingStatus] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
-    if (user) {
-      loadSubscriptionStatus();
-    }
-  }, [user]);
-
-  const loadSubscriptionStatus = async () => {
-    try {
-      setLoadingStatus(true);
-      const response = await paymentsAPI.getSubscriptionStatus();
-      setSubscriptionStatus(response.data);
-    } catch (error) {
-      console.error('Error loading subscription status:', error);
-    } finally {
-      setLoadingStatus(false);
-    }
+    description: 'Complete numerology insights & guidance',
+    monthlyPrice: 9.99,
+    yearlyPrice: 99.99,
+    icon: <SparklesIcon className="w-6 h-6" />,
+    color: 'from-purple-500 to-blue-600',
+    features: [{
+      text: 'Everything in Free, plus:',
+      included: true,
+      bold: true
+    }, {
+      text: 'Unlimited daily readings',
+      included: true
+    }, {
+      text: '10 full reports per month',
+      included: true
+    }, {
+      text: 'AI numerologist (50 msgs/day)',
+      included: true
+    }, {
+      text: 'All advanced calculators',
+      included: true
+    }, {
+      text: 'Name & phone numerology',
+      included: true
+    }, {
+      text: 'Personalized remedies',
+      included: true
+    }, {
+      text: 'Compatibility analysis',
+      included: true
+    }, {
+      text: 'Birth chart & forecasts',
+      included: true
+    }],
+    cta: 'Start Premium',
+    popular: true
+  }, {
+    id: 'enterprise',
+    name: 'Enterprise',
+    description: 'Everything unlimited with expert support',
+    monthlyPrice: 29.99,
+    yearlyPrice: 299.99,
+    icon: <CrownIcon className="w-6 h-6" />,
+    color: 'from-amber-500 to-orange-600',
+    features: [{
+      text: 'Everything in Premium, plus:',
+      included: true,
+      bold: true
+    }, {
+      text: 'Unlimited everything',
+      included: true
+    }, {
+      text: 'Expert consultations',
+      included: true
+    }, {
+      text: 'Priority support (24/7)',
+      included: true
+    }, {
+      text: 'Advanced analytics',
+      included: true
+    }, {
+      text: 'Custom reports',
+      included: true
+    }, {
+      text: 'API access',
+      included: true
+    }, {
+      text: 'Early feature access',
+      included: true
+    }, {
+      text: 'Dedicated account manager',
+      included: true
+    }],
+    cta: 'Contact Sales',
+    popular: false
+  }];
+  const getPrice = (plan: (typeof plans)[0]) => {
+    if (plan.monthlyPrice === 0) return 'Free';
+    const price = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
+    return `$${price}`;
   };
-
-  const handleSubscriptionSuccess = () => {
-    loadSubscriptionStatus();
-    router.push('/dashboard');
+  const getSavings = (plan: (typeof plans)[0]) => {
+    if (plan.monthlyPrice === 0 || billingCycle === 'monthly') return null;
+    const monthlyCost = plan.monthlyPrice * 12;
+    const savings = monthlyCost - plan.yearlyPrice;
+    const percentage = Math.round(savings / monthlyCost * 100);
+    return `Save ${percentage}%`;
   };
+  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 relative overflow-hidden">
+      <AmbientParticles />
+      <FloatingOrbs />
+      <LandingNav />
 
-  if (loading || loadingStatus) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  const hasActiveSubscription = subscriptionStatus?.has_subscription && 
-    subscriptionStatus?.subscription?.status === 'active';
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Choose Your Plan
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Unlock the full power of numerology with our premium plans
-          </p>
+      {/* Hero Section */}
+      <LiquidGlassHero title="Simple, Transparent Pricing" subtitle="Choose the perfect plan for your numerology journey. Start free, upgrade anytime." compact>
+        {/* Billing Toggle */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.4
+      }} className="inline-flex items-center gap-3 p-1.5 bg-white/80 dark:bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-gray-700/30 shadow-lg">
+          <button onClick={() => setBillingCycle('monthly')} className={`px-6 py-2.5 rounded-xl font-medium transition-all ${billingCycle === 'monthly' ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg' : 'text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>
+            Monthly
+          </button>
+          <button onClick={() => setBillingCycle('yearly')} className={`px-6 py-2.5 rounded-xl font-medium transition-all relative ${billingCycle === 'yearly' ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg' : 'text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>
+            Yearly
+            <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full">
+              -17%
+            </span>
+          </button>
         </motion.div>
+      </LiquidGlassHero>
 
-        {hasActiveSubscription && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <GlassCard variant="elevated" className="p-6 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
-                  <Check className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    Active Subscription
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    You are currently subscribed to the{' '}
-                    {subscriptionStatus?.subscription?.plan
-                      ? subscriptionStatus.subscription.plan.charAt(0).toUpperCase() +
-                        subscriptionStatus.subscription.plan.slice(1)
-                      : 'Unknown'}{' '}
-                    plan
-                  </p>
-                </div>
-              </div>
-            </GlassCard>
-          </motion.div>
-        )}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pb-16">
+        {/* Pricing Cards */}
+        <div className="grid md:grid-cols-3 gap-6 mb-16">
+          {plans.map((plan, index) => <motion.div key={plan.id} initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          delay: 0.1 * (index + 1)
+        }} className="relative">
+              {plan.popular && <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                  <span className="px-4 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-bold rounded-full shadow-lg">
+                    MOST POPULAR
+                  </span>
+                </div>}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={plan.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`relative ${plan.popular ? 'md:-mt-4 md:mb-4' : ''}`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
-                  </span>
-                </div>
-              )}
-              <GlassCard
-                variant={plan.popular ? 'elevated' : 'default'}
-                className={`p-6 h-full ${
-                  selectedPlan === plan.id
-                    ? 'ring-2 ring-purple-500 dark:ring-purple-400'
-                    : ''
-                }`}
-              >
-                <div
-                  className={`w-12 h-12 rounded-2xl bg-gradient-to-r ${plan.color} flex items-center justify-center text-white mb-4`}
-                >
-                  {plan.icon}
-                </div>
-                <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
-                  {plan.name}
-                </h3>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {plan.price}
-                  </span>
-                  <span className="text-gray-600 dark:text-gray-400">
-                    /{plan.period}
-                  </span>
-                </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  {plan.description}
-                </p>
-                <ul className="space-y-3 mb-6">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {feature}
+              <MagneticCard variant={plan.popular ? 'liquid-premium' : 'liquid'} className={`card-padding h-full ${plan.popular ? 'ring-2 ring-purple-500/50 scale-105' : ''}`}>
+                <div className="liquid-glass-content flex flex-col h-full">
+                  {/* Header */}
+                  <div className="text-center mb-6">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${plan.color} rounded-2xl flex items-center justify-center text-white mx-auto mb-4 shadow-lg`}>
+                      {plan.icon}
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                      {plan.name}
+                    </h3>
+                    <p className="text-sm text-gray-700 dark:text-gray-400 mb-4">
+                      {plan.description}
+                    </p>
+
+                    {/* Price */}
+                    <div className="flex items-baseline justify-center gap-1 mb-2">
+                      <span className="text-5xl font-bold text-gray-900 dark:text-white">
+                        {getPrice(plan)}
                       </span>
-                    </li>
-                  ))}
-                </ul>
-                <GlassButton
-                  variant={plan.popular ? 'primary' : 'secondary'}
-                  className="w-full"
-                  onClick={() => setSelectedPlan(plan.id as 'basic' | 'premium' | 'elite')}
-                >
-                  {selectedPlan === plan.id ? 'Selected' : 'Select Plan'}
-                </GlassButton>
-              </GlassCard>
-            </motion.div>
-          ))}
+                      {plan.monthlyPrice > 0 && <span className="text-gray-700 dark:text-gray-400">
+                          /{billingCycle === 'monthly' ? 'mo' : 'yr'}
+                        </span>}
+                    </div>
+
+                    {getSavings(plan) && <span className="inline-block px-3 py-1 bg-green-500/20 text-green-700 dark:text-green-400 text-xs font-semibold rounded-full">
+                        {getSavings(plan)}
+                      </span>}
+                  </div>
+
+                  {/* Features */}
+                  <div className="flex-1 mb-6">
+                    <ul className="space-y-3">
+                      {plan.features.map((feature, i) => <li key={i} className="flex items-start gap-2">
+                          {feature.included ? <CheckIcon className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" /> : <XIcon className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />}
+                          <span className={`text-sm ${feature.included ? feature.bold ? 'font-semibold text-gray-900 dark:text-white' : 'text-gray-800 dark:text-gray-300' : 'text-gray-500 dark:text-gray-600'}`}>
+                            {feature.text}
+                          </span>
+                        </li>)}
+                    </ul>
+                  </div>
+
+                  {/* CTA */}
+                  <GlassButton variant={plan.popular ? 'liquid' : 'secondary'} size="lg" onClick={() => router.push('/signup')} className={`w-full ${plan.popular ? 'glass-glow' : ''}`} icon={<ArrowRightIcon className="w-5 h-5" />}>
+                    {plan.cta}
+                  </GlassButton>
+
+                  {plan.monthlyPrice > 0 && <p className="text-xs text-center text-gray-600 dark:text-gray-400 mt-3">
+                      Cancel anytime • 7-day money-back guarantee
+                    </p>}
+                </div>
+              </MagneticCard>
+            </motion.div>)}
         </div>
 
-        {!hasActiveSubscription && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <GlassCard variant="elevated" className="p-8">
-              <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-                Complete Your Subscription
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Enter your payment details to activate your{' '}
-                {selectedPlan ? selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1) : 'Premium'} plan
-              </p>
-              <StripeForm
-                plan={selectedPlan}
-                onSuccess={handleSubscriptionSuccess}
-              />
-            </GlassCard>
-          </motion.div>
-        )}
+        {/* FAQ Section */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.5
+      }} className="max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">
+            Frequently Asked Questions
+          </h2>
 
-        {hasActiveSubscription && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <SubscriptionManagement />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              <BillingHistory />
-            </motion.div>
+          <div className="space-y-4">
+            {[{
+            q: 'Can I switch plans anytime?',
+            a: 'Yes! You can upgrade, downgrade, or cancel your subscription at any time. Changes take effect immediately.'
+          }, {
+            q: 'What payment methods do you accept?',
+            a: 'We accept all major credit cards, PayPal, and Apple Pay. All payments are processed securely.'
+          }, {
+            q: 'Is there a free trial?',
+            a: 'The Free plan is available forever with no credit card required. Premium and Enterprise plans come with a 7-day money-back guarantee.'
+          }, {
+            q: 'What happens to my data if I cancel?',
+            a: 'Your data remains accessible for 30 days after cancellation. You can reactivate anytime during this period.'
+          }].map((faq, i) => <motion.div key={i} initial={{
+            opacity: 0,
+            y: 20
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            delay: 0.6 + i * 0.1
+          }}>
+                <MagneticCard variant="liquid" className="card-padding">
+                  <div className="liquid-glass-content">
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-2">
+                      {faq.q}
+                    </h3>
+                    <p className="text-sm text-gray-700 dark:text-gray-400">
+                      {faq.a}
+                    </p>
+                  </div>
+                </MagneticCard>
+              </motion.div>)}
           </div>
-        )}
-      </div>
-    </div>
-  );
-}
+        </motion.div>
 
+        {/* CTA Section */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.8
+      }} className="text-center mt-16">
+          <MagneticCard variant="liquid-premium" className="card-padding-lg max-w-2xl mx-auto bg-gradient-to-br from-purple-100/50 to-blue-100/50 dark:from-purple-500/20 dark:to-blue-500/20">
+            <div className="liquid-glass-content">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Ready to unlock your cosmic potential?
+              </h2>
+              <p className="text-gray-700 dark:text-gray-400 mb-6">
+                Join thousands discovering their numerology insights with
+                NumerAI
+              </p>
+              <GlassButton variant="liquid" size="lg" onClick={() => router.push('/signup')} className="glass-glow" icon={<SparklesIcon className="w-5 h-5" />}>
+                Start Your Journey Free
+              </GlassButton>
+            </div>
+          </MagneticCard>
+        </motion.div>
+      </div>
+
+      <LandingFooter />
+    </div>;
+}

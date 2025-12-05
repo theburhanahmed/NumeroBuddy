@@ -8,8 +8,10 @@ import {
   MailIcon,
   SparklesIcon
 } from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
-import { GlassButton } from '@/components/glassmorphism/glass-button';
+import { GlassCard } from '@/components/ui/glass-card';
+import { GlassButton } from '@/components/ui/glass-button';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { useToast } from '@/components/ui/use-toast';
 import apiClient from '@/lib/api-client';
 
@@ -49,12 +51,14 @@ export default function ResetPasswordPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 relative overflow-hidden">
+        <AmbientParticles />
+        <FloatingOrbs />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md relative z-10"
         >
           <div className="text-center mb-8">
             <motion.div
@@ -101,12 +105,14 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 relative overflow-hidden">
+      <AmbientParticles />
+      <FloatingOrbs />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
           <motion.div

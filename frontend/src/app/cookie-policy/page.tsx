@@ -1,136 +1,196 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Cookie } from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
+import { CookieIcon, SettingsIcon } from 'lucide-react';
+import { LandingNav } from '@/components/LandingNav';
+import { LandingFooter } from '@/components/LandingFooter';
+import { GlassCard } from '@/components/ui/glass-card';
+import { LiquidGlassHero } from '@/components/LiquidGlassHero';
+import { MagneticCard } from '@/components/MagneticCard';
+import { FloatingOrbs } from '@/components/FloatingOrbs';
+import { AmbientParticles } from '@/components/AmbientParticles';
+export default function CookiePolicy() {
+  const cookieTypes = [{
+    title: 'Essential Cookies',
+    icon: '🔒',
+    description: 'These cookies are necessary for the website to function and cannot be switched off.',
+    examples: ['Authentication and security', 'Session management', 'Load balancing', 'User preferences'],
+    required: true
+  }, {
+    title: 'Analytics Cookies',
+    icon: '📊',
+    description: 'These cookies help us understand how visitors interact with our website.',
+    examples: ['Page views and navigation', 'Time spent on pages', 'Error tracking', 'Performance metrics'],
+    required: false
+  }, {
+    title: 'Functional Cookies',
+    icon: '⚙️',
+    description: 'These cookies enable enhanced functionality and personalization.',
+    examples: ['Language preferences', 'Theme settings', 'Saved calculations', 'User interface preferences'],
+    required: false
+  }, {
+    title: 'Marketing Cookies',
+    icon: '🎯',
+    description: 'These cookies track your activity to deliver relevant advertisements.',
+    examples: ['Ad targeting', 'Campaign effectiveness', 'Social media integration', 'Retargeting'],
+    required: false
+  }];
+  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 relative overflow-hidden">
+      <AmbientParticles />
+      <FloatingOrbs />
+      <LandingNav />
 
-export default function CookiePolicyPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <GlassCard className="p-8 md:p-12">
-            <div className="flex items-center gap-4 mb-8">
-              <Cookie className="w-8 h-8 text-purple-400" />
-              <h1 className="text-4xl font-bold text-white">Cookie Policy</h1>
+      {/* Hero Section */}
+      <LiquidGlassHero title="Cookie Policy" subtitle="Learn about how we use cookies and similar technologies on NumerAI" compact />
+
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pb-16 relative z-10">
+        {/* Introduction */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} className="mb-8">
+          <MagneticCard variant="liquid-premium" className="p-6 md:p-8">
+            <div className="liquid-glass-content">
+              <div className="flex items-center gap-3 mb-4">
+                <CookieIcon className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  What Are Cookies?
+                </h2>
+              </div>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                Cookies are small text files that are placed on your device when
+                you visit our website. They help us provide you with a better
+                experience by remembering your preferences and understanding how
+                you use our service.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                We use both session cookies (which expire when you close your
+                browser) and persistent cookies (which stay on your device until
+                deleted or expired).
+              </p>
             </div>
-            
-            <div className="prose prose-invert max-w-none text-gray-300 space-y-6">
-              <p className="text-sm text-gray-400">Last updated: {new Date().toLocaleDateString()}</p>
-              
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">1. What Are Cookies</h2>
-                <p>
-                  Cookies are small text files that are placed on your computer or mobile device when you visit a website.
-                  They are widely used to make websites work more efficiently and provide information to website owners.
-                </p>
-              </section>
+          </MagneticCard>
+        </motion.div>
 
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">2. How We Use Cookies</h2>
-                <p>NumerAI uses cookies for several purposes:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>To enable certain functions of the service</li>
-                  <li>To provide analytics and track usage patterns</li>
-                  <li>To store your preferences and settings</li>
-                  <li>To improve security and prevent fraud</li>
-                  <li>To personalize your experience</li>
-                </ul>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">3. Types of Cookies We Use</h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Essential Cookies</h3>
-                    <p>
-                      These cookies are necessary for the website to function properly. They enable core functionality
-                      such as security, network management, and accessibility.
-                    </p>
+        {/* Cookie Types */}
+        <div className="space-y-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-6">
+            Types of Cookies We Use
+          </h2>
+          {cookieTypes.map((type, index) => <motion.div key={index} initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          delay: index * 0.1
+        }}>
+              <MagneticCard variant="liquid-premium" className="p-6 md:p-8">
+                <div className="liquid-glass-content">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="text-4xl">{type.icon}</div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                          {type.title}
+                        </h3>
+                        {type.required && <span className="inline-block px-2 py-1 bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-full mt-1">
+                            Required
+                          </span>}
+                      </div>
+                    </div>
                   </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Analytics Cookies</h3>
-                    <p>
-                      These cookies help us understand how visitors interact with our website by collecting and reporting
-                      information anonymously. This helps us improve the way our website works.
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                    {type.description}
+                  </p>
+                  <div className="bg-gradient-to-br from-gray-100/50 to-gray-200/50 dark:from-gray-800/50 dark:to-gray-700/50 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                      Examples:
                     </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Functionality Cookies</h3>
-                    <p>
-                      These cookies allow the website to remember choices you make (such as your username, language,
-                      or region) and provide enhanced, personalized features.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Marketing Cookies</h3>
-                    <p>
-                      These cookies may be set through our site by our advertising partners to build a profile of your
-                      interests and show you relevant content on other sites.
-                    </p>
+                    <ul className="space-y-1">
+                      {type.examples.map((example, i) => <li key={i} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                          {example}
+                        </li>)}
+                    </ul>
                   </div>
                 </div>
-              </section>
+              </MagneticCard>
+            </motion.div>)}
+        </div>
 
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">4. Third-Party Cookies</h2>
-                <p>
-                  In addition to our own cookies, we may also use various third-party cookies to report usage statistics
-                  of the service, deliver advertisements, and so on. These third-party cookies are governed by the respective
-                  privacy policies of those third parties.
+        {/* Managing Cookies */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.5
+      }} className="mb-8">
+          <MagneticCard variant="liquid-premium" className="p-6 md:p-8">
+            <div className="liquid-glass-content">
+              <div className="flex items-center gap-3 mb-4">
+                <SettingsIcon className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Managing Your Cookie Preferences
+                </h2>
+              </div>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                You have the right to decide whether to accept or reject
+                cookies. You can exercise your cookie preferences by:
+              </p>
+              <ul className="space-y-3">
+                {['Using our cookie consent banner when you first visit', 'Adjusting your browser settings to block or delete cookies', 'Using browser plugins or extensions for cookie management', 'Opting out of third-party advertising cookies'].map((item, i) => <li key={i} className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
+                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full flex-shrink-0 mt-2"></span>
+                    <span>{item}</span>
+                  </li>)}
+              </ul>
+              <div className="mt-6 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                <p className="text-sm text-gray-800 dark:text-gray-200">
+                  <strong>Note:</strong> Blocking or deleting cookies may impact
+                  your experience and some features may not function properly.
                 </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">5. Managing Cookies</h2>
-                <p>
-                  You can control and/or delete cookies as you wish. You can delete all cookies that are already on your
-                  computer and you can set most browsers to prevent them from being placed.
-                </p>
-                <p className="mt-2">
-                  However, if you do this, you may have to manually adjust some preferences every time you visit a site
-                  and some services and functionalities may not work.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">6. Browser Settings</h2>
-                <p>Most web browsers allow some control of most cookies through the browser settings. To find out more:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Chrome: Settings → Privacy and security → Cookies</li>
-                  <li>Firefox: Options → Privacy & Security → Cookies and Site Data</li>
-                  <li>Safari: Preferences → Privacy → Cookies</li>
-                  <li>Edge: Settings → Privacy, search, and services → Cookies</li>
-                </ul>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">7. Changes to Cookie Policy</h2>
-                <p>
-                  We may update our Cookie Policy from time to time. We will notify you of any changes by posting
-                  the new Cookie Policy on this page and updating the {'"Last updated"'} date.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">8. Contact Us</h2>
-                <p>
-                  If you have any questions about our use of cookies, please contact us through our support channels.
-                </p>
-              </section>
+              </div>
             </div>
-          </GlassCard>
+          </MagneticCard>
+        </motion.div>
+
+        {/* Contact Section */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.6
+      }}>
+          <MagneticCard variant="liquid-premium" className="p-6 md:p-8 bg-gradient-to-br from-amber-100/50 to-orange-100/50 dark:from-amber-500/20 dark:to-orange-500/20">
+            <div className="liquid-glass-content text-center">
+              <CookieIcon className="w-12 h-12 text-amber-600 dark:text-amber-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                Questions About Cookies?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                If you have any questions about our use of cookies, please
+                contact us at{' '}
+                <a href="mailto:privacy@numerai.com" className="text-amber-600 dark:text-amber-400 hover:underline font-semibold">
+                  privacy@numerai.com
+                </a>
+              </p>
+            </div>
+          </MagneticCard>
         </motion.div>
       </div>
-    </div>
-  );
-}
 
+      <LandingFooter />
+    </div>;
+}

@@ -1,118 +1,139 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText } from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
+import { FileTextIcon, CheckCircleIcon } from 'lucide-react';
+import { LandingNav } from '@/components/LandingNav';
+import { LandingFooter } from '@/components/LandingFooter';
+import { GlassCard } from '@/components/ui/glass-card';
+import { LiquidGlassHero } from '@/components/LiquidGlassHero';
+import { MagneticCard } from '@/components/MagneticCard';
+import { FloatingOrbs } from '@/components/FloatingOrbs';
+import { AmbientParticles } from '@/components/AmbientParticles';
+export default function TermsOfService() {
+  const sections = [{
+    title: '1. Acceptance of Terms',
+    content: 'By accessing and using NumerAI, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these terms, please do not use our service.'
+  }, {
+    title: '2. Use License',
+    content: 'Permission is granted to temporarily access the materials on NumerAI for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.',
+    subsections: ['You may not modify or copy the materials', 'You may not use the materials for any commercial purpose', 'You may not attempt to decompile or reverse engineer any software', 'You may not remove any copyright or proprietary notations']
+  }, {
+    title: '3. User Accounts',
+    content: 'When you create an account with us, you must provide accurate, complete, and current information. Failure to do so constitutes a breach of the Terms.',
+    subsections: ['You are responsible for safeguarding your password', 'You must notify us immediately of any unauthorized use', 'We reserve the right to refuse service or terminate accounts']
+  }, {
+    title: '4. Subscriptions',
+    content: 'Some parts of the Service are billed on a subscription basis. You will be billed in advance on a recurring and periodic basis.',
+    subsections: ['Billing cycles are set on a monthly or annual basis', 'At the end of each billing cycle, your subscription will automatically renew', 'You can cancel your subscription at any time', 'Refunds are available within 7 days of purchase']
+  }, {
+    title: '5. Prohibited Uses',
+    content: 'You may not use our service for any illegal or unauthorized purpose. You must not violate any laws in your jurisdiction.',
+    subsections: ['Transmit any worms, viruses, or malicious code', 'Violate or infringe on the rights of others', 'Engage in any automated use of the system', 'Interfere with or disrupt the service']
+  }, {
+    title: '6. Intellectual Property',
+    content: 'The Service and its original content, features, and functionality are owned by NumerAI and are protected by international copyright, trademark, and other intellectual property laws.'
+  }, {
+    title: '7. Limitation of Liability',
+    content: 'In no event shall NumerAI, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages.'
+  }, {
+    title: '8. Changes to Terms',
+    content: 'We reserve the right to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page.'
+  }];
+  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 relative overflow-hidden">
+      <AmbientParticles />
+      <FloatingOrbs />
+      <LandingNav />
 
-export default function TermsOfServicePage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <GlassCard className="p-8 md:p-12">
-            <div className="flex items-center gap-4 mb-8">
-              <FileText className="w-8 h-8 text-purple-400" />
-              <h1 className="text-4xl font-bold text-white">Terms of Service</h1>
+      {/* Hero Section */}
+      <LiquidGlassHero title="Terms of Service" subtitle="Please read these terms carefully before using NumerAI" compact />
+
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pb-16 relative z-10">
+        {/* Last Updated */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} className="mb-8">
+          <MagneticCard variant="liquid" className="p-4">
+            <div className="liquid-glass-content flex items-center gap-3">
+              <FileTextIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  Last Updated
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  {new Date().toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+                </p>
+              </div>
             </div>
-            
-            <div className="prose prose-invert max-w-none text-gray-300 space-y-6">
-              <p className="text-sm text-gray-400">Last updated: {new Date().toLocaleDateString()}</p>
-              
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">1. Acceptance of Terms</h2>
-                <p>
-                  By accessing and using NumerAI, you accept and agree to be bound by the terms and provision of this agreement.
-                  If you do not agree to these Terms of Service, please do not use our service.
-                </p>
-              </section>
+          </MagneticCard>
+        </motion.div>
 
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">2. Use License</h2>
-                <p>
-                  Permission is granted to temporarily access NumerAI for personal, non-commercial transitory viewing only.
-                  This is the grant of a license, not a transfer of title, and under this license you may not:
-                </p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Modify or copy the materials</li>
-                  <li>Use the materials for any commercial purpose or for any public display</li>
-                  <li>Attempt to reverse engineer any software contained on NumerAI</li>
-                  <li>Remove any copyright or other proprietary notations from the materials</li>
-                </ul>
-              </section>
+        {/* Sections */}
+        <div className="space-y-6">
+          {sections.map((section, index) => <motion.div key={index} initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          delay: index * 0.1
+        }}>
+              <MagneticCard variant="liquid-premium" className="p-6 md:p-8">
+                <div className="liquid-glass-content">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                    {section.title}
+                  </h2>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                    {section.content}
+                  </p>
+                  {section.subsections && <ul className="space-y-2">
+                      {section.subsections.map((item, i) => <li key={i} className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
+                          <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                          <span>{item}</span>
+                        </li>)}
+                    </ul>}
+                </div>
+              </MagneticCard>
+            </motion.div>)}
+        </div>
 
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">3. User Accounts</h2>
-                <p>
-                  When you create an account with us, you must provide information that is accurate, complete, and current at all times.
-                  You are responsible for safeguarding the password and for all activities that occur under your account.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">4. Numerology Readings</h2>
-                <p>
-                  NumerAI provides numerology readings and interpretations based on the information you provide.
-                  These readings are for entertainment and personal guidance purposes only and should not be used as a substitute
-                  for professional advice in legal, financial, medical, or other matters.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">5. Payment Terms</h2>
-                <p>
-                  Some features of NumerAI may require payment. By making a purchase, you agree to pay all charges
-                  at the prices then in effect for your purchases. All payments are non-refundable unless otherwise stated.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">6. Intellectual Property</h2>
-                <p>
-                  The service and its original content, features, and functionality are and will remain the exclusive property
-                  of NumerAI and its licensors. The service is protected by copyright, trademark, and other laws.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">7. Disclaimer</h2>
-                <p>
-                  The information on this service is provided on an {'"as is"'} basis. To the fullest extent permitted by law,
-                  NumerAI excludes all representations, warranties, conditions, and terms.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">8. Limitation of Liability</h2>
-                <p>
-                  In no event shall NumerAI, nor its directors, employees, partners, agents, suppliers, or affiliates,
-                  be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use
-                  of the service.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">9. Changes to Terms</h2>
-                <p>
-                  We reserve the right, at our sole discretion, to modify or replace these Terms at any time.
-                  If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-2xl font-semibold text-white mb-4">10. Contact Information</h2>
-                <p>
-                  If you have any questions about these Terms of Service, please contact us through our support channels.
-                </p>
-              </section>
+        {/* Contact Section */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.8
+      }} className="mt-8">
+          <MagneticCard variant="liquid-premium" className="p-6 md:p-8 bg-gradient-to-br from-purple-100/50 to-blue-100/50 dark:from-purple-500/20 dark:to-blue-500/20">
+            <div className="liquid-glass-content text-center">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                Questions About Our Terms?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                If you have any questions about these Terms of Service, please
+                contact us at{' '}
+                <a href="mailto:legal@numerai.com" className="text-purple-600 dark:text-purple-400 hover:underline font-semibold">
+                  legal@numerai.com
+                </a>
+              </p>
             </div>
-          </GlassCard>
+          </MagneticCard>
         </motion.div>
       </div>
-    </div>
-  );
-}
 
+      <LandingFooter />
+    </div>;
+}
