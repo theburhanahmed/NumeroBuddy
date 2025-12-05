@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SparklesIcon, MailIcon, LockIcon, EyeIcon, EyeOffIcon, MoonIcon, SunIcon, CheckCircleIcon, AlertCircleIcon } from 'lucide-react';
 import { useTheme } from '@/contexts/theme-context';
@@ -313,18 +314,22 @@ export default function Login() {
               {/* Social Login */}
               <div className="grid grid-cols-2 gap-3">
                 <GlassButton variant="secondary" size="sm">
-                  <img
+                  <Image
                     src="https://www.google.com/favicon.ico"
-                    alt=""
-                    className="w-5 h-5 mr-2"
+                    alt="Google"
+                    width={20}
+                    height={20}
+                    className="mr-2"
                   />
                   Google
                 </GlassButton>
                 <GlassButton variant="secondary" size="sm">
-                  <img
+                  <Image
                     src="https://www.facebook.com/favicon.ico"
-                    alt=""
-                    className="w-5 h-5 mr-2"
+                    alt="Facebook"
+                    width={20}
+                    height={20}
+                    className="mr-2"
                   />
                   Facebook
                 </GlassButton>

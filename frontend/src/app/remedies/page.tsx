@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { SparklesIcon, GemIcon, PaletteIcon, FlowerIcon, ClockIcon, CheckCircleIcon } from 'lucide-react';
 import { AppNavbar } from '@/components/navigation/app-navbar';
@@ -174,7 +175,12 @@ export default function Remedies() {
                   <MagneticCard variant="liquid-premium" className="p-6 h-full">
                     <div className="liquid-glass-content">
                       <div className="relative mb-4 rounded-2xl overflow-hidden h-48">
-                        <img src={gem.image} alt={gem.name} className="w-full h-full object-cover" />
+                        <Image 
+                          src={gem.image} 
+                          alt={gem.name} 
+                          fill
+                          className="object-cover" 
+                        />
                         <div className={`absolute inset-0 bg-gradient-to-t ${gem.color} opacity-30`} />
                       </div>
                       <div className="flex items-center justify-between mb-3">

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SparklesIcon, MailIcon, LockIcon, UserIcon, CalendarIcon, EyeIcon, EyeOffIcon, MoonIcon, SunIcon, CheckCircleIcon, AlertCircleIcon } from 'lucide-react';
 import { useTheme } from '@/contexts/theme-context';
@@ -17,23 +18,27 @@ export default function Signup() {
   const { theme, toggleTheme } = useTheme();
   const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     birthDate: ''
   });
   const [errors, setErrors] = useState({
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     birthDate: ''
   });
   const [touched, setTouched] = useState({
     name: false,
     email: false,
     password: false,
+    confirmPassword: false,
     birthDate: false
   });
 
@@ -48,6 +53,11 @@ export default function Signup() {
 
   const validatePassword = (password: string) => {
     return password.length >= 6;
+  };
+
+  const validateConfirmPassword = (confirmPassword: string, password: string) => {
+    if (!confirmPassword) return false;
+    return confirmPassword === password;
   };
 
   const validateBirthDate = (date: string) => {
@@ -83,6 +93,13 @@ export default function Signup() {
           error = 'Password must be at least 6 characters';
         }
         break;
+      case 'confirmPassword':
+        if (!formData.confirmPassword) {
+          error = 'Please confirm your password';
+        } else if (!validateConfirmPassword(formData.confirmPassword, formData.password)) {
+          error = 'Passwords do not match';
+        }
+        break;
       case 'birthDate':
         if (!formData.birthDate) {
           error = 'Birth date is required';
@@ -108,6 +125,7 @@ export default function Signup() {
       name: true,
       email: true,
       password: true,
+      confirmPassword: true,
       birthDate: true
     };
     setTouched(allTouched);
@@ -116,6 +134,7 @@ export default function Signup() {
       name: !formData.name ? 'Name is required' : !validateName(formData.name) ? 'Name must be at least 2 characters' : '',
       email: !formData.email ? 'Email is required' : !validateEmail(formData.email) ? 'Please enter a valid email' : '',
       password: !formData.password ? 'Password is required' : !validatePassword(formData.password) ? 'Password must be at least 6 characters' : '',
+      confirmPassword: !formData.confirmPassword ? 'Please confirm your password' : !validateConfirmPassword(formData.confirmPassword, formData.password) ? 'Passwords do not match' : '',
       birthDate: !formData.birthDate ? 'Birth date is required' : !validateBirthDate(formData.birthDate) ? 'You must be at least 13 years old' : ''
     };
     setErrors(newErrors);
@@ -130,6 +149,7 @@ export default function Signup() {
         full_name: formData.name,
         email: formData.email,
         password: formData.password,
+        confirm_password: formData.confirmPassword,
         date_of_birth: formData.birthDate
       });
       toast.success('Account created successfully!', {
@@ -424,6 +444,68 @@ export default function Signup() {
                   </AnimatePresence>
                 </div>
 
+                {/* Confirm Password Input */}
+                <div>
+                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60" />
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur('confirmPassword')}
+                      className={`w-full pl-10 pr-20 py-3 bg-white/10 backdrop-blur-xl border ${
+                        touched.confirmPassword && errors.confirmPassword
+                          ? 'border-red-500'
+                          : touched.confirmPassword && !errors.confirmPassword && formData.confirmPassword
+                          ? 'border-green-500'
+                          : 'border-white/20'
+                      } rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-white/50`}
+                      placeholder="••••••••"
+                    />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                      {touched.confirmPassword && (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                          {errors.confirmPassword ? (
+                            <AlertCircleIcon className="w-5 h-5 text-red-500" />
+                          ) : formData.confirmPassword ? (
+                            <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                          ) : null}
+                        </motion.div>
+                      )}
+                      <motion.button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="text-white/60 hover:text-white/90"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOffIcon className="w-5 h-5" />
+                        ) : (
+                          <EyeIcon className="w-5 h-5" />
+                        )}
+                      </motion.button>
+                    </div>
+                  </div>
+                  <AnimatePresence>
+                    {touched.confirmPassword && errors.confirmPassword && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-2 text-sm text-red-400 flex items-center gap-1"
+                      >
+                        <AlertCircleIcon className="w-4 h-4" />
+                        {errors.confirmPassword}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 {/* Submit Button */}
                 <GlassButton
                   type="submit"
@@ -466,18 +548,22 @@ export default function Signup() {
               {/* Social Signup */}
               <div className="grid grid-cols-2 gap-3">
                 <GlassButton variant="secondary" size="sm">
-                  <img
+                  <Image
                     src="https://www.google.com/favicon.ico"
-                    alt=""
-                    className="w-5 h-5 mr-2"
+                    alt="Google"
+                    width={20}
+                    height={20}
+                    className="mr-2"
                   />
                   Google
                 </GlassButton>
                 <GlassButton variant="secondary" size="sm">
-                  <img
+                  <Image
                     src="https://www.facebook.com/favicon.ico"
-                    alt=""
-                    className="w-5 h-5 mr-2"
+                    alt="Facebook"
+                    width={20}
+                    height={20}
+                    className="mr-2"
                   />
                   Facebook
                 </GlassButton>
