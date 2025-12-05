@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,7 +16,7 @@ import { commonValidationRules } from '@/lib/form-validation';
 import { LoginData } from '@/types';
 import { toast } from 'sonner';
 
-export default function Login() {
+function LoginContent() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const { login, user, loading: authLoading } = useAuth();
@@ -379,5 +379,21 @@ export default function Login() {
         </motion.button>
       </div>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+        <AmbientParticles />
+        <FloatingOrbs />
+        <div className="w-full max-w-md relative z-10 text-center">
+          <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
