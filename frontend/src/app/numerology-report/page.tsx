@@ -128,7 +128,7 @@ export default function NumerologyReport() {
                       Enter Your Information
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400">
-                      We'll generate a comprehensive numerology report based on
+                      We&apos;ll generate a comprehensive numerology report based on
                       your details
                     </p>
                   </div>

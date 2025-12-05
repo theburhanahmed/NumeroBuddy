@@ -116,7 +116,7 @@ export default function Dashboard() {
               <GlassCard variant="elevated" className="p-6 md:p-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                   <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Today's Reading
+                    Today&apos;s Reading
                   </h3>
                   <motion.div className="px-4 py-2 bg-gradient-to-r from-blue-500/20 to-purple-600/20 backdrop-blur-xl rounded-full border border-blue-500/30" animate={{
                   scale: [1, 1.05, 1]
@@ -232,7 +232,7 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingUpIcon className="w-5 h-5 md:w-6 md:h-6 text-purple-600 dark:text-purple-400" />
                   <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">
-                    This Week's Insights
+                    This Week&apos;s Insights
                   </h3>
                 </div>
                 <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
