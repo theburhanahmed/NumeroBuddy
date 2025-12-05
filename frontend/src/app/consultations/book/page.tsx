@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, Clock, DollarSign, MessageSquare, Video, Phone } from 'lucide-react';
 import { GlassCard } from '@/components/ui/glass-card';
@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 import type { Expert, TimeSlot } from '@/types/consultations';
 
-export default function BookConsultationPage() {
+function BookConsultationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -219,6 +219,18 @@ export default function BookConsultationPage() {
         </GlassCard>
       </div>
     </div>
+  );
+}
+
+export default function BookConsultationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    }>
+      <BookConsultationContent />
+    </Suspense>
   );
 }
 
