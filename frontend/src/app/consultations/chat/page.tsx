@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MessageSquare, Send, Paperclip } from 'lucide-react';
 import { GlassCard } from '@/components/ui/glass-card';
@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 import type { ExpertChatConversation, ExpertChatMessage, Expert } from '@/types/consultations';
 
-export default function ChatPage() {
+function ChatPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -207,6 +207,18 @@ export default function ChatPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    }>
+      <ChatPageContent />
+    </Suspense>
   );
 }
 
