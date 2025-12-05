@@ -15,20 +15,62 @@ python manage.py showmigrations
 echo "Fixing migration dependency issue..."
 python manage.py migrate accounts 0001 --fake-initial || echo "Warning: Fake initial migration may have failed, continuing..."
 
+# Ensure accounts app migrations are applied in correct order before creating new ones
+echo "Ensuring accounts migrations are fully applied before creating new migrations..."
+# First ensure all dependencies are met
+python manage.py migrate accounts 0001 --no-input || true
+python manage.py migrate accounts 0002 --no-input || true
+# Then apply the notification migration (must be applied before 0004)
+python manage.py migrate accounts 0003 --no-input || echo "Warning: Migration 0003 may have issues"
+
+# Fix inconsistent migration history if 0004 is marked as applied but 0003 is not
+echo "Checking for inconsistent migration history..."
+python << 'PYTHON_SCRIPT'
+import os
+import sys
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'numerai.settings.production')
+django.setup()
+
+from django.db import connection
+
+cursor = connection.cursor()
+# Check if 0004 is marked as applied
+cursor.execute("""
+    SELECT COUNT(*) FROM django_migrations 
+    WHERE app = 'accounts' AND name = '0004_emailtemplate'
+""")
+has_0004 = cursor.fetchone()[0] > 0
+
+# Check if 0003 is marked as applied
+cursor.execute("""
+    SELECT COUNT(*) FROM django_migrations 
+    WHERE app = 'accounts' AND name = '0003_notification'
+""")
+has_0003 = cursor.fetchone()[0] > 0
+
+if has_0004 and not has_0003:
+    print("  ⚠ Found inconsistent state: 0004 is applied but 0003 is not")
+    print("  → Removing 0004 from migration history to fix inconsistency...")
+    cursor.execute("""
+        DELETE FROM django_migrations 
+        WHERE app = 'accounts' AND name = '0004_emailtemplate'
+    """)
+    connection.commit()
+    print("  ✓ Fixed inconsistent migration history")
+else:
+    print("  ✓ Migration history is consistent")
+PYTHON_SCRIPT
+
 echo "Creating migrations for all apps..."
 python manage.py makemigrations --no-input
 
 echo "Running database migrations..."
 python manage.py migrate --no-input --run-syncdb
 
-# Ensure accounts app migrations are fully applied (critical for notifications table)
-echo "Ensuring accounts migrations are fully applied..."
-# First ensure all dependencies are met
-python manage.py migrate accounts 0001 --no-input || true
-python manage.py migrate accounts 0002 --no-input || true
-# Then apply the notification migration
-python manage.py migrate accounts 0003 --no-input || echo "Warning: Migration 0003 may have issues"
-# Finally, run all remaining migrations
+# Ensure all accounts migrations are fully applied
+echo "Ensuring all accounts migrations are fully applied..."
 python manage.py migrate accounts --no-input
 
 # Verify critical tables exist (using actual db_table names from models)
