@@ -66,7 +66,31 @@ if has_0004 and (not has_0002 or not has_0003):
     """)
     connection.commit()
     print("  ✓ Fixed inconsistent migration history")
-else:
+
+# Check if email_templates table exists but migration is not applied
+cursor.execute("""
+    SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'email_templates')
+""")
+table_exists = cursor.fetchone()[0]
+
+if table_exists and not has_0004:
+    print("  ⚠ Found email_templates table exists but migration is not applied")
+    print("  → Will fake the migration since table already exists")
+    # Mark migration as applied without running it
+    cursor.execute("""
+        INSERT INTO django_migrations (app, name, applied)
+        SELECT 'accounts', '0004_emailtemplate', NOW()
+        WHERE NOT EXISTS (
+            SELECT 1 FROM django_migrations 
+            WHERE app = 'accounts' AND name = '0004_emailtemplate'
+        )
+    """)
+    connection.commit()
+    print("  ✓ Marked 0004_emailtemplate as applied (faked)")
+
+if not has_0004 and not table_exists:
+    print("  ✓ Migration history is consistent - 0004 will be applied normally")
+elif has_0004 and has_0002 and has_0003:
     print("  ✓ Migration history is consistent")
 PYTHON_SCRIPT
 
@@ -74,6 +98,42 @@ echo "Creating migrations for all apps..."
 python manage.py makemigrations --no-input
 
 echo "Running database migrations..."
+# Check if email_templates table exists and fake the migration if needed
+python << 'PYTHON_SCRIPT'
+import os
+import sys
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'numerai.settings.production')
+django.setup()
+
+from django.db import connection
+from django.core.management import call_command
+
+cursor = connection.cursor()
+# Check if email_templates table exists
+cursor.execute("""
+    SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'email_templates')
+""")
+table_exists = cursor.fetchone()[0]
+
+# Check if migration is applied
+cursor.execute("""
+    SELECT COUNT(*) FROM django_migrations 
+    WHERE app = 'accounts' AND name = '0004_emailtemplate'
+""")
+migration_applied = cursor.fetchone()[0] > 0
+
+if table_exists and not migration_applied:
+    print("  → email_templates table exists, faking migration 0004...")
+    try:
+        call_command('migrate', 'accounts', '0004', '--fake', verbosity=1, interactive=False)
+        print("  ✓ Successfully faked migration 0004_emailtemplate")
+    except Exception as e:
+        print(f"  ⚠ Failed to fake migration: {e}")
+        print("  → Will try to apply normally (may fail if table exists)")
+PYTHON_SCRIPT
+
 python manage.py migrate --no-input --run-syncdb
 
 # Ensure all accounts migrations are fully applied
