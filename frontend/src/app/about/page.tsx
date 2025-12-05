@@ -3,13 +3,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { SparklesIcon, HeartIcon, UsersIcon, TrendingUpIcon, StarIcon, TargetIcon } from 'lucide-react';
-import { LandingNav } from '@/components/LandingNav';
-import { LandingFooter } from '@/components/LandingFooter';
+import { LandingNav } from '@/components/landing/landing-nav';
+import { LandingFooter } from '@/components/landing/landing-footer';
 import { GlassCard } from '@/components/ui/glass-card';
-import { LiquidGlassHero } from '@/components/LiquidGlassHero';
+import { LiquidGlassHero } from '@/components/ui/liquid-glass-hero';
 import { FloatingOrbs } from '@/components/FloatingOrbs';
 import { AmbientParticles } from '@/components/AmbientParticles';
-import { MagneticCard } from '@/components/MagneticCard';
+import { MagneticCard } from '@/components/ui/magnetic-card';
 export default function AboutUs() {
   return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 relative overflow-hidden">
       <AmbientParticles />

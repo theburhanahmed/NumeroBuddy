@@ -8,7 +8,7 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { GlassButton } from '@/components/ui/glass-button';
 import { FloatingOrbs } from '@/components/FloatingOrbs';
 import { AmbientParticles } from '@/components/AmbientParticles';
-import { MagneticCard } from '@/components/MagneticCard';
+import { MagneticCard } from '@/components/ui/magnetic-card';
 type ForumCategory = 'all' | 'questions' | 'insights' | 'experiences' | 'remedies';
 interface ForumPost {
   id: string;
