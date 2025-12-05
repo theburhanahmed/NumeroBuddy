@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { UsersIcon, StarIcon, CalendarIcon, ClockIcon, VideoIcon, MessageSquareIcon, CheckCircleIcon, SparklesIcon } from 'lucide-react';
 import { AppNavbar } from '@/components/navigation/app-navbar';
@@ -184,10 +185,16 @@ export default function Consultations() {
                 <MagneticCard variant="liquid-premium" className="p-6 h-full">
                   <div className="liquid-glass-content">
                     <div className="flex items-start gap-4 mb-4">
-                      <motion.div className="relative" whileHover={{
+                      <motion.div className="relative w-20 h-20" whileHover={{
                     scale: 1.05
                   }}>
-                        <img src={expert.image} alt={expert.name} className="w-20 h-20 rounded-2xl object-cover" />
+                        <Image 
+                          src={expert.image} 
+                          alt={expert.name} 
+                          width={80}
+                          height={80}
+                          className="rounded-2xl object-cover" 
+                        />
                         <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
                           <CheckCircleIcon className="w-5 h-5" />
                         </div>

@@ -6,6 +6,24 @@ const nextConfig = {
   },
   // Remove the problematic redirect that was causing '/' to redirect to '/dashboard'
   // This was causing unexpected behavior for unauthenticated users
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'www.google.com',
+        pathname: '/favicon.ico',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.facebook.com',
+        pathname: '/favicon.ico',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

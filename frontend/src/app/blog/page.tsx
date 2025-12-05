@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { BookOpenIcon, ClockIcon, ArrowRightIcon } from 'lucide-react';
 import { LandingNav } from '@/components/landing/landing-nav';
@@ -80,7 +81,12 @@ export default function Blog() {
                 <MagneticCard variant="liquid" className="h-full overflow-hidden group cursor-pointer">
                   <div className="liquid-glass-content h-full flex flex-col">
                     <div className="relative h-48 overflow-hidden rounded-t-2xl">
-                      <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <Image 
+                        src={post.image} 
+                        alt={post.title} 
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                      />
                       <div className="absolute top-4 left-4">
                         <span className="px-3 py-1 bg-purple-600/90 backdrop-blur-xl text-white text-xs font-semibold rounded-full">
                           {post.category}
