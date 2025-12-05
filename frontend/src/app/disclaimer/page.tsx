@@ -3,11 +3,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangleIcon, InfoIcon } from 'lucide-react';
-import { LandingNav } from '@/components/LandingNav';
-import { LandingFooter } from '@/components/LandingFooter';
+import { LandingNav } from '@/components/landing/landing-nav';
+import { LandingFooter } from '@/components/landing/landing-footer';
 import { GlassCard } from '@/components/ui/glass-card';
-import { LiquidGlassHero } from '@/components/LiquidGlassHero';
-import { MagneticCard } from '@/components/MagneticCard';
+import { LiquidGlassHero } from '@/components/ui/liquid-glass-hero';
+import { MagneticCard } from '@/components/ui/magnetic-card';
 import { FloatingOrbs } from '@/components/FloatingOrbs';
 import { AmbientParticles } from '@/components/AmbientParticles';
 export default function Disclaimer() {

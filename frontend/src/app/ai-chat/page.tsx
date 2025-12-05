@@ -9,7 +9,7 @@ import { GlassButton } from '@/components/ui/glass-button';
 import { EmptyState } from '@/components/EmptyState';
 import { FloatingOrbs } from '@/components/FloatingOrbs';
 import { AmbientParticles } from '@/components/AmbientParticles';
-import { MagneticCard } from '@/components/MagneticCard';
+import { MagneticCard } from '@/components/ui/magnetic-card';
 import { toast } from 'sonner';
 interface Message {
   id: string;

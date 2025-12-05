@@ -7,7 +7,7 @@ import { AppNavbar } from '@/components/AppNavbar';
 import { GlassCard } from '@/components/ui/glass-card';
 import { FloatingOrbs } from '@/components/FloatingOrbs';
 import { AmbientParticles } from '@/components/AmbientParticles';
-import { MagneticCard } from '@/components/MagneticCard';
+import { MagneticCard } from '@/components/ui/magnetic-card';
 export default function BirthChart() {
   const coreNumbers = [{
     label: 'Life Path',

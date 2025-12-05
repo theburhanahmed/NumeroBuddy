@@ -6,7 +6,7 @@ import { SparklesIcon, StarIcon, HeartIcon, BriefcaseIcon, TrendingUpIcon, Calen
 import { PageLayout } from '@/components/ui/page-layout';
 import { GlassCard } from '@/components/ui/glass-card';
 import { GlassButton } from '@/components/ui/glass-button';
-import { MagneticCard } from '@/components/MagneticCard';
+import { MagneticCard } from '@/components/ui/magnetic-card';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
 import { SubscriptionPricingCards } from '@/components/SubscriptionPricingCards';
 import { useSubscription, SubscriptionTier } from '@/contexts/SubscriptionContext';

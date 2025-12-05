@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CheckIcon, SparklesIcon, CrownIcon, ZapIcon, ArrowRightIcon, XIcon } from 'lucide-react';
-import { LandingNav } from '@/components/LandingNav';
-import { LandingFooter } from '@/components/LandingFooter';
+import { LandingNav } from '@/components/landing/landing-nav';
+import { LandingFooter } from '@/components/landing/landing-footer';
 import { FloatingOrbs } from '@/components/FloatingOrbs';
 import { AmbientParticles } from '@/components/AmbientParticles';
-import { LiquidGlassHero } from '@/components/LiquidGlassHero';
-import { MagneticCard } from '@/components/MagneticCard';
+import { LiquidGlassHero } from '@/components/ui/liquid-glass-hero';
+import { MagneticCard } from '@/components/ui/magnetic-card';
 import { GlassButton } from '@/components/ui/glass-button';
 type BillingCycle = 'monthly' | 'yearly';
 export default function Pricing() {
