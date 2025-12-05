@@ -7,6 +7,8 @@ import { Toaster as SonnerToaster } from "sonner";
 import { Navigation } from "@/components/navigation";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { AIChatProvider } from "@/contexts/ai-chat-context";
+import { OnboardingProvider } from "@/contexts/OnboardingContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { FloatingChatWidget } from "@/components/ai-chat/floating-chat-widget";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -35,15 +37,19 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
-            <AIChatProvider>
-              <ErrorBoundary>
-                <Navigation />
-                <main className="pt-16">{children}</main>
-                <FloatingChatWidget />
-                <Toaster />
-                <SonnerToaster position="top-right" richColors />
-              </ErrorBoundary>
-            </AIChatProvider>
+            <OnboardingProvider>
+              <SubscriptionProvider>
+                <AIChatProvider>
+                  <ErrorBoundary>
+                    <Navigation />
+                    <main className="pt-16">{children}</main>
+                    <FloatingChatWidget />
+                    <Toaster />
+                    <SonnerToaster position="top-right" richColors />
+                  </ErrorBoundary>
+                </AIChatProvider>
+              </SubscriptionProvider>
+            </OnboardingProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
