@@ -7,7 +7,7 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0002_fix_allauth_dependency'),
+        ('accounts', '0003_notification'),
     ]
 
     operations = [
