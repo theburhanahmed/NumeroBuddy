@@ -115,7 +115,7 @@ export default function DailyReadings() {
             <div className="liquid-glass-content">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                  Today's Reading
+                  Today&apos;s Reading
                 </h2>
                 <motion.div className="px-4 py-2 bg-gradient-to-r from-blue-500/20 to-purple-600/20 backdrop-blur-xl rounded-full border border-blue-500/30" animate={{
                 scale: [1, 1.05, 1]
@@ -200,7 +200,7 @@ export default function DailyReadings() {
               <GlassCard variant="liquid" className="p-5">
                 <div className="liquid-glass-content">
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-                    Today's Advice
+                    Today&apos;s Advice
                   </h3>
                   <ul className="space-y-2">
                     {todayReading.advice.map((item, index) => <motion.li key={index} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300" initial={{

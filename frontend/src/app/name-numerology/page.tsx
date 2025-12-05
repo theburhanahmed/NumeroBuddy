@@ -161,7 +161,7 @@ export default function NameNumerology() {
                       </h4>
                       <p className="text-sm text-gray-700 dark:text-white/90">
                         Represents your natural talents, abilities, and the path
-                        you're meant to follow. This is who you are at your
+                        you&apos;re meant to follow. This is who you are at your
                         core.
                       </p>
                     </div>

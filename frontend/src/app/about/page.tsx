@@ -67,7 +67,7 @@ export default function AboutUs() {
                     Our Vision
                   </h2>
                   <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    To become the world's most trusted platform for numerology
+                    To become the world&apos;s most trusted platform for numerology
                     guidance, empowering millions to make informed decisions and
                     live more fulfilling lives through personalized insights.
                   </p>
@@ -142,7 +142,7 @@ export default function AboutUs() {
                   <p>
                     Today, NumerAI serves thousands of users worldwide, helping
                     them discover their life path, make important decisions, and
-                    understand their relationships better. We're proud to make
+                    understand their relationships better. We&apos;re proud to make
                     this ancient wisdom accessible to everyone, anytime,
                     anywhere.
                   </p>

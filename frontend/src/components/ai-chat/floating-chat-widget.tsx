@@ -76,16 +76,16 @@ export function FloatingChatWidget() {
     closeChat();
   };
 
-  if (shouldHide) {
-    return null;
-  }
-
   // Reset minimized state when chat is opened
   useEffect(() => {
     if (isOpen) {
       setIsMinimized(false);
     }
   }, [isOpen]);
+
+  if (shouldHide) {
+    return null;
+  }
 
   if (!isOpen || isMinimized) {
     return (
