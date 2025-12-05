@@ -23,7 +23,7 @@ python manage.py migrate accounts 0002 --no-input || true
 # Then apply the notification migration (must be applied before 0004)
 python manage.py migrate accounts 0003 --no-input || echo "Warning: Migration 0003 may have issues"
 
-# Fix inconsistent migration history if 0004 is marked as applied but 0003 is not
+# Fix inconsistent migration history - remove 0004 if any dependency is missing
 echo "Checking for inconsistent migration history..."
 python << 'PYTHON_SCRIPT'
 import os
@@ -43,6 +43,13 @@ cursor.execute("""
 """)
 has_0004 = cursor.fetchone()[0] > 0
 
+# Check if 0002 is marked as applied
+cursor.execute("""
+    SELECT COUNT(*) FROM django_migrations 
+    WHERE app = 'accounts' AND name = '0002_fix_allauth_dependency'
+""")
+has_0002 = cursor.fetchone()[0] > 0
+
 # Check if 0003 is marked as applied
 cursor.execute("""
     SELECT COUNT(*) FROM django_migrations 
@@ -50,8 +57,8 @@ cursor.execute("""
 """)
 has_0003 = cursor.fetchone()[0] > 0
 
-if has_0004 and not has_0003:
-    print("  ⚠ Found inconsistent state: 0004 is applied but 0003 is not")
+if has_0004 and (not has_0002 or not has_0003):
+    print(f"  ⚠ Found inconsistent state: 0004 is applied but dependencies are missing (0002: {has_0002}, 0003: {has_0003})")
     print("  → Removing 0004 from migration history to fix inconsistency...")
     cursor.execute("""
         DELETE FROM django_migrations 
