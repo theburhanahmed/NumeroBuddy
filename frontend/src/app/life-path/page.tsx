@@ -1,241 +1,289 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  SparklesIcon, 
-  StarIcon, 
-  TrendingUpIcon,
-  BookOpenIcon,
-  LightbulbIcon
-} from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
-import { GlassButton } from '@/components/glassmorphism/glass-button';
-import { useLifePathAnalysis } from '@/lib/hooks';
-import { Suspense } from 'react';
-
-function LifePathContent() {
+import { StarIcon, SparklesIcon, TrendingUpIcon, HeartIcon, BriefcaseIcon, BookOpenIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { AppNavbar } from '@/components/AppNavbar';
+import { GlassCard } from '@/components/ui/glass-card';
+import { GlassButton } from '@/components/ui/glass-button';
+import { FloatingOrbs } from '@/components/FloatingOrbs';
+import { AmbientParticles } from '@/components/AmbientParticles';
+import { MagneticCard } from '@/components/MagneticCard';
+export default function LifePathAnalysis() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { analysis, loading, error } = useLifePathAnalysis();
+  const [selectedPath, setSelectedPath] = useState(7);
+  const lifePaths = [{
+    number: 1,
+    title: 'The Leader',
+    description: 'Independent, ambitious, and pioneering',
+    color: 'from-red-500 to-orange-600'
+  }, {
+    number: 2,
+    title: 'The Peacemaker',
+    description: 'Diplomatic, cooperative, and sensitive',
+    color: 'from-blue-500 to-cyan-600'
+  }, {
+    number: 3,
+    title: 'The Creative',
+    description: 'Expressive, optimistic, and artistic',
+    color: 'from-yellow-500 to-amber-600'
+  }, {
+    number: 4,
+    title: 'The Builder',
+    description: 'Practical, disciplined, and reliable',
+    color: 'from-green-500 to-emerald-600'
+  }, {
+    number: 5,
+    title: 'The Adventurer',
+    description: 'Dynamic, freedom-loving, and versatile',
+    color: 'from-purple-500 to-pink-600'
+  }, {
+    number: 6,
+    title: 'The Nurturer',
+    description: 'Caring, responsible, and harmonious',
+    color: 'from-rose-500 to-pink-600'
+  }, {
+    number: 7,
+    title: 'The Seeker',
+    description: 'Analytical, spiritual, and introspective',
+    color: 'from-indigo-500 to-purple-600'
+  }, {
+    number: 8,
+    title: 'The Powerhouse',
+    description: 'Ambitious, authoritative, and material success',
+    color: 'from-gray-700 to-gray-900'
+  }, {
+    number: 9,
+    title: 'The Humanitarian',
+    description: 'Compassionate, idealistic, and generous',
+    color: 'from-teal-500 to-cyan-600'
+  }];
+  const selected = lifePaths.find(p => p.number === selectedPath);
+  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 relative overflow-hidden">
+      <AmbientParticles />
+      <FloatingOrbs />
+      <AppNavbar />
 
-  if (!user) {
-    if (typeof window !== 'undefined') {
-      router.push('/login');
-    }
-    return null;
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Life Path Analysis
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Discover your core purpose and life direction
-              </p>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 py-8">
+        {/* Hero Section */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.1
+      }}>
+          <GlassCard variant="liquid-premium" className={`p-8 mb-8 bg-gradient-to-br ${selected?.color} text-white relative overflow-hidden`}>
+            <div className="liquid-glass-content">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+              <div className="relative z-10">
+                <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                  Life Path {selectedPath}
+                </h1>
+                <h2 className="text-2xl md:text-3xl mb-2">{selected?.title}</h2>
+                <p className="text-xl text-white/90">{selected?.description}</p>
+              </div>
             </div>
-            
-            <GlassButton 
-              variant="secondary" 
-              onClick={() => router.push('/dashboard')}
-            >
-              Back to Dashboard
-            </GlassButton>
+          </GlassCard>
+        </motion.div>
+
+        {/* Life Path Numbers Grid */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.2
+      }} className="mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            Explore All Life Paths
+          </h3>
+          <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3">
+            {lifePaths.map((path, index) => <motion.button key={path.number} onClick={() => setSelectedPath(path.number)} className={`p-4 rounded-2xl backdrop-blur-xl border transition-all ${selectedPath === path.number ? 'bg-gradient-to-r ' + path.color + ' text-white border-white/30 shadow-xl scale-105' : 'bg-white/50 dark:bg-gray-800/50 border-gray-300 dark:border-white/20 text-gray-900 dark:text-white'}`} initial={{
+            opacity: 0,
+            scale: 0.8
+          }} animate={{
+            opacity: 1,
+            scale: 1
+          }} transition={{
+            delay: index * 0.05
+          }} whileHover={{
+            scale: 1.1,
+            y: -4
+          }} whileTap={{
+            scale: 0.95
+          }}>
+                <div className="text-3xl font-bold mb-1">{path.number}</div>
+                <div className="text-xs">{path.title.split(' ')[1]}</div>
+              </motion.button>)}
           </div>
+        </motion.div>
 
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : error ? (
-            <GlassCard variant="default" className="p-12 text-center">
-              <StarIcon className="w-12 h-12 text-red-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Error Loading Data</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {error}
-              </p>
-              <GlassButton 
-                variant="primary" 
-                onClick={() => router.push('/dashboard')}
-              >
-                Back to Dashboard
-              </GlassButton>
-            </GlassCard>
-          ) : analysis ? (
-            <div className="space-y-8">
-              {/* Life Path Number */}
-              <GlassCard variant="elevated" className="p-8 text-center">
-                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl font-bold text-white">{analysis.number}</span>
+        {/* Detailed Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Characteristics */}
+          <motion.div initial={{
+          opacity: 0,
+          x: -20
+        }} animate={{
+          opacity: 1,
+          x: 0
+        }} transition={{
+          delay: 0.3
+        }}>
+            <MagneticCard variant="liquid-premium" className="p-6">
+              <div className="liquid-glass-content">
+                <div className="flex items-center gap-3 mb-6">
+                  <SparklesIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Key Characteristics
+                  </h3>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{analysis.title}</h2>
-                <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                  {analysis.description}
-                </p>
-                <div className="mt-6 max-w-3xl mx-auto text-gray-600 dark:text-gray-400 text-left space-y-4">
-                  <p>
-                    Your Life Path Number is the most significant number in your numerology chart. 
-                    It reveals your innate talents, challenges you&apos;ll face, and the major lessons 
-                    you&apos;re here to learn throughout your lifetime.
-                  </p>
-                  <p>
-                    This number influences your natural inclinations, the way you approach 
-                    relationships and career decisions, and how you respond to life&apos;s ups and downs.
-                  </p>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      Strengths
+                    </h4>
+                    <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full" />
+                        Deep analytical thinking
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full" />
+                        Strong intuition
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full" />
+                        Spiritual awareness
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full" />
+                        Independent nature
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      Challenges
+                    </h4>
+                    <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-amber-500 rounded-full" />
+                        Can be overly critical
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-amber-500 rounded-full" />
+                        May isolate from others
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-amber-500 rounded-full" />
+                        Difficulty trusting
+                      </li>
+                    </ul>
+                  </div>
                 </div>
-              </GlassCard>
-
-              {/* Key Insights */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <GlassCard variant="default" className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl flex items-center justify-center">
-                      <TrendingUpIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Strengths</h3>
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    These are your natural talents and abilities that you can leverage to achieve success 
-                    and fulfillment in various areas of your life.
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {Array.isArray(analysis.strengths) && analysis.strengths.map((strength: string, index: number) => (
-                      <div 
-                        key={index} 
-                        className="px-4 py-2 bg-white/50 dark:bg-gray-800/50 rounded-xl text-center text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        {strength}
-                      </div>
-                    ))}
-                  </div>
-                </GlassCard>
-
-                <GlassCard variant="default" className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
-                      <LightbulbIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Challenges</h3>
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    These are the areas where you may face obstacles or need to develop greater awareness. 
-                    Understanding these challenges can help you navigate them more effectively.
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {Array.isArray(analysis.challenges) && analysis.challenges.map((challenge: string, index: number) => (
-                      <div 
-                        key={index} 
-                        className="px-4 py-2 bg-white/50 dark:bg-gray-800/50 rounded-xl text-center text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        {challenge}
-                      </div>
-                    ))}
-                  </div>
-                </GlassCard>
               </div>
+            </MagneticCard>
+          </motion.div>
 
-              {/* Career & Relationships */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <GlassCard variant="default" className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                      <TrendingUpIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Career Paths</h3>
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    These career paths align with your natural talents and life purpose. 
-                    Consider these options when making professional decisions or seeking fulfillment in your work.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {Array.isArray(analysis.career) && analysis.career.map((career: string, index: number) => (
-                      <span 
-                        key={index} 
-                        className="px-3 py-1.5 bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-blue-700 dark:text-blue-300 rounded-full text-sm"
-                      >
-                        {career}
-                      </span>
-                    ))}
-                  </div>
-                </GlassCard>
-
-                <GlassCard variant="default" className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-red-600 rounded-xl flex items-center justify-center">
-                      <SparklesIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Relationships</h3>
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {analysis.relationships}
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-400 mt-4">
-                    Understanding your relationship patterns can help you build stronger connections 
-                    and navigate interpersonal dynamics more effectively.
-                  </p>
-                </GlassCard>
-              </div>
-
-              {/* Personal Advice */}
-              <GlassCard variant="elevated" className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <BookOpenIcon className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Personal Advice</h3>
+          {/* Life Areas */}
+          <motion.div initial={{
+          opacity: 0,
+          x: 20
+        }} animate={{
+          opacity: 1,
+          x: 0
+        }} transition={{
+          delay: 0.4
+        }}>
+            <MagneticCard variant="liquid-premium" className="p-6">
+              <div className="liquid-glass-content">
+                <div className="flex items-center gap-3 mb-6">
+                  <TrendingUpIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Life Areas
+                  </h3>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  {analysis.advice}
-                </p>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  This personalized guidance is based on your unique Life Path Number and is designed 
-                  to help you make the most of your natural strengths while addressing potential challenges.
-                </p>
-                <GlassButton 
-                  variant="primary" 
-                  onClick={() => router.push('/ai-chat')}
-                  icon={<SparklesIcon className="w-5 h-5" />}
-                >
-                  Discuss with AI Numerologist
-                </GlassButton>
-              </GlassCard>
-            </div>
-          ) : (
-            <GlassCard variant="default" className="p-12 text-center">
-              <StarIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Data Available</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                We couldn&apos;t find your life path analysis. Please ensure your birth details are complete.
+                <div className="space-y-4">
+                  <GlassCard variant="liquid" className="p-4">
+                    <div className="liquid-glass-content">
+                      <div className="flex items-center gap-2 mb-2">
+                        <HeartIcon className="w-5 h-5 text-pink-500" />
+                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                          Relationships
+                        </h4>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        Seeks deep, meaningful connections with intellectual
+                        compatibility
+                      </p>
+                    </div>
+                  </GlassCard>
+
+                  <GlassCard variant="liquid" className="p-4">
+                    <div className="liquid-glass-content">
+                      <div className="flex items-center gap-2 mb-2">
+                        <BriefcaseIcon className="w-5 h-5 text-blue-500" />
+                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                          Career
+                        </h4>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        Excel in research, analysis, teaching, and spiritual
+                        counseling
+                      </p>
+                    </div>
+                  </GlassCard>
+
+                  <GlassCard variant="liquid" className="p-4">
+                    <div className="liquid-glass-content">
+                      <div className="flex items-center gap-2 mb-2">
+                        <BookOpenIcon className="w-5 h-5 text-purple-500" />
+                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                          Personal Growth
+                        </h4>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        Focus on spiritual development and inner wisdom
+                      </p>
+                    </div>
+                  </GlassCard>
+                </div>
+              </div>
+            </MagneticCard>
+          </motion.div>
+        </div>
+
+        {/* CTA */}
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.5
+      }}>
+          <GlassCard variant="liquid-premium" className="p-8 text-center bg-gradient-to-br from-blue-500/20 to-purple-600/20 liquid-glass-iridescent">
+            <div className="liquid-glass-content">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Want Your Complete Analysis?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                Get a detailed report with personalized insights and guidance
               </p>
-              <GlassButton 
-                variant="primary" 
-                onClick={() => router.push('/birth-chart')}
-              >
-                Generate Birth Chart
+              <GlassButton variant="liquid" size="lg" onClick={() => router.push('/report')} className="glass-glow">
+                View Full Report
               </GlassButton>
-            </GlassCard>
-          )}
+            </div>
+          </GlassCard>
         </motion.div>
       </div>
-    </div>
-  );
-}
-
-export default function LifePathAnalysisPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LifePathContent />
-    </Suspense>
-  );
+    </div>;
 }

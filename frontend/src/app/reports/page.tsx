@@ -13,8 +13,10 @@ import {
   Calendar,
   User
 } from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
-import { GlassButton } from '@/components/glassmorphism/glass-button';
+import { GlassCard } from '@/components/ui/glass-card';
+import { GlassButton } from '@/components/ui/glass-button';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { useAuth } from '@/contexts/auth-context';
 import { reportAPI, peopleAPI } from '@/lib/numerology-api';
 import { GeneratedReport, Person, ReportTemplate } from '@/types';
@@ -120,8 +122,10 @@ export default function ReportsPage() {
     : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 relative overflow-hidden p-4 sm:p-8">
+      <AmbientParticles />
+      <FloatingOrbs />
+      <div className="relative z-10 max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

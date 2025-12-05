@@ -1,264 +1,329 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { 
-  User, 
-  Users, 
-  Search,
-  Plus,
-  Edit,
-  Trash2,
-  Calendar,
-  UserCircle
-} from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
-import { GlassButton } from '@/components/glassmorphism/glass-button';
-import { useAuth } from '@/contexts/auth-context';
-import { peopleAPI } from '@/lib/numerology-api';
-import { Person } from '@/types';
-
-export default function PeoplePage() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [people, setPeople] = useState<Person[]>([]);
-  const [filteredPeople, setFilteredPeople] = useState<Person[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetchPeople();
-  }, []);
-
-  useEffect(() => {
-    if (!Array.isArray(people)) {
-      setFilteredPeople([]);
-      return;
-    }
-    
-    if (searchTerm) {
-      const filtered = people.filter(person => 
-        person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.relationship.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredPeople(filtered);
-    } else {
-      setFilteredPeople(people);
-    }
-  }, [searchTerm, people]);
-
-  const fetchPeople = async () => {
-    try {
-      setLoading(true);
-      const data = await peopleAPI.getPeople();
-      const peopleArray = Array.isArray(data) ? data : [];
-      setPeople(peopleArray);
-      setFilteredPeople(peopleArray);
-      setError('');
-    } catch (err) {
-      console.error('Failed to fetch people:', err);
-      setError('Failed to load people');
-      setPeople([]);
-      setFilteredPeople([]);
-    } finally {
-      setLoading(false);
-    }
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { UsersIcon, PlusIcon, HeartIcon, BriefcaseIcon, HomeIcon, UserIcon, CalendarIcon, SparklesIcon, EditIcon, TrashIcon, XIcon } from 'lucide-react';
+import { AppNavbar } from '@/components/AppNavbar';
+import { GlassCard } from '@/components/ui/glass-card';
+import { GlassButton } from '@/components/ui/glass-button';
+import { FloatingOrbs } from '@/components/FloatingOrbs';
+import { AmbientParticles } from '@/components/AmbientParticles';
+import { MagneticCard } from '@/components/MagneticCard';
+interface Person {
+  id: string;
+  name: string;
+  birthDate: string;
+  relationship: 'family' | 'friend' | 'partner' | 'colleague' | 'other';
+  lifePathNumber: number;
+  personalYear: number;
+  compatibility: number;
+}
+export default function PeopleManager() {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newPerson, setNewPerson] = useState({
+    name: '',
+    birthDate: '',
+    relationship: 'friend' as const
+  });
+  const [people, setPeople] = useState<Person[]>([{
+    id: '1',
+    name: 'Sarah Mitchell',
+    birthDate: '1990-05-15',
+    relationship: 'partner',
+    lifePathNumber: 7,
+    personalYear: 5,
+    compatibility: 92
+  }, {
+    id: '2',
+    name: 'Michael Chen',
+    birthDate: '1988-11-22',
+    relationship: 'friend',
+    lifePathNumber: 11,
+    personalYear: 3,
+    compatibility: 85
+  }, {
+    id: '3',
+    name: 'Emma Rodriguez',
+    birthDate: '1992-03-08',
+    relationship: 'colleague',
+    lifePathNumber: 5,
+    personalYear: 7,
+    compatibility: 78
+  }]);
+  const relationshipIcons = {
+    family: <HomeIcon className="w-5 h-5" />,
+    friend: <UsersIcon className="w-5 h-5" />,
+    partner: <HeartIcon className="w-5 h-5" />,
+    colleague: <BriefcaseIcon className="w-5 h-5" />,
+    other: <UserIcon className="w-5 h-5" />
   };
-
-  const handleDeletePerson = async (personId: string) => {
-    if (!confirm('Are you sure you want to delete this person?')) {
-      return;
-    }
-
-    try {
-      await peopleAPI.deletePerson(personId);
-      fetchPeople(); // Refresh the list
-    } catch (err) {
-      console.error('Failed to delete person:', err);
-      setError('Failed to delete person');
-    }
+  const relationshipColors = {
+    family: 'from-blue-500 to-cyan-500',
+    friend: 'from-green-500 to-emerald-500',
+    partner: 'from-pink-500 to-rose-500',
+    colleague: 'from-purple-500 to-indigo-500',
+    other: 'from-gray-500 to-slate-500'
   };
-
   const handleAddPerson = () => {
-    router.push('/people/add');
+    if (newPerson.name && newPerson.birthDate) {
+      const person: Person = {
+        id: Date.now().toString(),
+        name: newPerson.name,
+        birthDate: newPerson.birthDate,
+        relationship: newPerson.relationship,
+        lifePathNumber: Math.floor(Math.random() * 9) + 1,
+        personalYear: Math.floor(Math.random() * 9) + 1,
+        compatibility: Math.floor(Math.random() * 30) + 70
+      };
+      setPeople([...people, person]);
+      setNewPerson({
+        name: '',
+        birthDate: '',
+        relationship: 'friend'
+      });
+      setShowAddModal(false);
+    }
   };
-
-  const handleEditPerson = (personId: string) => {
-    router.push(`/people/${personId}/edit`);
+  const handleDeletePerson = (id: string) => {
+    setPeople(people.filter(p => p.id !== id));
   };
+  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 flex flex-col relative overflow-hidden">
+      <AmbientParticles />
+      <FloatingOrbs />
+      <AppNavbar />
 
-  const handleViewPerson = (personId: string) => {
-    router.push(`/people/${personId}`);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
+      <main className="flex-1 section-spacing px-4 md:px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-12 bg-white/50 dark:bg-gray-800/50 rounded w-1/3 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-48 bg-white/50 dark:bg-gray-800/50 rounded-2xl"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
-      <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} className="flex items-center justify-between mb-12">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                People
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-white dark:via-purple-300 dark:to-blue-300 bg-clip-text text-transparent">
+                My People
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Manage people for numerology reports
-              </p>
-              <p className="text-gray-600 dark:text-gray-400 mt-4 max-w-3xl">
-                Add family members, friends, or colleagues to generate personalized numerology reports for them. 
-                You can create compatibility analyses, birth charts, and other numerology insights for each person.
+              <p className="text-lg text-gray-600 dark:text-white/70">
+                Manage and explore numerology profiles of people in your life
               </p>
             </div>
-            
-            <GlassButton 
-              variant="primary" 
-              onClick={handleAddPerson}
-              icon={<Plus className="w-5 h-5" />}
-            >
+            <GlassButton variant="liquid" size="lg" icon={<PlusIcon className="w-5 h-5" />} onClick={() => setShowAddModal(true)} className="glass-glow">
               Add Person
             </GlassButton>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 rounded-2xl bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800">
-              <p className="text-red-800 dark:text-red-200">{error}</p>
-            </div>
-          )}
-
-          {/* Search */}
-          <div className="relative mb-8">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search people..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
-          </div>
-          <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
-            Search for people by name or relationship to quickly find them in your list.
-          </p>
+          </motion.div>
 
           {/* People Grid */}
-          {filteredPeople.length === 0 ? (
-            <GlassCard variant="default" className="p-12 text-center">
-              <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                No People Found
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {searchTerm ? 'No people match your search.' : 'Add people to generate numerology reports for them.'}
-              </p>
-              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                Adding people allows you to create compatibility reports, generate birth charts, 
-                and analyze numerology connections between you and your loved ones.
-              </p>
-              <GlassButton 
-                variant="primary" 
-                onClick={handleAddPerson}
-                icon={<Plus className="w-5 h-5" />}
-              >
-                Add Person
-              </GlassButton>
-            </GlassCard>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPeople.map((person) => (
-                <motion.div
-                  key={person.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <GlassCard 
-                    variant="default" 
-                    className="p-6 hover:ring-2 hover:ring-purple-500 transition-all duration-200"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                        <UserCircle className="w-6 h-6 text-white" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {people.map((person, index) => <motion.div key={person.id} initial={{
+            opacity: 0,
+            y: 20
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            delay: index * 0.1
+          }}>
+                <MagneticCard variant="liquid" className="card-padding h-full">
+                  <div className="liquid-glass-content">
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`w-12 h-12 bg-gradient-to-br ${relationshipColors[person.relationship]} rounded-2xl flex items-center justify-center text-white shadow-lg`}>
+                        {relationshipIcons[person.relationship]}
                       </div>
-                      
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          {person.name}
-                        </h3>
-                        
-                        <div className="flex items-center gap-2 mt-1 text-gray-600 dark:text-gray-400">
-                          <Calendar className="w-4 h-4" />
-                          <span className="text-sm">
-                            {new Date(person.birth_date).toLocaleDateString()}
-                          </span>
-                        </div>
-                        
-                        <div className="mt-3">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                            {person.relationship}
-                          </span>
-                        </div>
+                      <div className="flex gap-2">
+                        <motion.button className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors" whileHover={{
+                      scale: 1.1
+                    }} whileTap={{
+                      scale: 0.95
+                    }}>
+                          <EditIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        </motion.button>
+                        <motion.button onClick={() => handleDeletePerson(person.id)} className="p-2 rounded-lg hover:bg-red-500/10 transition-colors" whileHover={{
+                      scale: 1.1
+                    }} whileTap={{
+                      scale: 0.95
+                    }}>
+                          <TrashIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        </motion.button>
                       </div>
                     </div>
-                    
-                    <div className="flex gap-2 mt-6">
-                      <GlassButton 
-                        variant="secondary" 
-                        size="sm"
-                        onClick={() => handleViewPerson(person.id)}
-                        className="flex-1"
-                      >
-                        View
+
+                    {/* Info */}
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                      {person.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-white/70 mb-4 capitalize">
+                      {person.relationship}
+                    </p>
+
+                    {/* Stats */}
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Life Path
+                        </span>
+                        <span className="font-bold text-gray-900 dark:text-white">
+                          {person.lifePathNumber}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Personal Year
+                        </span>
+                        <span className="font-bold text-gray-900 dark:text-white">
+                          {person.personalYear}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Compatibility
+                        </span>
+                        <span className="font-bold text-green-600 dark:text-green-400">
+                          {person.compatibility}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Birth Date */}
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <CalendarIcon className="w-4 h-4" />
+                      <span>
+                        {new Date(person.birthDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                      </span>
+                    </div>
+
+                    {/* Action Button */}
+                    <GlassButton variant="secondary" size="sm" className="w-full" icon={<SparklesIcon className="w-4 h-4" />}>
+                      View Full Profile
+                    </GlassButton>
+                  </div>
+                </MagneticCard>
+              </motion.div>)}
+          </div>
+
+          {/* Empty State */}
+          {people.length === 0 && <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} className="text-center py-16">
+              <MagneticCard variant="liquid-premium" className="card-padding-lg max-w-md mx-auto">
+                <div className="liquid-glass-content">
+                  <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-500 rounded-3xl flex items-center justify-center text-white mb-6 mx-auto shadow-xl">
+                    <UsersIcon className="w-10 h-10" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                    No People Added Yet
+                  </h3>
+                  <p className="text-gray-600 dark:text-white/70 mb-6">
+                    Start building your numerology network by adding people in
+                    your life
+                  </p>
+                  <GlassButton variant="liquid" size="lg" icon={<PlusIcon className="w-5 h-5" />} onClick={() => setShowAddModal(true)} className="glass-glow">
+                    Add Your First Person
+                  </GlassButton>
+                </div>
+              </MagneticCard>
+            </motion.div>}
+        </div>
+      </main>
+
+      {/* Add Person Modal */}
+      <AnimatePresence>
+        {showAddModal && <motion.div initial={{
+        opacity: 0
+      }} animate={{
+        opacity: 1
+      }} exit={{
+        opacity: 0
+      }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddModal(false)}>
+            <motion.div initial={{
+          opacity: 0,
+          scale: 0.9,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          scale: 1,
+          y: 0
+        }} exit={{
+          opacity: 0,
+          scale: 0.9,
+          y: 20
+        }} onClick={e => e.stopPropagation()} className="w-full max-w-md">
+              <MagneticCard variant="liquid-premium" className="card-padding-lg">
+                <div className="liquid-glass-content">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      Add New Person
+                    </h3>
+                    <motion.button onClick={() => setShowAddModal(false)} className="p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors" whileHover={{
+                  scale: 1.1
+                }} whileTap={{
+                  scale: 0.95
+                }}>
+                      <XIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    </motion.button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Name
+                      </label>
+                      <input type="text" value={newPerson.name} onChange={e => setNewPerson({
+                    ...newPerson,
+                    name: e.target.value
+                  })} placeholder="Enter name" className="w-full px-4 py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-gray-300 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white placeholder-gray-500" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Birth Date
+                      </label>
+                      <input type="date" value={newPerson.birthDate} onChange={e => setNewPerson({
+                    ...newPerson,
+                    birthDate: e.target.value
+                  })} className="w-full px-4 py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-gray-300 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Relationship
+                      </label>
+                      <select value={newPerson.relationship} onChange={e => setNewPerson({
+                    ...newPerson,
+                    relationship: e.target.value as any
+                  })} className="w-full px-4 py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-gray-300 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 dark:text-white">
+                        <option value="family">Family</option>
+                        <option value="friend">Friend</option>
+                        <option value="partner">Partner</option>
+                        <option value="colleague">Colleague</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <GlassButton variant="ghost" size="md" onClick={() => setShowAddModal(false)} className="flex-1">
+                        Cancel
                       </GlassButton>
-                      <GlassButton 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleEditPerson(person.id)}
-                        icon={<Edit className="w-4 h-4" />}
-                      >
-                        Edit
-                      </GlassButton>
-                      <GlassButton 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleDeletePerson(person.id)}
-                        icon={<Trash2 className="w-4 h-4" />}
-                      >
-                        Delete
+                      <GlassButton variant="liquid" size="md" onClick={handleAddPerson} className="flex-1 glass-glow" disabled={!newPerson.name || !newPerson.birthDate}>
+                        Add Person
                       </GlassButton>
                     </div>
-                  </GlassCard>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      </div>
-    </div>
-  );
+                  </div>
+                </div>
+              </MagneticCard>
+            </motion.div>
+          </motion.div>}
+      </AnimatePresence>
+    </div>;
 }

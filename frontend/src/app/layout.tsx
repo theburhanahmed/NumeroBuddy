@@ -3,8 +3,11 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 import { Navigation } from "@/components/navigation";
 import { ThemeProvider } from "@/contexts/theme-context";
+import { AIChatProvider } from "@/contexts/ai-chat-context";
+import { FloatingChatWidget } from "@/components/ai-chat/floating-chat-widget";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -32,11 +35,15 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
-            <ErrorBoundary>
-              <Navigation />
-              <main className="pt-16">{children}</main>
-              <Toaster />
-            </ErrorBoundary>
+            <AIChatProvider>
+              <ErrorBoundary>
+                <Navigation />
+                <main className="pt-16">{children}</main>
+                <FloatingChatWidget />
+                <Toaster />
+                <SonnerToaster position="top-right" richColors />
+              </ErrorBoundary>
+            </AIChatProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

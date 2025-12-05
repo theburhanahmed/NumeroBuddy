@@ -10,8 +10,10 @@ import {
   ChevronLeft,
   Save
 } from 'lucide-react';
-import { GlassCard } from '@/components/glassmorphism/glass-card';
-import { GlassButton } from '@/components/glassmorphism/glass-button';
+import { GlassCard } from '@/components/ui/glass-card';
+import { GlassButton } from '@/components/ui/glass-button';
+import { FloatingOrbs } from '@/components/ui/floating-orbs';
+import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { useAuth } from '@/contexts/auth-context';
 import { peopleAPI } from '@/lib/numerology-api';
 import { Person } from '@/types';
@@ -94,7 +96,10 @@ export default function EditPersonPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 relative overflow-hidden p-4 sm:p-8">
+      <AmbientParticles />
+      <FloatingOrbs />
+      <div className="relative z-10">
         <div className="max-w-2xl mx-auto">
           <div className="animate-pulse">
             <div className="h-12 bg-white/50 dark:bg-gray-800/50 rounded w-1/3 mb-8"></div>
@@ -107,7 +112,7 @@ export default function EditPersonPage() {
 
   if (!person) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 relative overflow-hidden p-4 sm:p-8">
         <div className="max-w-2xl mx-auto">
           <GlassCard variant="default" className="p-12 text-center">
             <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -130,7 +135,7 @@ export default function EditPersonPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 relative overflow-hidden p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -281,7 +286,7 @@ export default function EditPersonPage() {
             </form>
           </GlassCard>
         </motion.div>
-      </div>
+        </div>      </div>
     </div>
   );
 }

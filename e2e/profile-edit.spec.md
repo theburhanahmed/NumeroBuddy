@@ -174,3 +174,5 @@ npx cypress run   # Headless mode
 - Use environment variables for test credentials
 - Run tests in CI/CD pipeline
 
+
+

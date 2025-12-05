@@ -63,3 +63,5 @@ def get_available_features(user: User) -> dict:
     tier = get_user_subscription_tier(user)
     return SUBSCRIPTION_FEATURES.get(tier, SUBSCRIPTION_FEATURES['free'])
 
+
+
