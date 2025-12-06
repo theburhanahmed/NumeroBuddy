@@ -33,6 +33,7 @@ from .name_numerology import compute_name_numbers
 from .tasks import generate_name_report, generate_phone_report
 from .phone_numerology import sanitize_and_validate_phone, compute_phone_numerology, compute_compatibility_score
 import os
+import traceback
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -1740,11 +1741,16 @@ def get_weekly_report(request, week_start_date_str=None, person_id=None):
         # Parse week start date
         today = date.today()
         if week_start_date_str:
-            week_start_date = dt.strptime(week_start_date_str, '%Y-%m-%d').date()
+            try:
+                week_start_date = dt.strptime(week_start_date_str, '%Y-%m-%d').date()
+            except ValueError as ve:
+                return Response({
+                    'error': f'Invalid date format. Use YYYY-MM-DD. Error: {str(ve)}'
+                }, status=status.HTTP_400_BAD_REQUEST)
             # Validate: don't allow future dates
             if week_start_date > today:
                 return Response({
-                    'error': 'Cannot generate report for future dates'
+                    'error': f'Cannot generate report for future dates. Requested: {week_start_date}, Today: {today}'
                 }, status=status.HTTP_400_BAD_REQUEST)
         else:
             # Default to current week (Sunday)
@@ -1768,19 +1774,36 @@ def get_weekly_report(request, week_start_date_str=None, person_id=None):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         # Generate new report
-        generator = get_weekly_report_generator()
-        report_data = generator.generate_weekly_report(
-            user=user,
-            week_start_date=week_start_date,
-            person=person
-        )
+        try:
+            generator = get_weekly_report_generator()
+            report_data = generator.generate_weekly_report(
+                user=user,
+                week_start_date=week_start_date,
+                person=person
+            )
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as gen_error:
+            logger.error(f'Error in weekly report generator for user {user.id}: {str(gen_error)}\n{traceback.format_exc()}')
+            return Response({
+                'error': 'Failed to generate weekly report',
+                'message': str(gen_error)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Create report instance
-        report = WeeklyReport.objects.create(
-            user=user,
-            person=person,
-            **report_data
-        )
+        try:
+            report = WeeklyReport.objects.create(
+                user=user,
+                person=person,
+                **report_data
+            )
+        except Exception as create_error:
+            import traceback
+            logger.error(f'Error creating WeeklyReport for user {user.id}: {str(create_error)}\n{traceback.format_exc()}')
+            return Response({
+                'error': 'Failed to save weekly report',
+                'message': str(create_error)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         serializer = WeeklyReportSerializer(report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1788,13 +1811,23 @@ def get_weekly_report(request, week_start_date_str=None, person_id=None):
     except Person.DoesNotExist:
         return Response({'error': 'Person not found'}, status=status.HTTP_404_NOT_FOUND)
     except ValueError as e:
+        logger.error(f'ValueError in get_weekly_report: {str(e)}')
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except KeyError as ke:
+        logger.error(f'KeyError in get_weekly_report: {str(ke)}\n{traceback.format_exc()}')
+        return Response({
+            'error': f'Missing required data: {str(ke)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except AttributeError as ae:
+        logger.error(f'AttributeError in get_weekly_report: {str(ae)}\n{traceback.format_exc()}')
+        return Response({
+            'error': f'Data access error: {str(ae)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
-        import traceback
-        logger.error(f'Error generating weekly report: {str(e)}\n{traceback.format_exc()}')
+        logger.error(f'Unexpected error in get_weekly_report for user {request.user.id if hasattr(request, "user") and request.user else "unknown"}: {str(e)}\n{traceback.format_exc()}')
         return Response({
             'error': 'Error generating weekly report',
-            'message': str(e)
+            'message': str(e) if settings.DEBUG else 'An unexpected error occurred. Please try again later.'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
