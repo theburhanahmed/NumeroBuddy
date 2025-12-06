@@ -39,8 +39,15 @@ class YearlyReportGenerator:
         
         Returns:
             Dictionary with yearly report data
+        
+        Raises:
+            ValueError: If required data is missing
         """
-        # Get numerology profile
+        # Validate year
+        if not isinstance(year, int) or year < 1900 or year > 2100:
+            raise ValueError(f"Invalid year: {year}. Year must be between 1900 and 2100.")
+        
+        # Get numerology profile and birth date
         if not numerology_profile:
             if person:
                 try:
@@ -51,9 +58,11 @@ class YearlyReportGenerator:
                         'soul_urge_number': profile.soul_urge_number,
                         'personality_number': profile.personality_number,
                     }
+                    if not person.birth_date:
+                        raise ValueError("Person birth date is required to generate yearly report")
                     birth_date = person.birth_date
                 except PersonNumerologyProfile.DoesNotExist:
-                    raise ValueError("Numerology profile not found for person")
+                    raise ValueError("Numerology profile not found for person. Please calculate the numerology profile first.")
             else:
                 try:
                     profile = NumerologyProfile.objects.get(user=user)
@@ -64,63 +73,125 @@ class YearlyReportGenerator:
                         'personality_number': profile.personality_number,
                     }
                     from accounts.models import UserProfile
-                    user_profile = UserProfile.objects.get(user=user)
-                    birth_date = user_profile.date_of_birth
-                except (NumerologyProfile.DoesNotExist, Exception) as e:
-                    raise ValueError(f"Numerology profile not found: {str(e)}")
+                    try:
+                        user_profile = UserProfile.objects.get(user=user)
+                        if not user_profile.date_of_birth:
+                            raise ValueError("Date of birth is required to generate yearly report. Please update your profile.")
+                        birth_date = user_profile.date_of_birth
+                    except UserProfile.DoesNotExist:
+                        raise ValueError("User profile not found. Please complete your profile with date of birth.")
+                except NumerologyProfile.DoesNotExist:
+                    raise ValueError("Numerology profile not found. Please complete your numerology profile first.")
         else:
             if person:
+                if not person.birth_date:
+                    raise ValueError("Person birth date is required to generate yearly report")
                 birth_date = person.birth_date
             else:
                 from accounts.models import UserProfile
-                user_profile = UserProfile.objects.get(user=user)
-                birth_date = user_profile.date_of_birth
+                try:
+                    user_profile = UserProfile.objects.get(user=user)
+                    if not user_profile.date_of_birth:
+                        raise ValueError("Date of birth is required to generate yearly report. Please update your profile.")
+                    birth_date = user_profile.date_of_birth
+                except UserProfile.DoesNotExist:
+                    raise ValueError("User profile not found. Please complete your profile with date of birth.")
+        
+        # Validate birth_date is not None
+        if birth_date is None:
+            raise ValueError("Birth date is required to generate yearly report")
+        
+        # Validate numerology_profile has required fields
+        required_fields = ['life_path_number', 'destiny_number', 'soul_urge_number', 'personality_number']
+        for field in required_fields:
+            if field not in numerology_profile or numerology_profile[field] is None:
+                raise ValueError(f"Numerology profile is incomplete. Missing field: {field}")
         
         # Calculate personal year number
-        personal_year = self.calculator.calculate_personal_year_number(birth_date, year)
+        try:
+            personal_year = self.calculator.calculate_personal_year_number(birth_date, year)
+        except Exception as e:
+            logger.error(f"Error calculating personal year number for user {user.id}, year {year}: {str(e)}")
+            raise ValueError(f"Failed to calculate personal year number: {str(e)}")
         
         # Determine cycle phase
-        cycle_phase = self._determine_cycle_phase(year, birth_date)
+        try:
+            cycle_phase = self._determine_cycle_phase(year, birth_date)
+        except Exception as e:
+            logger.warning(f"Error determining cycle phase for user {user.id}, year {year}: {str(e)}, using default")
+            cycle_phase = 'middle'  # Default fallback
         
         # Generate month-by-month overview
-        month_by_month = self._generate_month_by_month(
-            birth_date, year, numerology_profile
-        )
+        try:
+            month_by_month = self._generate_month_by_month(
+                birth_date, year, numerology_profile
+            )
+        except Exception as e:
+            logger.warning(f"Error generating month-by-month overview for user {user.id}, year {year}: {str(e)}, using empty dict")
+            month_by_month = {}
         
         # Identify key dates
-        key_dates = self._identify_key_dates(birth_date, year, personal_year)
+        try:
+            key_dates = self._identify_key_dates(birth_date, year, personal_year)
+        except Exception as e:
+            logger.warning(f"Error identifying key dates for user {user.id}, year {year}: {str(e)}, using empty list")
+            key_dates = []
         
         # Get Raj Yog patterns
-        raj_yog_patterns = self._analyze_raj_yog_patterns(user, person, year)
+        try:
+            raj_yog_patterns = self._analyze_raj_yog_patterns(user, person, year)
+        except Exception as e:
+            logger.warning(f"Error analyzing Raj Yog patterns for user {user.id}, year {year}: {str(e)}, using empty list")
+            raj_yog_patterns = []
         
         # Generate major themes
-        major_themes = self._generate_major_themes(
-            personal_year, numerology_profile, cycle_phase
-        )
+        try:
+            major_themes = self._generate_major_themes(
+                personal_year, numerology_profile, cycle_phase
+            )
+        except Exception as e:
+            logger.warning(f"Error generating major themes for user {user.id}, year {year}: {str(e)}, using default")
+            major_themes = [f"Personal Year {personal_year}"]
         
         # Generate opportunities
-        opportunities = self._generate_opportunities(
-            personal_year, numerology_profile, key_dates
-        )
+        try:
+            opportunities = self._generate_opportunities(
+                personal_year, numerology_profile, key_dates
+            )
+        except Exception as e:
+            logger.warning(f"Error generating opportunities for user {user.id}, year {year}: {str(e)}, using empty list")
+            opportunities = []
         
         # Generate challenges
-        challenges = self._generate_challenges(
-            personal_year, numerology_profile, cycle_phase
-        )
+        try:
+            challenges = self._generate_challenges(
+                personal_year, numerology_profile, cycle_phase
+            )
+        except Exception as e:
+            logger.warning(f"Error generating challenges for user {user.id}, year {year}: {str(e)}, using empty list")
+            challenges = []
         
         # Generate recommendations
-        recommendations = self._generate_recommendations(
-            personal_year, numerology_profile, major_themes
-        )
+        try:
+            recommendations = self._generate_recommendations(
+                personal_year, numerology_profile, major_themes
+            )
+        except Exception as e:
+            logger.warning(f"Error generating recommendations for user {user.id}, year {year}: {str(e)}, using default")
+            recommendations = [f"Embrace the energy of Personal Year {personal_year}"]
         
         # Generate annual overview
-        annual_overview = self._generate_annual_overview(
-            personal_year,
-            numerology_profile,
-            major_themes,
-            opportunities,
-            challenges
-        )
+        try:
+            annual_overview = self._generate_annual_overview(
+                personal_year,
+                numerology_profile,
+                major_themes,
+                opportunities,
+                challenges
+            )
+        except Exception as e:
+            logger.warning(f"Error generating annual overview for user {user.id}, year {year}: {str(e)}, using default")
+            annual_overview = f"Personal Year {personal_year} brings unique energies and opportunities for growth and transformation."
         
         # Raj Yog insights
         annual_raj_yog_status = None

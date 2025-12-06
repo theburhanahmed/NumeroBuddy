@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/contexts/auth-context';
 
 export type SubscriptionTier = 'free' | 'premium' | 'enterprise';
 
@@ -40,19 +41,45 @@ const tierLimits: Record<SubscriptionTier, UsageLimits> = {
 
 const featureTierMap: Record<string, SubscriptionTier> = {
   'full-numerology-report': 'premium',
+  'auspicious-dates': 'premium',
+  'ai-chat': 'premium',
+  'advanced-numerology': 'premium',
   'monthlyReports': 'free',
 };
 
+// Map backend subscription plans to frontend tiers
+function mapBackendTierToFrontend(backendTier: string | undefined | null): SubscriptionTier {
+  if (!backendTier) return 'free';
+  
+  const tierMap: Record<string, SubscriptionTier> = {
+    'free': 'free',
+    'basic': 'premium',
+    'premium': 'premium',
+    'elite': 'enterprise',
+    'enterprise': 'enterprise',
+  };
+  
+  return tierMap[backendTier.toLowerCase()] || 'free';
+}
+
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [tier, setTierState] = useState<SubscriptionTier>('free');
   const [usageLimits, setUsageLimits] = useState<UsageLimits>(tierLimits.free);
 
   useEffect(() => {
-    // Load tier from localStorage
-    const savedTier = localStorage.getItem('subscription_tier') as SubscriptionTier;
-    if (savedTier && ['free', 'premium', 'enterprise'].includes(savedTier)) {
-      setTierState(savedTier);
-      setUsageLimits(tierLimits[savedTier]);
+    // Check user's actual subscription from backend
+    if (user) {
+      // Check if user has is_premium flag or subscription_plan
+      const userTier = mapBackendTierToFrontend(
+        (user as any).subscription_plan || ((user as any).is_premium ? 'premium' : 'free')
+      );
+      setTierState(userTier);
+      setUsageLimits(tierLimits[userTier]);
+    } else {
+      // No user, default to free
+      setTierState('free');
+      setUsageLimits(tierLimits.free);
     }
 
     // Load usage from localStorage
@@ -65,7 +92,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         // Ignore parse errors
       }
     }
-  }, []);
+  }, [user]);
 
   const setTier = useCallback((newTier: SubscriptionTier) => {
     setTierState(newTier);

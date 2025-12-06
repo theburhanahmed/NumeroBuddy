@@ -25,12 +25,15 @@ export default function YearlyReportPage() {
 
   const fetchYearlyReport = useCallback(async (year: number) => {
     try {
+      setLoading(true);
       const data = await numerologyAPI.getYearlyReport(year);
       setReport(data);
     } catch (error: any) {
+      console.error('Failed to fetch yearly report:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to load yearly report. This may be a backend issue.';
       toast({
-        title: 'Error',
-        description: error.response?.data?.error || 'Failed to load yearly report',
+        title: 'Error Loading Yearly Report',
+        description: errorMessage,
         variant: 'destructive',
       });
       setReport(null);

@@ -28,6 +28,13 @@ export default function Dashboard() {
   const { isOnboardingComplete } = useOnboarding();
   const [isLoading, setIsLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Update showOnboarding when isOnboardingComplete changes
+  useEffect(() => {
+    if (isOnboardingComplete) {
+      setShowOnboarding(false);
+    }
+  }, [isOnboardingComplete]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [numerologyProfile, setNumerologyProfile] = useState<any>(null);
   const [dailyReading, setDailyReading] = useState<any>(null);
