@@ -75,16 +75,26 @@ class WeeklyReportGenerator:
                     from accounts.models import UserProfile
                     user_profile = UserProfile.objects.get(user=user)
                     birth_date = user_profile.date_of_birth
-                except (NumerologyProfile.DoesNotExist, Exception) as e:
-                    raise ValueError(f"Numerology profile not found: {str(e)}")
+                except NumerologyProfile.DoesNotExist:
+                    raise ValueError("Numerology profile not found. Please calculate your numerology profile first.")
+                except Exception as e:
+                    logger.error(f"Error getting numerology profile: {str(e)}")
+                    raise ValueError(f"Error accessing numerology profile: {str(e)}")
         else:
             # If profile dict provided, need birth_date separately
             if person:
                 birth_date = person.birth_date
+                if not birth_date:
+                    raise ValueError("Person birth date is required")
             else:
                 from accounts.models import UserProfile
-                user_profile = UserProfile.objects.get(user=user)
-                birth_date = user_profile.date_of_birth
+                try:
+                    user_profile = UserProfile.objects.get(user=user)
+                    birth_date = user_profile.date_of_birth
+                    if not birth_date:
+                        raise ValueError("User birth date is required. Please update your profile.")
+                except UserProfile.DoesNotExist:
+                    raise ValueError("User profile not found. Please complete your profile first.")
         
         # Calculate weekly number (average of personal day numbers for the week)
         personal_day_numbers = []
