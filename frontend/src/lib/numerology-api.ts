@@ -699,6 +699,42 @@ export const numerologyAPI = {
     }
     const response = await apiClient.get(url);
     return response.data;
+  },
+
+  /**
+   * Get auspicious dates for activities.
+   */
+  async getAuspiciousDates(data: {
+    activity_type?: string;
+    start_date: string;
+    end_date: string;
+  }): Promise<Array<{
+    date: string;
+    personal_day_number: number;
+    activity_type: string;
+    reasoning: string;
+    score: number;
+  }>> {
+    const params: any = {};
+    if (data.activity_type) params.activity_type = data.activity_type;
+    if (data.start_date) params.start_date = data.start_date;
+    if (data.end_date) params.end_date = data.end_date;
+    const response = await apiClient.get('/calendar/auspicious-dates/', { params });
+    
+    // Map response to include activity_type in each result
+    const activityType = data.activity_type || '';
+    return response.data.map((item: {
+      date: string | Date;
+      personal_day_number: number;
+      score: number;
+      reasoning: string;
+    }) => ({
+      date: typeof item.date === 'string' ? item.date : (item.date as Date).toISOString().split('T')[0],
+      personal_day_number: item.personal_day_number,
+      activity_type: activityType,
+      reasoning: item.reasoning,
+      score: item.score,
+    }));
   }
 };
 
