@@ -9,9 +9,10 @@ import { useRouter, usePathname } from 'next/navigation';
 import { GlassCard } from '@/components/ui/glass-card';
 import { GlassButton } from '@/components/ui/glass-button';
 import { toast } from 'sonner';
+import { numerologyAPI } from '@/lib/numerology-api';
 
 export function FloatingChatWidget() {
-  const { isOpen, messages, isTyping, openChat, closeChat, toggleChat, addMessage, setIsTyping } = useAIChat();
+  const { isOpen, messages, isTyping, openChat, closeChat, toggleChat, addMessage, removeMessage, setIsTyping, clearMessages } = useAIChat();
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -41,6 +42,12 @@ export function FloatingChatWidget() {
     e.preventDefault();
     if (!inputMessage.trim() || isTyping) return;
 
+    if (!user) {
+      toast.error('Please log in to use AI chat');
+      router.push('/login');
+      return;
+    }
+
     const userMessage = {
       id: Date.now().toString(),
       content: inputMessage.trim(),
@@ -49,31 +56,29 @@ export function FloatingChatWidget() {
     };
 
     addMessage(userMessage);
+    const messageToSend = inputMessage.trim();
     setInputMessage('');
     setIsTyping(true);
 
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/ai-chat', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ message: inputMessage })
-      // });
-      // const data = await response.json();
-
-      // Simulate API response
-      setTimeout(() => {
-        const aiMessage = {
-          id: (Date.now() + 1).toString(),
-          content: 'Based on your numerology profile, I can help you understand your life path better. Would you like to know more about your personal numbers?',
-          sender: 'ai' as const,
-          timestamp: new Date()
-        };
-        addMessage(aiMessage);
-        setIsTyping(false);
-      }, 1500);
-    } catch (error) {
-      toast.error('Failed to send message');
+      const response = await numerologyAPI.aiChat(messageToSend);
+      
+      const aiMessage = {
+        id: response.message.id || (Date.now() + 1).toString(),
+        content: response.message.content,
+        sender: 'ai' as const,
+        timestamp: new Date(response.message.created_at || Date.now())
+      };
+      
+      addMessage(aiMessage);
+    } catch (error: any) {
+      console.error('Failed to send message:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to get response. Please try again.';
+      toast.error(errorMessage);
+      
+      // Remove the user message on error
+      removeMessage(userMessage.id);
+    } finally {
       setIsTyping(false);
     }
   };

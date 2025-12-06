@@ -14,6 +14,7 @@ interface AIChatContextType {
   isOpen: boolean;
   isTyping: boolean;
   addMessage: (message: Message) => void;
+  removeMessage: (messageId: string) => void;
   setIsTyping: (typing: boolean) => void;
   openChat: () => void;
   closeChat: () => void;
@@ -30,6 +31,10 @@ export function AIChatProvider({ children }: { children: ReactNode }) {
 
   const addMessage = useCallback((message: Message) => {
     setMessages(prev => [...prev, message]);
+  }, []);
+
+  const removeMessage = useCallback((messageId: string) => {
+    setMessages(prev => prev.filter(m => m.id !== messageId));
   }, []);
 
   const openChat = useCallback(() => {
@@ -55,6 +60,7 @@ export function AIChatProvider({ children }: { children: ReactNode }) {
         isOpen,
         isTyping,
         addMessage,
+        removeMessage,
         setIsTyping,
         openChat,
         closeChat,

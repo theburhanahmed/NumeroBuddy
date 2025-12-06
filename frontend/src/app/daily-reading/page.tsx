@@ -39,14 +39,15 @@ export default function DailyReadings() {
   const todayReading = reading ? {
     personalDay: reading.personal_day_number,
     theme: `Personal Day ${reading.personal_day_number}`,
-    message: reading.llm_explanation || reading.actionable_tip || 'Your personalized reading for today.',
+    message: reading.llm_explanation || reading.actionable_tip || `Today is a Personal Day ${reading.personal_day_number}. This day brings unique energies and opportunities aligned with your numerology profile.`,
     luckyNumber: reading.lucky_number,
     luckyColor: reading.lucky_color,
     advice: [
-      reading.actionable_tip,
+      reading.llm_explanation ? null : reading.actionable_tip, // Only show if no LLM explanation
       reading.activity_recommendation,
       reading.warning ? `Note: ${reading.warning}` : null,
-      reading.affirmation
+      reading.affirmation,
+      reading.raj_yog_insight ? `✨ Raj Yog Insight: ${reading.raj_yog_insight}` : null
     ].filter(Boolean) as string[]
   } : {
     personalDay: 5,

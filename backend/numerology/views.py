@@ -1793,15 +1793,53 @@ def get_yearly_report(request, year=None, person_id=None):
     
     try:
         from .services.yearly_report_generator import get_yearly_report_generator
+        from accounts.models import UserProfile
         
         # Use provided year or current year
         if year is None:
             year = date.today().year
         
+        # Validate year is reasonable
+        if year < 1900 or year > 2100:
+            return Response({
+                'error': 'Invalid year. Please provide a year between 1900 and 2100.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         # Get person if specified
         person = None
         if person_id:
-            person = Person.objects.get(id=person_id, user=user)
+            try:
+                person = Person.objects.get(id=person_id, user=user, is_active=True)
+            except Person.DoesNotExist:
+                return Response({
+                    'error': 'Person not found or you do not have access to this person'
+                }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Validate numerology profile exists
+        if person:
+            # Check if person has numerology profile
+            if not PersonNumerologyProfile.objects.filter(person=person).exists():
+                return Response({
+                    'error': 'Numerology profile not found for this person. Please calculate the numerology profile first.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # Check if user has numerology profile
+            if not NumerologyProfile.objects.filter(user=user).exists():
+                return Response({
+                    'error': 'Numerology profile not found. Please complete your numerology profile first.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if user has UserProfile with date_of_birth
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+                if not user_profile.date_of_birth:
+                    return Response({
+                        'error': 'Date of birth is required to generate yearly report. Please update your profile.'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            except UserProfile.DoesNotExist:
+                return Response({
+                    'error': 'User profile not found. Please complete your profile with date of birth.'
+                }, status=status.HTTP_400_BAD_REQUEST)
         
         # Check if report already exists
         existing_report = YearlyReport.objects.filter(
@@ -1815,31 +1853,47 @@ def get_yearly_report(request, year=None, person_id=None):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         # Generate new report
-        generator = get_yearly_report_generator()
-        report_data = generator.generate_yearly_report(
-            user=user,
-            year=year,
-            person=person
-        )
+        try:
+            generator = get_yearly_report_generator()
+            report_data = generator.generate_yearly_report(
+                user=user,
+                year=year,
+                person=person
+            )
+        except ValueError as e:
+            logger.error(f'Error generating yearly report for user {user.id}, year {year}: {str(e)}')
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f'Unexpected error generating yearly report for user {user.id}, year {year}: {str(e)}', exc_info=True)
+            return Response({
+                'error': 'Failed to generate yearly report',
+                'message': 'An unexpected error occurred while generating the report. Please try again later.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Create report instance
-        report = YearlyReport.objects.create(
-            user=user,
-            person=person,
-            **report_data
-        )
+        try:
+            report = YearlyReport.objects.create(
+                user=user,
+                person=person,
+                **report_data
+            )
+        except Exception as e:
+            logger.error(f'Error creating yearly report for user {user.id}, year {year}: {str(e)}', exc_info=True)
+            return Response({
+                'error': 'Failed to save yearly report',
+                'message': 'The report was generated but could not be saved. Please try again.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         serializer = YearlyReportSerializer(report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
         
-    except Person.DoesNotExist:
-        return Response({'error': 'Person not found'}, status=status.HTTP_404_NOT_FOUND)
-    except ValueError as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
+        logger.error(f'Unexpected error in get_yearly_report for user {user.id}: {str(e)}', exc_info=True)
         return Response({
             'error': 'Error generating yearly report',
-            'message': str(e)
+            'message': 'An unexpected error occurred. Please try again later.'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
