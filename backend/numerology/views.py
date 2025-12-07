@@ -643,7 +643,6 @@ def check_compatibility(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         # Log the full traceback for debugging
-        import traceback
         error_details = traceback.format_exc()
         print(f"Compatibility check error: {str(e)}")
         print(f"Traceback: {error_details}")
@@ -1325,7 +1324,6 @@ def get_full_numerology_report(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     except Exception as e:
-        import traceback
         logger.error(f'Error generating full numerology report for user {user.id}: {str(e)}\n{traceback.format_exc()}')
         error_response = {
             'error': 'Failed to generate full numerology report',
@@ -1798,7 +1796,6 @@ def get_weekly_report(request, week_start_date_str=None, person_id=None):
                 **report_data
             )
         except Exception as create_error:
-            import traceback
             logger.error(f'Error creating WeeklyReport for user {user.id}: {str(create_error)}\n{traceback.format_exc()}')
             return Response({
                 'error': 'Failed to save weekly report',
@@ -1856,6 +1853,13 @@ def get_yearly_report(request, year=None, person_id=None):
                 'error': 'Invalid year. Please provide a year between 1900 and 2100.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        # Validate: don't allow future years
+        current_year = date.today().year
+        if year > current_year:
+            return Response({
+                'error': f'Cannot generate report for future years. Requested: {year}, Current year: {current_year}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         # Get person if specified
         person = None
         if person_id:
@@ -1911,16 +1915,26 @@ def get_yearly_report(request, year=None, person_id=None):
                 year=year,
                 person=person
             )
-        except ValueError as e:
-            logger.error(f'Error generating yearly report for user {user.id}, year {year}: {str(e)}')
+        except ValueError as ve:
+            logger.error(f'ValueError generating yearly report for user {user.id}, year {year}: {str(ve)}')
             return Response({
-                'error': str(e)
+                'error': str(ve)
             }, status=status.HTTP_400_BAD_REQUEST)
+        except KeyError as ke:
+            logger.error(f'KeyError generating yearly report for user {user.id}, year {year}: {str(ke)}\n{traceback.format_exc()}')
+            return Response({
+                'error': f'Missing required data: {str(ke)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except AttributeError as ae:
+            logger.error(f'AttributeError generating yearly report for user {user.id}, year {year}: {str(ae)}\n{traceback.format_exc()}')
+            return Response({
+                'error': f'Data access error: {str(ae)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
-            logger.error(f'Unexpected error generating yearly report for user {user.id}, year {year}: {str(e)}', exc_info=True)
+            logger.error(f'Unexpected error generating yearly report for user {user.id}, year {year}: {str(e)}\n{traceback.format_exc()}')
             return Response({
                 'error': 'Failed to generate yearly report',
-                'message': 'An unexpected error occurred while generating the report. Please try again later.'
+                'message': str(e) if settings.DEBUG else 'An unexpected error occurred while generating the report. Please try again later.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Create report instance
@@ -1930,21 +1944,36 @@ def get_yearly_report(request, year=None, person_id=None):
                 person=person,
                 **report_data
             )
-        except Exception as e:
-            logger.error(f'Error creating yearly report for user {user.id}, year {year}: {str(e)}', exc_info=True)
+        except Exception as create_error:
+            logger.error(f'Error creating YearlyReport for user {user.id}, year {year}: {str(create_error)}\n{traceback.format_exc()}')
             return Response({
                 'error': 'Failed to save yearly report',
-                'message': 'The report was generated but could not be saved. Please try again.'
+                'message': str(create_error) if settings.DEBUG else 'The report was generated but could not be saved. Please try again.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         serializer = YearlyReportSerializer(report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
         
+    except Person.DoesNotExist:
+        return Response({'error': 'Person not found'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError as e:
+        logger.error(f'ValueError in get_yearly_report: {str(e)}')
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except KeyError as ke:
+        logger.error(f'KeyError in get_yearly_report: {str(ke)}\n{traceback.format_exc()}')
+        return Response({
+            'error': f'Missing required data: {str(ke)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except AttributeError as ae:
+        logger.error(f'AttributeError in get_yearly_report: {str(ae)}\n{traceback.format_exc()}')
+        return Response({
+            'error': f'Data access error: {str(ae)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
-        logger.error(f'Unexpected error in get_yearly_report for user {user.id}: {str(e)}', exc_info=True)
+        logger.error(f'Unexpected error in get_yearly_report for user {request.user.id if hasattr(request, "user") and request.user else "unknown"}: {str(e)}\n{traceback.format_exc()}')
         return Response({
             'error': 'Error generating yearly report',
-            'message': 'An unexpected error occurred. Please try again later.'
+            'message': str(e) if settings.DEBUG else 'An unexpected error occurred. Please try again later.'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
