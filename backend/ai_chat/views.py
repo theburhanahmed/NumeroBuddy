@@ -14,10 +14,23 @@ from .serializers import (
 )
 from openai import OpenAI
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-# Initialize OpenAI client
-openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+# Lazy initialization of OpenAI client
+_openai_client = None
+
+def get_openai_client():
+    """Get or create OpenAI client instance."""
+    global _openai_client
+    if _openai_client is None:
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            raise ValueError('OPENAI_API_KEY environment variable is not set')
+        _openai_client = OpenAI(api_key=api_key)
+    return _openai_client
 
 
 @api_view(['POST'])
@@ -143,15 +156,28 @@ def ai_chat(request):
         """ + conversation_history
         
         # Call OpenAI API
-        response = openai_client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message}
-            ],
-            max_tokens=500,
-            temperature=0.7
-        )
+        try:
+            client = get_openai_client()
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message}
+                ],
+                max_tokens=500,
+                temperature=0.7
+            )
+        except ValueError as ve:
+            # API key not set
+            return Response({
+                'error': 'OpenAI API key is not configured. Please contact support.'
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except Exception as openai_error:
+            logger.error(f'OpenAI API error: {str(openai_error)}')
+            return Response({
+                'error': 'AI service is temporarily unavailable. Please try again later.',
+                'message': str(openai_error) if os.getenv('DEBUG', 'False').lower() == 'true' else None
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         
         ai_response = response.choices[0].message.content
         # Handle case where usage might be None
@@ -179,8 +205,6 @@ def ai_chat(request):
     
     except Exception as e:
         import traceback
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f'AI chat error for user {user.id}: {str(e)}\n{traceback.format_exc()}')
         return Response({
             'error': 'AI chat service unavailable',
