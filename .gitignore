@@ -26,6 +26,10 @@ yarn-error.log*
 .env*.local
 .env
 
+# deployment configs with sensitive data
+deploy/digitalocean/deploy-config.env
+**/deploy-config.env
+
 # vercel
 .vercel
 
@@ -48,3 +52,7 @@ __pycache__
 .coverage.*
 backend/venv/
 frontend/node_modules/
+
+# Deployment configs with sensitive data
+deploy/digitalocean/deploy-config.env
+**/.env.production

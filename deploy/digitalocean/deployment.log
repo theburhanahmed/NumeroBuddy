@@ -1,0 +1,110 @@
+[0;34m==========================================
+NumerAI Automated DigitalOcean Deployment
+==========================================\033[0m
+
+[0;32m[1/10] Authenticating with DigitalOcean...[0m
+Using token for context default
+
+Validating token... ✔
+
+[0;32m[2/10] Checking for existing droplet...[0m
+[1;33mFound existing droplet: 536446269[0m
+[0;34m==========================================
+NumerAI Automated DigitalOcean Deployment
+==========================================\033[0m
+
+[0;32m[1/10] Authenticating with DigitalOcean...[0m
+Using token for context default
+
+Validating token... ✔
+
+[0;32m[2/10] Checking for existing droplet...[0m
+[1;33mFound existing droplet: 536446269[0m
+[0;32mUsing existing droplet: 536446269[0m
+[0;32m[3/10] Setting up SSH key...[0m
+[0;32mUsing existing SSH key: 52606450[0m
+[0;32m[4/10] Getting droplet IP address...[0m
+[0;32mIP Address: 146.190.74.172[0m
+[0;32m[5/10] Waiting for SSH to be ready...[0m
+SSH ready
+[0;32mSSH is ready![0m
+[0;32m[6/10] Copying deployment files to server...[0m
+[0;32m[7/10] Running server setup...[0m
+==========================================
+NumerAI Server Setup Script
+==========================================
+[0;32m[1/8] Updating system packages...[0m
+Hit:1 http://mirrors.digitalocean.com/ubuntu jammy InRelease
+Hit:2 http://mirrors.digitalocean.com/ubuntu jammy-updates InRelease
+Hit:3 http://mirrors.digitalocean.com/ubuntu jammy-backports InRelease
+Hit:4 https://repos-droplet.digitalocean.com/apt/droplet-agent main InRelease
+Hit:5 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Reading package lists...
+E: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 9307 (apt-get)
+E: Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), is another process using it?
+[0;34m==========================================
+NumerAI Automated DigitalOcean Deployment
+==========================================\033[0m
+
+[0;32m[1/10] Authenticating with DigitalOcean...[0m
+Using token for context default
+
+Validating token... ✔
+
+[0;32m[2/10] Checking for existing droplet...[0m
+[1;33mFound existing droplet: 536446269[0m
+[0;32mUsing existing droplet: 536446269[0m
+[0;32m[3/10] Setting up SSH key...[0m
+[0;32mUsing existing SSH key: 52606450[0m
+[0;32m[4/10] Getting droplet IP address...[0m
+[0;32mIP Address: 146.190.74.172[0m
+[0;32m[5/10] Waiting for SSH to be ready...[0m
+SSH ready
+[0;32mSSH is ready![0m
+[0;32m[6/10] Copying deployment files to server...[0m
+[0;32m[7/10] Running server setup...[0m
+==========================================
+NumerAI Server Setup Script
+==========================================
+[0;32m[1/8] Updating system packages...[0m
+Hit:1 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:2 http://mirrors.digitalocean.com/ubuntu jammy InRelease
+Hit:3 http://mirrors.digitalocean.com/ubuntu jammy-updates InRelease
+Hit:4 http://mirrors.digitalocean.com/ubuntu jammy-backports InRelease
+Hit:5 https://repos-droplet.digitalocean.com/apt/droplet-agent main InRelease
+Reading package lists...
+E: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 9307 (apt-get)
+E: Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), is another process using it?
+(eval):1: command not found: timeout
+[0;34m==========================================
+NumerAI Automated DigitalOcean Deployment
+==========================================\033[0m
+
+[0;32m[1/10] Authenticating with DigitalOcean...[0m
+Using token for context default
+
+Validating token... ✔
+
+[0;32m[2/10] Checking for existing droplet...[0m
+[1;33mFound existing droplet: 536446269[0m
+[0;32mUsing existing droplet: 536446269[0m
+[0;32m[3/10] Setting up SSH key...[0m
+[0;32mUsing existing SSH key: 52606450[0m
+[0;32m[4/10] Getting droplet IP address...[0m
+[0;32mIP Address: 146.190.74.172[0m
+[0;32m[5/10] Waiting for SSH to be ready...[0m
+SSH ready
+[0;32mSSH is ready![0m
+[0;32m[6/10] Copying deployment files to server...[0m
+[0;32m[7/10] Running server setup...[0m
+==========================================
+NumerAI Server Setup Script
+==========================================
+[0;32m[1/8] Updating system packages...[0m
+Hit:1 http://mirrors.digitalocean.com/ubuntu jammy InRelease
+Hit:2 http://mirrors.digitalocean.com/ubuntu jammy-updates InRelease
+Hit:3 http://mirrors.digitalocean.com/ubuntu jammy-backports InRelease
+Hit:4 https://repos-droplet.digitalocean.com/apt/droplet-agent main InRelease
+Hit:5 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Reading package lists...
+E: dpkg was interrupted, you must manually run 'dpkg --configure -a' to correct the problem. 
