@@ -9,11 +9,14 @@ const HOSTNAME = process.env.HOSTNAME || '0.0.0.0';
 const NEXTJS_PORT = 3001; // Internal Next.js server port
 const NEXTJS_HOST = '127.0.0.1';
 
-// Create proxy
+// Create proxy with proper connection handling
 const proxy = httpProxy.createProxyServer({
   target: `http://${NEXTJS_HOST}:${NEXTJS_PORT}`,
   ws: true, // Enable WebSocket support
   xfwd: true, // Add X-Forwarded-* headers
+  changeOrigin: true,
+  timeout: 30000,
+  proxyTimeout: 30000,
 });
 
 // Handle proxy errors
@@ -29,9 +32,24 @@ proxy.on('error', (err, req, res) => {
 
 // Create HTTP server with proper keep-alive settings
 const server = http.createServer((req, res) => {
+  // Ensure Connection header is preserved
+  if (!req.headers.connection) {
+    req.headers.connection = 'keep-alive';
+  }
+  
   // Proxy the request
   proxy.web(req, res, {
     target: `http://${NEXTJS_HOST}:${NEXTJS_PORT}`,
+  }, (err) => {
+    if (err) {
+      console.error('Proxy error:', err.message);
+      if (!res.headersSent) {
+        res.writeHead(502, {
+          'Content-Type': 'text/plain'
+        });
+        res.end('Bad Gateway');
+      }
+    }
   });
 });
 
