@@ -1,85 +1,61 @@
-// HTTP Proxy server for Next.js to fix nginx connection closing issues
-// This proxy properly handles keep-alive connections
+// Simple HTTP proxy for Next.js to fix nginx connection closing issues
+// Manually handles requests to ensure keep-alive connections
 
 const http = require('http');
-const httpProxy = require('http-proxy');
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 const HOSTNAME = process.env.HOSTNAME || '0.0.0.0';
-const NEXTJS_PORT = 3001; // Internal Next.js server port
+const NEXTJS_PORT = 3001;
 const NEXTJS_HOST = '127.0.0.1';
-
-// Create proxy with proper connection handling
-const proxy = httpProxy.createProxyServer({
-  target: `http://${NEXTJS_HOST}:${NEXTJS_PORT}`,
-  ws: true, // Enable WebSocket support
-  xfwd: true, // Add X-Forwarded-* headers
-  changeOrigin: true,
-  timeout: 30000,
-  proxyTimeout: 30000,
-});
-
-// Handle proxy errors
-proxy.on('error', (err, req, res) => {
-  console.error('Proxy error:', err.message);
-  if (res && !res.headersSent) {
-    res.writeHead(502, {
-      'Content-Type': 'text/plain'
-    });
-    res.end('Bad Gateway');
-  }
-});
 
 // Create HTTP server with proper keep-alive settings
 const server = http.createServer((req, res) => {
-  // Ensure Connection header is preserved for keep-alive
-  if (!req.headers.connection) {
-    req.headers.connection = 'keep-alive';
-  }
-  
-  // Intercept response to ensure keep-alive
-  const originalWriteHead = res.writeHead;
-  res.writeHead = function(statusCode, statusMessage, headers) {
-    if (!headers) {
-      headers = statusMessage;
-      statusMessage = undefined;
+  // Create request to Next.js
+  const options = {
+    hostname: NEXTJS_HOST,
+    port: NEXTJS_PORT,
+    path: req.url,
+    method: req.method,
+    headers: {
+      ...req.headers,
+      'connection': 'keep-alive',
+      'host': `${NEXTJS_HOST}:${NEXTJS_PORT}`
     }
-    if (headers && typeof headers === 'object') {
-      // Force keep-alive connection
-      headers['Connection'] = 'keep-alive';
-    }
-    return originalWriteHead.call(this, statusCode, statusMessage, headers);
   };
-  
-  // Proxy the request
-  proxy.web(req, res, {
-    target: `http://${NEXTJS_HOST}:${NEXTJS_PORT}`,
-  }, (err) => {
-    if (err) {
-      console.error('Proxy error:', err.message);
-      if (!res.headersSent) {
-        res.writeHead(502, {
-          'Content-Type': 'text/plain',
-          'Connection': 'keep-alive'
-        });
-        res.end('Bad Gateway');
-      }
+
+  // Forward request to Next.js
+  const proxyReq = http.request(options, (proxyRes) => {
+    // Set response headers with keep-alive
+    res.writeHead(proxyRes.statusCode, {
+      ...proxyRes.headers,
+      'connection': 'keep-alive'
+    });
+    
+    // Pipe response
+    proxyRes.pipe(res);
+  });
+
+  // Handle proxy request errors
+  proxyReq.on('error', (err) => {
+    console.error('Proxy request error:', err.message);
+    if (!res.headersSent) {
+      res.writeHead(502, {
+        'Content-Type': 'text/plain',
+        'Connection': 'keep-alive'
+      });
+      res.end('Bad Gateway');
     }
   });
+
+  // Pipe request body
+  req.pipe(proxyReq);
 });
 
 // Configure keep-alive for nginx compatibility
-server.keepAliveTimeout = 65000; // 65 seconds (nginx default is 60s)
-server.headersTimeout = 66000; // Must be > keepAliveTimeout
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
 
-// Handle WebSocket upgrades
-server.on('upgrade', (req, socket, head) => {
-  proxy.ws(req, socket, head, {
-    target: `http://${NEXTJS_HOST}:${NEXTJS_PORT}`,
-  });
-});
-
-// Start proxy server
+// Start server
 server.listen(PORT, HOSTNAME, () => {
   console.log(`> Proxy server ready on http://${HOSTNAME}:${PORT}`);
   console.log(`> Proxying to Next.js on http://${NEXTJS_HOST}:${NEXTJS_PORT}`);
