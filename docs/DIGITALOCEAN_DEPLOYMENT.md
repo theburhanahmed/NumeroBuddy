@@ -98,7 +98,7 @@ ssh root@<your-droplet-ip>
 
 ```bash
 cd /tmp
-git clone https://github.com/yourusername/NumerAI.git
+git clone https://github.com/theburhanahmed/NumerAI.git
 cd NumerAI
 ```
 

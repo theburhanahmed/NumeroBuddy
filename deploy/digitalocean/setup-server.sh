@@ -22,6 +22,15 @@ fi
 
 # Update system packages
 echo -e "${GREEN}[1/8] Updating system packages...${NC}"
+# Wait for any existing apt processes to finish
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+    echo "Waiting for apt to finish..."
+    sleep 5
+done
+# Kill any stuck apt processes (if any)
+pkill -9 apt-get 2>/dev/null || true
+pkill -9 apt 2>/dev/null || true
+sleep 2
 apt-get update
 apt-get upgrade -y
 
