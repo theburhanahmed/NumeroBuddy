@@ -25,14 +25,20 @@ const server = http.createServer((req, res) => {
 
   // Forward request to Next.js
   const proxyReq = http.request(options, (proxyRes) => {
+    // Copy headers and force keep-alive
+    const headers = { ...proxyRes.headers };
+    headers['connection'] = 'keep-alive';
+    delete headers['content-length']; // Let Node.js calculate this
+    
     // Set response headers with keep-alive
-    res.writeHead(proxyRes.statusCode, {
-      ...proxyRes.headers,
-      'connection': 'keep-alive'
+    res.writeHead(proxyRes.statusCode, headers);
+    
+    // Pipe response and handle end
+    proxyRes.on('end', () => {
+      res.end();
     });
     
-    // Pipe response
-    proxyRes.pipe(res);
+    proxyRes.pipe(res, { end: false });
   });
 
   // Handle proxy request errors
