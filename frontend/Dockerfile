@@ -46,7 +46,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Backup original server.js
 RUN if [ -f server.js ]; then mv server.js server.js.original; fi
 
-# Install http-proxy in runner stage
+# Install http-proxy in runner stage (needed for proxy server)
 RUN npm install http-proxy
 
 # Copy proxy server and start script
