@@ -29,7 +29,9 @@ apiClient.interceptors.request.use(
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/bd39975f-6fe4-411e-a1e1-89be47e83836',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api-client.ts:26',message:'Auth token added to headers',data:{authHeaderPrefix:config.headers.Authorization?.substring(0,10)||'none'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        const authHeaderValue = config.headers.Authorization;
+        const authHeaderPrefix = typeof authHeaderValue === 'string' ? authHeaderValue.substring(0,10) : 'none';
+        fetch('http://127.0.0.1:7242/ingest/bd39975f-6fe4-411e-a1e1-89be47e83836',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api-client.ts:26',message:'Auth token added to headers',data:{authHeaderPrefix},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
         // #endregion
       } else {
         // #region agent log
@@ -118,9 +120,11 @@ apiClient.interceptors.response.use(
 
       // #region agent log
       const requestUrl = originalRequest?.url ? `${originalRequest.baseURL || ''}${originalRequest.url}` : 'unknown';
-      const authHeader = originalRequest?.headers?.Authorization || 'none';
+      const authHeaderRaw = originalRequest?.headers?.Authorization;
+      const authHeader = typeof authHeaderRaw === 'string' ? authHeaderRaw : (authHeaderRaw ? String(authHeaderRaw) : 'none');
+      const authHeaderPrefix = typeof authHeader === 'string' ? authHeader.substring(0,20) : 'none';
       const errorDataStr = typeof data === 'object' ? JSON.stringify(data).substring(0,500) : String(data).substring(0,500);
-      fetch('http://127.0.0.1:7242/ingest/bd39975f-6fe4-411e-a1e1-89be47e83836',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api-client.ts:91',message:'API error response received',data:{status,url:requestUrl,errorData:errorDataStr,hasAuthHeader:!!authHeader,authHeaderPrefix:authHeader.substring(0,20),method:originalRequest?.method},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7242/ingest/bd39975f-6fe4-411e-a1e1-89be47e83836',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api-client.ts:91',message:'API error response received',data:{status,url:requestUrl,errorData:errorDataStr,hasAuthHeader:!!authHeaderRaw,authHeaderPrefix,method:originalRequest?.method},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
       // #endregion
 
       // Don't show toast for 401 as it's handled above (or redirects)
