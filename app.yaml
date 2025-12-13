@@ -31,11 +31,6 @@ ingress:
           prefix: /media
       component:
         name: backend
-    - match:
-        path:
-          prefix: /
-      component:
-        name: frontend
 
 services:
   # Django Backend Service (Docker)
@@ -133,33 +128,6 @@ services:
       - key: APPLE_TEAM_ID
         scope: RUN_TIME
         type: SECRET
-
-  # Next.js Frontend Service (Docker)
-  - name: frontend
-    github:
-      repo: theburhanahmed/NumerAI
-      branch: main
-      deploy_on_push: true
-    dockerfile_path: frontend/Dockerfile
-    source_dir: frontend
-    instance_count: 1
-    instance_size_slug: basic-xxs
-    http_port: 3000
-    health_check:
-      http_path: /
-      initial_delay_seconds: 60
-      period_seconds: 10
-      timeout_seconds: 5
-      success_threshold: 1
-      failure_threshold: 3
-    envs:
-      - key: NODE_ENV
-        value: production
-      - key: NEXT_PUBLIC_API_URL
-        scope: RUN_TIME
-        type: SECRET
-      - key: PORT
-        value: "3000"
 
   # Redis Container Service (as service for discoverability)
   - name: redis

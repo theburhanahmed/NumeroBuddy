@@ -1,17 +1,68 @@
 # DigitalOcean App Platform Deployment Guide
 
-Complete guide for deploying NumerAI to DigitalOcean App Platform.
+Complete guide for deploying NumerAI backend services to DigitalOcean App Platform.
+
+> **Note**: This deployment uses a **split architecture**:
+> - **Frontend**: Deployed to [Vercel](../VERCEL_DEPLOYMENT.md) (Next.js optimized hosting)
+> - **Backend Services**: Deployed to DigitalOcean App Platform (Django, PostgreSQL, Redis, Celery)
 
 ## Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Initial Setup](#initial-setup)
-3. [Creating the App](#creating-the-app)
-4. [Environment Variables](#environment-variables)
-5. [Custom Domain Configuration](#custom-domain-configuration)
-6. [Post-Deployment Steps](#post-deployment-steps)
-7. [Monitoring & Maintenance](#monitoring--maintenance)
-8. [Troubleshooting](#troubleshooting)
+1. [Architecture Overview](#architecture-overview)
+2. [Prerequisites](#prerequisites)
+3. [Initial Setup](#initial-setup)
+4. [Creating the App](#creating-the-app)
+5. [Environment Variables](#environment-variables)
+6. [Custom Domain Configuration](#custom-domain-configuration)
+7. [Post-Deployment Steps](#post-deployment-steps)
+8. [Monitoring & Maintenance](#monitoring--maintenance)
+9. [Troubleshooting](#troubleshooting)
+
+---
+
+## Architecture Overview
+
+### Split Deployment Architecture
+
+The NumerAI application uses a split deployment strategy:
+
+```
+┌─────────────────┐
+│   User Browser  │
+└────────┬────────┘
+         │ HTTPS
+         ▼
+┌─────────────────┐      ┌──────────────────┐
+│  Vercel Frontend │─────▶│ DigitalOcean     │
+│   (Next.js)      │ API  │ Backend (Django) │
+└─────────────────┘      └────────┬─────────┘
+                                   │
+                    ┌──────────────┼──────────────┐
+                    ▼              ▼              ▼
+            ┌───────────┐  ┌──────────┐  ┌──────────────┐
+            │PostgreSQL │  │  Redis    │  │Celery Workers│
+            │  Database │  │  Cache    │  │   & Beat     │
+            └───────────┘  └──────────┘  └──────────────┘
+```
+
+### Services Deployed on DigitalOcean
+
+- **Backend Service**: Django REST API
+- **PostgreSQL Database**: Managed database
+- **Redis**: Cache and message broker
+- **Celery Worker**: Background task processing
+- **Celery Beat**: Scheduled task scheduler
+
+### Services Deployed on Vercel
+
+- **Frontend**: Next.js application (see [Vercel Deployment Guide](../VERCEL_DEPLOYMENT.md))
+
+### Benefits of Split Deployment
+
+- **Optimized Hosting**: Vercel provides excellent Next.js optimization and edge network
+- **Cost Efficiency**: Separate scaling for frontend and backend
+- **Performance**: CDN distribution for frontend, dedicated resources for backend
+- **Flexibility**: Independent deployments and scaling
 
 ---
 
@@ -21,6 +72,7 @@ Complete guide for deploying NumerAI to DigitalOcean App Platform.
 
 - **DigitalOcean Account**: Sign up at https://www.digitalocean.com
 - **GitHub Account**: Your code must be in a GitHub repository
+- **Vercel Account**: For frontend deployment (see [Vercel Deployment Guide](../VERCEL_DEPLOYMENT.md))
 - **Domain Name** (optional): For custom domain setup
 - **Email Service**: SMTP credentials (Gmail, SendGrid, Mailgun, etc.)
 - **OpenAI API Key**: For AI features
@@ -134,17 +186,9 @@ If you encounter issues with the app spec file, use the dashboard method:
    - **Environment**: Python
    - Add routes: `/api`, `/admin`, `/static`, `/media`
 
-3. **Add Frontend Service**:
-   - Click **"Add Component"** → **"Web Service"**
-   - **Name**: `frontend`
-   - **Source Directory**: `frontend`
-   - **Build Command**: `npm ci && npm run build`
-   - **Run Command**: `npm start`
-   - **HTTP Port**: `3000`
-   - **Environment**: Node.js
-   - Add route: `/`
+   > **Note**: Frontend is deployed separately on Vercel. Do not add a frontend service to DigitalOcean.
 
-4. **Add PostgreSQL Container**:
+3. **Add PostgreSQL Container**:
    - Click **"Add Component"** → **"Worker"**
    - **Name**: `postgres`
    - **Docker Image**: `postgres:14-alpine`
@@ -235,9 +279,11 @@ CELERY_RESULT_BACKEND=redis://redis:6379/2
 
 **CORS & Security:**
 ```
-CORS_ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+CORS_ALLOWED_ORIGINS=https://your-vercel-app.vercel.app,https://yourdomain.com,https://www.yourdomain.com
+CSRF_TRUSTED_ORIGINS=https://your-vercel-app.vercel.app,https://yourdomain.com,https://www.yourdomain.com
 ```
+
+> **Important**: Add your Vercel frontend domain(s) to CORS and CSRF trusted origins. This allows the frontend to make API requests to the backend. Include both production and preview deployment URLs if needed.
 
 **Email Configuration:**
 ```
@@ -278,11 +324,7 @@ APPLE_KEY_ID=your-apple-key-id
 APPLE_TEAM_ID=your-apple-team-id
 ```
 
-#### Frontend Service
-
-```
-NEXT_PUBLIC_API_URL=https://yourdomain.com/api/v1
-```
+> **Note**: Frontend environment variables are configured in Vercel, not DigitalOcean. See [Vercel Deployment Guide](../VERCEL_DEPLOYMENT.md) for frontend configuration.
 
 #### PostgreSQL Container
 
@@ -328,10 +370,11 @@ DigitalOcean will provide DNS records to add:
 
 After domain is configured, update:
 
-- `ALLOWED_HOSTS`: Add your domain
-- `CORS_ALLOWED_ORIGINS`: Add your frontend URL
-- `CSRF_TRUSTED_ORIGINS`: Add your frontend URL
-- `NEXT_PUBLIC_API_URL`: Update to your backend URL
+- `ALLOWED_HOSTS`: Add your backend domain
+- `CORS_ALLOWED_ORIGINS`: Add your Vercel frontend URL(s)
+- `CSRF_TRUSTED_ORIGINS`: Add your Vercel frontend URL(s)
+
+> **Note**: `NEXT_PUBLIC_API_URL` is configured in Vercel, not DigitalOcean. Update it in your Vercel project settings to point to your DigitalOcean backend URL.
 
 ---
 
@@ -344,12 +387,13 @@ Check that all services are running:
 1. Go to App Platform dashboard
 2. Click on your app
 3. Verify all services show **"Running"** status:
-   - `postgres` (PostgreSQL container)
+   - `postgres` (PostgreSQL database)
    - `redis` (Redis container)
    - `backend` (Django backend)
-   - `frontend` (Next.js frontend)
    - `celery-worker` (Celery worker)
    - `celery-beat` (Celery beat scheduler)
+
+> **Note**: Frontend is deployed separately on Vercel. Verify frontend deployment in your Vercel dashboard.
 
 ### Step 2: Check Health Endpoints
 
@@ -364,7 +408,7 @@ Expected response:
 ```
 
 **Frontend:**
-Open in browser: `https://yourdomain.com`
+Open in browser: Your Vercel frontend URL (e.g., `https://your-app.vercel.app` or custom domain)
 
 ### Step 3: Run Database Migrations
 
@@ -515,16 +559,19 @@ doctl apps create --spec app.yaml
 
 ### Frontend Not Loading
 
-1. **Check Build**:
-   - Verify frontend build completed successfully
-   - Check build logs for errors
+> **Note**: Frontend is deployed on Vercel, not DigitalOcean. See [Vercel Deployment Guide](../VERCEL_DEPLOYMENT.md) for frontend troubleshooting.
+
+1. **Check Vercel Deployment**:
+   - Verify frontend build completed successfully in Vercel
+   - Check Vercel build logs for errors
 
 2. **Verify API URL**:
-   - Ensure `NEXT_PUBLIC_API_URL` is set correctly
-   - Should point to backend service URL
+   - Ensure `NEXT_PUBLIC_API_URL` is set correctly in Vercel
+   - Should point to your DigitalOcean backend URL
 
-3. **Check Routes**:
-   - Verify frontend route is configured in `app.yaml`
+3. **Check CORS Configuration**:
+   - Verify backend `CORS_ALLOWED_ORIGINS` includes Vercel domain
+   - Check browser console for CORS errors
 
 ### Celery Not Working
 
@@ -569,9 +616,10 @@ App Platform automatically provides internal hostnames for services:
 - **PostgreSQL**: `postgres` (service name)
 - **Redis**: `redis` (service name)
 - **Backend**: `backend` (service name)
-- **Frontend**: `frontend` (service name)
 
 Services can reference each other using these hostnames within the App Platform network.
+
+> **Note**: Frontend is deployed on Vercel and communicates with the backend via HTTPS using the public backend URL. Internal service discovery is not used for frontend-backend communication.
 
 ---
 
@@ -579,21 +627,25 @@ Services can reference each other using these hostnames within the App Platform 
 
 **Basic Setup (Minimum):**
 - Backend: Basic-XXS ($5/month)
-- Frontend: Basic-XXS ($5/month)
-- PostgreSQL Container: Basic-XXS ($5/month)
+- PostgreSQL Database: Basic-XXS ($5/month)
 - Redis Container: Basic-XXS ($5/month)
 - Celery Worker: Basic-XXS ($5/month)
 - Celery Beat: Basic-XXS ($5/month)
-- **Total: ~$30/month**
+- **DigitalOcean Total: ~$25/month**
+- **Vercel**: Free tier (or Pro $20/month for production)
+- **Combined Total: ~$25-45/month**
 
 **Recommended Production Setup:**
 - Backend: Basic ($12/month)
-- Frontend: Basic ($12/month)
-- PostgreSQL Container: Basic ($12/month)
+- PostgreSQL Database: Basic ($12/month)
 - Redis Container: Basic-XXS ($5/month)
 - Celery Worker: Basic ($12/month)
 - Celery Beat: Basic-XXS ($5/month)
-- **Total: ~$58/month**
+- **DigitalOcean Total: ~$46/month**
+- **Vercel**: Pro ($20/month) or Enterprise
+- **Combined Total: ~$66/month+**
+
+> **Note**: Frontend hosting costs are separate on Vercel. Vercel offers a generous free tier for personal projects.
 
 ---
 
