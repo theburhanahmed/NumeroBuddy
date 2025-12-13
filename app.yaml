@@ -1,6 +1,14 @@
 name: numerai
 region: nyc
 
+databases:
+  - name: postgres
+    engine: PG
+    version: "14"
+    production: false
+    db_name: numerai
+    db_user: numerai
+
 ingress:
   rules:
     - match:
@@ -61,18 +69,9 @@ services:
       - key: ALLOWED_HOSTS
         scope: RUN_TIME
         type: SECRET
-      - key: DB_NAME
-        value: numerai
-      - key: DB_USER
-        value: numerai
-      - key: DB_PASSWORD
-        value: changeme123
+      - key: DATABASE_URL
         scope: RUN_TIME
         type: SECRET
-      - key: DB_HOST
-        value: postgres
-      - key: DB_PORT
-        value: "5432"
       - key: REDIS_URL
         value: redis://redis:6379/0
       - key: CELERY_BROKER_URL
@@ -166,25 +165,6 @@ services:
       - key: PORT
         value: "3000"
 
-  # PostgreSQL Database Container Service (as service for discoverability)
-  - name: postgres
-    image:
-      registry_type: DOCKER_HUB
-      repository: postgres
-      tag: "14-alpine"
-    instance_count: 1
-    instance_size_slug: basic-xxs
-    http_port: 5432
-    envs:
-      - key: POSTGRES_DB
-        value: numerai
-      - key: POSTGRES_USER
-        value: numerai
-      - key: POSTGRES_PASSWORD
-        value: changeme123
-        scope: RUN_TIME
-        type: SECRET
-
   # Redis Container Service (as service for discoverability)
   - name: redis
     image:
@@ -221,18 +201,9 @@ workers:
       - key: ALLOWED_HOSTS
         scope: RUN_TIME
         type: SECRET
-      - key: DB_NAME
-        value: numerai
-      - key: DB_USER
-        value: numerai
-      - key: DB_PASSWORD
-        value: changeme123
+      - key: DATABASE_URL
         scope: RUN_TIME
         type: SECRET
-      - key: DB_HOST
-        value: postgres
-      - key: DB_PORT
-        value: "5432"
       - key: REDIS_URL
         value: redis://redis:6379/0
       - key: CELERY_BROKER_URL
@@ -320,18 +291,9 @@ workers:
       - key: ALLOWED_HOSTS
         scope: RUN_TIME
         type: SECRET
-      - key: DB_NAME
-        value: numerai
-      - key: DB_USER
-        value: numerai
-      - key: DB_PASSWORD
-        value: changeme123
+      - key: DATABASE_URL
         scope: RUN_TIME
         type: SECRET
-      - key: DB_HOST
-        value: postgres
-      - key: DB_PORT
-        value: "5432"
       - key: REDIS_URL
         value: redis://redis:6379/0
       - key: CELERY_BROKER_URL
