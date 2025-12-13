@@ -33,10 +33,13 @@ for host in env_allowed_hosts:
 ALLOWED_HOSTS = list(set(env_allowed_hosts + backend_subdomains + [s.strip() for s in default_allowed_hosts.split(',') if s.strip()]))
 
 # Database - Support both DATABASE_URL and individual DB settings
-# Priority: DATABASE_URL > individual settings
-if config('DATABASE_URL', default=None):
+# Priority: DATABASE_URL > postgres_DATABASE_URL > individual settings
+# DigitalOcean App Platform injects managed database as ${DATABASE_NAME}_DATABASE_URL
+database_url = config('DATABASE_URL', default=None) or config('postgres_DATABASE_URL', default=None)
+if database_url:
     DATABASES = {
         'default': dj_database_url.config(
+            default=database_url,
             conn_max_age=600,
             conn_health_checks=True,
         )
