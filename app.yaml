@@ -161,8 +161,7 @@ services:
       - key: PORT
         value: "3000"
 
-workers:
-  # PostgreSQL Database Container Service
+  # PostgreSQL Database Container Service (as service for discoverability)
   - name: postgres
     image:
       registry_type: DOCKER_HUB
@@ -170,8 +169,7 @@ workers:
       tag: "14-alpine"
     instance_count: 1
     instance_size_slug: basic-xxs
-    internal_ports:
-      - 5432
+    http_port: 5432
     envs:
       - key: POSTGRES_DB
         value: numerai
@@ -182,7 +180,7 @@ workers:
         scope: RUN_TIME
         type: SECRET
 
-  # Redis Container Service
+  # Redis Container Service (as service for discoverability)
   - name: redis
     image:
       registry_type: DOCKER_HUB
@@ -190,9 +188,10 @@ workers:
       tag: "7-alpine"
     instance_count: 1
     instance_size_slug: basic-xxs
-    internal_ports:
-      - 6379
+    http_port: 6379
     run_command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+workers:
 
   # Celery Worker Service
   - name: celery-worker
