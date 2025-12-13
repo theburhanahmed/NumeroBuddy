@@ -68,6 +68,8 @@ services:
       - key: ALLOWED_HOSTS
         scope: RUN_TIME
         type: SECRET
+      - key: DATABASE_URL
+        value: ${postgres.DATABASE_URL}
       - key: REDIS_URL
         value: redis://redis:6379/0
       - key: CELERY_BROKER_URL
@@ -194,6 +196,8 @@ workers:
       - key: ALLOWED_HOSTS
         scope: RUN_TIME
         type: SECRET
+      - key: DATABASE_URL
+        value: ${postgres.DATABASE_URL}
       - key: REDIS_URL
         value: redis://redis:6379/0
       - key: CELERY_BROKER_URL
@@ -280,6 +284,8 @@ workers:
       - key: ALLOWED_HOSTS
         scope: RUN_TIME
         type: SECRET
+      - key: DATABASE_URL
+        value: ${postgres.DATABASE_URL}
       - key: REDIS_URL
         value: redis://redis:6379/0
       - key: CELERY_BROKER_URL
