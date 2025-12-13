@@ -70,6 +70,7 @@ services:
         scope: RUN_TIME
         type: SECRET
       - key: DATABASE_URL
+        value: ${postgres.DATABASE_URL}
         scope: RUN_TIME
         type: SECRET
       - key: REDIS_URL
@@ -202,6 +203,7 @@ workers:
         scope: RUN_TIME
         type: SECRET
       - key: DATABASE_URL
+        value: ${postgres.DATABASE_URL}
         scope: RUN_TIME
         type: SECRET
       - key: REDIS_URL
@@ -292,6 +294,7 @@ workers:
         scope: RUN_TIME
         type: SECRET
       - key: DATABASE_URL
+        value: ${postgres.DATABASE_URL}
         scope: RUN_TIME
         type: SECRET
       - key: REDIS_URL
