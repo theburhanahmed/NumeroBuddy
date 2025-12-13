@@ -62,7 +62,10 @@ else:
     }
 
 # CORS Settings for production
-# Default to frontend URL if not specified in environment
+# Supports Vercel frontend deployments (both preview and production)
+# Set CORS_ALLOWED_ORIGINS environment variable with comma-separated list of allowed origins
+# Example: https://your-app.vercel.app,https://www.yourdomain.com,https://preview-deployment.vercel.app
+# Vercel preview deployments use *.vercel.app pattern
 default_frontend_url = 'https://numerobuddy.com'
 cors_origins = config('CORS_ALLOWED_ORIGINS', default=default_frontend_url, cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
 CORS_ALLOWED_ORIGINS = cors_origins if cors_origins else [default_frontend_url]
@@ -105,7 +108,10 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='https://numerai-frontend.onrender.com', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
+# CSRF_TRUSTED_ORIGINS: Must match CORS_ALLOWED_ORIGINS for Vercel frontend
+# Set CSRF_TRUSTED_ORIGINS environment variable with comma-separated list of trusted origins
+# Example: https://your-app.vercel.app,https://www.yourdomain.com
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='https://numerobuddy.com', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 SECURE_CONTENT_TYPE_NOSNIFF = True
