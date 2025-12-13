@@ -38,16 +38,15 @@ ingress:
         name: frontend
 
 services:
-  # Django Backend Service
+  # Django Backend Service (Docker)
   - name: backend
     github:
       repo: theburhanahmed/NumerAI
       branch: main
       deploy_on_push: true
+    dockerfile_path: backend/Dockerfile
     source_dir: backend
-    build_command: pip install -r requirements.txt
     run_command: ./start.sh
-    environment_slug: python
     instance_count: 1
     instance_size_slug: basic-xxs
     http_port: 8000
@@ -133,16 +132,14 @@ services:
         scope: RUN_TIME
         type: SECRET
 
-  # Next.js Frontend Service
+  # Next.js Frontend Service (Docker)
   - name: frontend
     github:
       repo: theburhanahmed/NumerAI
       branch: main
       deploy_on_push: true
+    dockerfile_path: frontend/Dockerfile
     source_dir: frontend
-    build_command: npm ci --include=dev || npm install && npm run build
-    run_command: npm start
-    environment_slug: node-js
     instance_count: 1
     instance_size_slug: basic-xxs
     http_port: 3000
@@ -175,16 +172,15 @@ services:
 
 workers:
 
-  # Celery Worker Service
+  # Celery Worker Service (Docker)
   - name: celery-worker
     github:
       repo: theburhanahmed/NumerAI
       branch: main
       deploy_on_push: true
+    dockerfile_path: backend/Dockerfile
     source_dir: backend
-    build_command: pip install -r requirements.txt
     run_command: celery -A numerai worker -l info
-    environment_slug: python
     instance_count: 1
     instance_size_slug: basic-xxs
     envs:
@@ -262,16 +258,15 @@ workers:
         scope: RUN_TIME
         type: SECRET
 
-  # Celery Beat Service
+  # Celery Beat Service (Docker)
   - name: celery-beat
     github:
       repo: theburhanahmed/NumerAI
       branch: main
       deploy_on_push: true
+    dockerfile_path: backend/Dockerfile
     source_dir: backend
-    build_command: pip install -r requirements.txt
     run_command: celery -A numerai beat -l info
-    environment_slug: python
     instance_count: 1
     instance_size_slug: basic-xxs
     envs:

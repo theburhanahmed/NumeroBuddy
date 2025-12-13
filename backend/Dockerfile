@@ -35,6 +35,9 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code
 COPY . .
 
+# Make start.sh executable
+RUN chmod +x start.sh
+
 # Create directories for static files and media
 RUN mkdir -p /app/staticfiles /app/media && \
     chmod -R 755 /app/staticfiles /app/media
