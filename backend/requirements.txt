@@ -29,7 +29,7 @@ cffi==1.17.1
 openai==1.55.3
 
 # PDF Generation
-reportlab==4.2.0
+reportlab==4.4.7
 
 # Push Notifications
 firebase-admin==6.5.0
