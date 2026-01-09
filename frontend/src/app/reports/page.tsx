@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -13,7 +15,7 @@ import {
   Calendar,
   User,
   Settings,
-  Compare,
+  GitCompare as Compare,
   Clock,
   Layout
 } from 'lucide-react';

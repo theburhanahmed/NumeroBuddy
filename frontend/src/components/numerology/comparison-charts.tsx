@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, Radar, Scatter, Download } from 'lucide-react';
+import { BarChart3, Radar, TrendingUp as Scatter, Download } from 'lucide-react';
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { numerologyAPI } from '@/lib/numerology-api';
