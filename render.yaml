@@ -49,14 +49,6 @@ services:
       - key: DEFAULT_FROM_EMAIL
         value: noreply@numerai.app
 
-  # PostgreSQL Database
-  - type: pgsql
-    name: numerai-db
-    plan: starter
-    region: oregon
-    databaseName: numerai
-    databaseUser: numerai
-
   # Redis Cache
   - type: redis
     name: numerai-redis
