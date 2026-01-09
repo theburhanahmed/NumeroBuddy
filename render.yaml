@@ -55,6 +55,9 @@ services:
     plan: starter
     region: oregon
     maxmemoryPolicy: allkeys-lru
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: Allow all IPs (internal services)
 
   # Celery Worker (Optional - for background tasks)
   - type: worker
