@@ -182,7 +182,7 @@ function LoginContent() {
                     )}
                   </div>
                   <AnimatePresence>
-                    {touched.email && errors.email && (
+                    {touched.email && errors.email && typeof errors.email === 'string' && (
                       <motion.p
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -190,7 +190,7 @@ function LoginContent() {
                         className="mt-2 text-sm text-red-500 flex items-center gap-1"
                       >
                         <AlertCircleIcon className="w-4 h-4" />
-                        {errors.email}
+                        {String(errors.email || '')}
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -222,7 +222,7 @@ function LoginContent() {
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
                       {touched.password && (
                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                          {errors.password ? (
+                          {errors.password && typeof errors.password === 'string' ? (
                             <AlertCircleIcon className="w-5 h-5 text-red-500" />
                           ) : values.password ? (
                             <CheckCircleIcon className="w-5 h-5 text-green-500" />

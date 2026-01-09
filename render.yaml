@@ -1,0 +1,135 @@
+services:
+  # Django Backend Web Service
+  - type: web
+    name: numerai-backend
+    runtime: python
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: backend
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile - numerai.wsgi:application
+    healthCheckPath: /api/v1/health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: numerai.settings.production
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        sync: false  # Set this manually after deployment
+      - key: DATABASE_URL
+        fromDatabase:
+          name: numerai-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: numerai-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: numerai-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: numerai-redis
+          property: connectionString
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false  # Set this manually after frontend deployment
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false  # Set this manually after frontend deployment
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.console.EmailBackend
+      - key: DEFAULT_FROM_EMAIL
+        value: noreply@numerai.app
+
+  # PostgreSQL Database
+  - type: pspg
+    name: numerai-db
+    plan: starter
+    region: oregon
+    databaseName: numerai
+    databaseUser: numerai
+
+  # Redis Cache
+  - type: redis
+    name: numerai-redis
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+
+  # Celery Worker (Optional - for background tasks)
+  - type: worker
+    name: numerai-celery-worker
+    runtime: python
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: backend
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: celery -A numerai worker --loglevel=info --concurrency=2
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: numerai.settings.production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: numerai-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: numerai-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: numerai-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: numerai-redis
+          property: connectionString
+
+  # Celery Beat (Optional - for scheduled tasks)
+  - type: worker
+    name: numerai-celery-beat
+    runtime: python
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: backend
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: celery -A numerai beat --loglevel=info
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: numerai.settings.production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: numerai-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: numerai-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: numerai-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: numerai-redis
+          property: connectionString

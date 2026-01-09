@@ -652,3 +652,7 @@ class UniversalCyclesService:
             trends.append('Some challenging cycles require preparation')
         
         return trends
+
+
+# Alias for backward compatibility
+UniversalCycleCalculator = UniversalCyclesService

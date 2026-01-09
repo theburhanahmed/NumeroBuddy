@@ -3197,6 +3197,64 @@ def get_essence_cycles(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def analyze_essence_transitions(request):
+    """Analyze essence cycle transitions for user."""
+    try:
+        user = request.user
+        if not user.date_of_birth:
+            return Response({
+                'error': 'Date of birth required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        years_ahead = int(request.query_params.get('years_ahead', 27))
+        
+        from .services.universal_cycles import UniversalCyclesService
+        service = UniversalCyclesService()
+        
+        transitions = service.analyze_essence_transitions(
+            user.date_of_birth,
+            years_ahead
+        )
+        
+        return Response(transitions)
+    except Exception as e:
+        logger.error(f"Error analyzing essence transitions: {str(e)}")
+        return Response({
+            'error': f'Failed to analyze transitions: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def forecast_essence_trends(request):
+    """Forecast essence cycle trends for user."""
+    try:
+        user = request.user
+        if not user.date_of_birth:
+            return Response({
+                'error': 'Date of birth required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        years_ahead = int(request.query_params.get('years_ahead', 27))
+        
+        from .services.universal_cycles import UniversalCyclesService
+        service = UniversalCyclesService()
+        
+        forecast = service.forecast_essence_trends(
+            user.date_of_birth,
+            years_ahead
+        )
+        
+        return Response(forecast)
+    except Exception as e:
+        logger.error(f"Error forecasting essence trends: {str(e)}")
+        return Response({
+            'error': f'Failed to forecast trends: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_cycle_timeline(request):
     """Get complete cycle timeline visualization."""
     try:
@@ -7700,3 +7758,104 @@ def get_dashboard_recommendations(request):
         return Response({
             'error': 'Failed to get recommendations.'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Missing view functions - stubs for now
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def calculate_sexual_energy(request):
+    """Calculate sexual energy compatibility between partners."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def predict_breakup_risks(request):
+    """Predict breakup risks in a relationship."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def optimize_relationship_timing(request):
+    """Optimize timing for relationship events."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def track_relationship_health(request):
+    """Track relationship health over time."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_relationship_growth_tips(request):
+    """Get tips for relationship growth."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_name_suggestions(request):
+    """Generate name suggestions based on numerology."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def optimize_name_vibration(request):
+    """Optimize name vibration."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def analyze_phonetic_compatibility(request):
+    """Analyze phonetic compatibility."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def calculate_name_change_timing(request):
+    """Calculate optimal timing for name changes."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def compare_name_variations(request):
+    """Compare different name variations."""
+    return Response({
+        'message': 'Feature not yet implemented',
+        'error': 'This endpoint is under development'
+    }, status=status.HTTP_501_NOT_IMPLEMENTED)
