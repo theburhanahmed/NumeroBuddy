@@ -2495,6 +2495,67 @@ export const relationshipNumerologyAPI = {
     const response = await apiClient.post('/numerology/relationship/marriage-harmony/', data);
     return response.data;
   },
+
+  /**
+   * Calculate sexual energy compatibility
+   */
+  calculateSexualEnergy: async (data: {
+    profile_1: any;
+    profile_2: any;
+  }) => {
+    const response = await apiClient.post('/numerology/relationship/sexual-energy/', data);
+    return response.data;
+  },
+
+  /**
+   * Predict breakup risks
+   */
+  predictBreakupRisks: async (data: {
+    profile_1: any;
+    profile_2: any;
+    relationship_start_date?: string;
+  }) => {
+    const response = await apiClient.post('/numerology/relationship/breakup-risks/', data);
+    return response.data;
+  },
+
+  /**
+   * Optimize relationship timing
+   */
+  optimizeRelationshipTiming: async (data: {
+    profile_1: any;
+    profile_2: any;
+    event_type?: string;
+    preferred_dates?: string[];
+  }) => {
+    const response = await apiClient.post('/numerology/relationship/timing/', data);
+    return response.data;
+  },
+
+  /**
+   * Track relationship health
+   */
+  trackRelationshipHealth: async (data: {
+    profile_1: any;
+    profile_2: any;
+    relationship_start_date?: string;
+    current_date?: string;
+  }) => {
+    const response = await apiClient.post('/numerology/relationship/health-tracking/', data);
+    return response.data;
+  },
+
+  /**
+   * Get relationship growth tips
+   */
+  getRelationshipGrowthTips: async (data: {
+    profile_1: any;
+    profile_2: any;
+    relationship_type?: string;
+  }) => {
+    const response = await apiClient.post('/numerology/relationship/growth-tips/', data);
+    return response.data;
+  },
 };
 
 export const timingNumerologyAPI = {
@@ -2740,9 +2801,18 @@ export const generationalNumerologyAPI = {
   },
 
   /**
+   * Get generational family analysis
+   */
+  getGenerationalFamilyAnalysis: async () => {
+    const response = await apiClient.get('/numerology/generational/family-analysis/get/');
+    return response.data;
+  },
+
+  /**
    * Get generational patterns
    */
-  getGenerationalPatterns: async (params?: { year?: number }) => {
+  getGenerationalPatterns: async (personIds?: string[]) => {
+    const params = personIds ? { person_ids: personIds } : {};
     const response = await apiClient.get('/numerology/generational/patterns/', { params });
     return response.data;
   },
@@ -2754,6 +2824,49 @@ export const generationalNumerologyAPI = {
     const response = await apiClient.post('/numerology/generational/karmic-contract/', data);
     return response.data;
   },
+
+  /**
+   * Get all karmic contracts
+   */
+  getKarmicContracts: async () => {
+    const response = await apiClient.get('/numerology/generational/karmic-contracts/');
+    return response.data;
+  },
+
+  /**
+   * Get family compatibility matrix
+   */
+  getFamilyCompatibilityMatrix: async (personIds?: string[]) => {
+    const params = personIds ? { person_ids: personIds } : {};
+    const response = await apiClient.get('/numerology/generational/compatibility-matrix/', { params });
+    return response.data;
+  },
+
+  /**
+   * Get family unit numerology
+   */
+  getFamilyUnitNumerology: async (personIds?: string[]) => {
+    if (personIds && personIds.length > 0) {
+      const response = await apiClient.post('/numerology/generational/family-unit/', { person_ids: personIds });
+      return response.data;
+    } else {
+      const response = await apiClient.get('/numerology/generational/family-unit/');
+      return response.data;
+    }
+  },
+
+  /**
+   * Track generational cycles
+   */
+  trackGenerationalCycles: async (personIds?: string[]) => {
+    if (personIds && personIds.length > 0) {
+      const response = await apiClient.post('/numerology/generational/cycles/', { person_ids: personIds });
+      return response.data;
+    } else {
+      const response = await apiClient.get('/numerology/generational/cycles/');
+      return response.data;
+    }
+  },
 };
 
 export const fengShuiHybridAPI = {
@@ -2761,8 +2874,8 @@ export const fengShuiHybridAPI = {
    * Analyze space with Feng Shui × Numerology
    */
   analyzeSpace: async (data: {
-    address: string;
-    house_number?: string;
+    address?: string;
+    house_number: string;
     floor_number?: number;
     room_layout?: any;
   }) => {
@@ -2775,6 +2888,55 @@ export const fengShuiHybridAPI = {
    */
   getAnalysis: async (analysisId: string) => {
     const response = await apiClient.get(`/numerology/feng-shui/analysis/${analysisId}/`);
+    return response.data;
+  },
+
+  /**
+   * Optimize space layout
+   */
+  optimizeSpace: async (data: {
+    analysis_id: string;
+    room_data: {
+      room_name: string;
+      room_number?: string;
+      direction?: string;
+    };
+  }) => {
+    const response = await apiClient.post('/numerology/feng-shui/optimize-space/', data);
+    return response.data;
+  },
+
+  /**
+   * Get energy flow analysis
+   */
+  getEnergyFlow: async (analysisId: string) => {
+    const response = await apiClient.get('/numerology/feng-shui/energy-flow/', {
+      params: { analysis_id: analysisId }
+    });
+    return response.data;
+  },
+
+  /**
+   * Get room numerology analysis
+   */
+  getRoomNumerology: async (analysisId: string, roomData?: {
+    room_name: string;
+    room_number?: string;
+    direction?: string;
+  }) => {
+    const data: any = { analysis_id: analysisId };
+    if (roomData) {
+      data.room_data = roomData;
+    }
+    const response = await apiClient.post('/numerology/feng-shui/room-numbers/', data);
+    return response.data;
+  },
+
+  /**
+   * Check direction compatibility
+   */
+  checkDirectionCompatibility: async (direction: string) => {
+    const response = await apiClient.post('/numerology/feng-shui/directions/', { direction });
     return response.data;
   },
 
@@ -2795,9 +2957,10 @@ export const mentalStateAIAPI = {
    * Track mental state
    */
   trackMentalState: async (data: {
-    mood: string;
+    date?: string;
+    emotional_state?: string;
     stress_level?: number;
-    energy_level?: number;
+    mood_score?: number;
     notes?: string;
   }) => {
     const response = await apiClient.post('/numerology/mental-state/track/', data);
@@ -2807,8 +2970,53 @@ export const mentalStateAIAPI = {
   /**
    * Get mental state history
    */
-  getMentalStateHistory: async (params?: { start_date?: string; end_date?: string }) => {
+  getMentalStateHistory: async (params?: { start_date?: string; end_date?: string; limit?: number }) => {
     const response = await apiClient.get('/numerology/mental-state/history/', { params });
+    return response.data;
+  },
+
+  /**
+   * Analyze mental state
+   */
+  analyzeMentalState: async (data: {
+    period_start?: string;
+    period_end?: string;
+  }) => {
+    const response = await apiClient.post('/numerology/mental-state/analyze/', data);
+    return response.data;
+  },
+
+  /**
+   * Get stress patterns
+   */
+  getStressPatterns: async () => {
+    const response = await apiClient.get('/numerology/mental-state/stress-patterns/');
+    return response.data;
+  },
+
+  /**
+   * Get wellbeing recommendations
+   */
+  getWellbeingRecommendations: async () => {
+    const response = await apiClient.get('/numerology/mental-state/wellbeing-recommendations/');
+    return response.data;
+  },
+
+  /**
+   * Get mood predictions
+   */
+  getMoodPredictions: async () => {
+    const response = await apiClient.get('/numerology/mental-state/mood-predictions/');
+    return response.data;
+  },
+
+  /**
+   * Get emotional compatibility
+   */
+  getEmotionalCompatibility: async (person2Id: string) => {
+    const response = await apiClient.post('/numerology/mental-state/emotional-compatibility/', {
+      person2_id: person2Id
+    });
     return response.data;
   },
 
@@ -3220,5 +3428,31 @@ export const knowledgeGraphAPI = {
       params: personIds ? { person_ids: personIds } : {}
     });
     return response.data;
+  },
+
+  /**
+   * Get family unit numerology.
+   */
+  async getFamilyUnitNumerology(personIds?: string[]): Promise<any> {
+    if (personIds && personIds.length > 0) {
+      const response = await apiClient.post('/numerology/generational/family-unit/', { person_ids: personIds });
+      return response.data;
+    } else {
+      const response = await apiClient.get('/numerology/generational/family-unit/');
+      return response.data;
+    }
+  },
+
+  /**
+   * Track generational cycles.
+   */
+  async trackGenerationalCycles(personIds?: string[]): Promise<any> {
+    if (personIds && personIds.length > 0) {
+      const response = await apiClient.post('/numerology/generational/cycles/', { person_ids: personIds });
+      return response.data;
+    } else {
+      const response = await apiClient.get('/numerology/generational/cycles/');
+      return response.data;
+    }
   }
 };

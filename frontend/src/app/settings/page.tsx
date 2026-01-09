@@ -10,13 +10,18 @@ import {
   CreditCardIcon,
   LogOutIcon,
   SaveIcon,
+  CodeIcon,
+  KeyIcon,
+  TrashIcon,
+  PlusIcon,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicTooltip } from '@/components/cosmic/cosmic-tooltip';
-import { userAPI } from '@/lib/api-client';
+import { userAPI, apiKeyAPI } from '@/lib/api-client';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -77,6 +82,11 @@ export default function Settings() {
     fetchProfile();
   }, [user]);
 
+  const [apiKeys, setApiKeys] = useState<any[]>([]);
+  const [apiKeysLoading, setApiKeysLoading] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [showCreateKey, setShowCreateKey] = useState(false);
+
   const tabs = [
     {
       id: 'profile',
@@ -98,7 +108,77 @@ export default function Settings() {
       label: 'Billing',
       icon: <CreditCardIcon className="w-5 h-5" />,
     },
+    {
+      id: 'developer',
+      label: 'Developer API',
+      icon: <CodeIcon className="w-5 h-5" />,
+    },
   ];
+
+  useEffect(() => {
+    if (activeTab === 'developer') {
+      fetchApiKeys();
+    }
+  }, [activeTab]);
+
+  const fetchApiKeys = async () => {
+    try {
+      setApiKeysLoading(true);
+      const response = await apiKeyAPI.list();
+      setApiKeys(Array.isArray(response.data) ? response.data : []);
+    } catch (error: any) {
+      console.error('Failed to fetch API keys:', error);
+      toast.error('Failed to load API keys');
+    } finally {
+      setApiKeysLoading(false);
+    }
+  };
+
+  const handleCreateKey = async () => {
+    if (!newKeyName.trim()) {
+      toast.error('Please enter a key name');
+      return;
+    }
+
+    try {
+      setApiKeysLoading(true);
+      const response = await apiKeyAPI.create({ name: newKeyName });
+      toast.success('API key created! Make sure to copy it now - you won\'t be able to see it again.');
+      setNewKeyName('');
+      setShowCreateKey(false);
+      await fetchApiKeys();
+      
+      // Show the new key value if returned
+      if (response.data?.key) {
+        const shouldCopy = confirm('Copy API key to clipboard?');
+        if (shouldCopy) {
+          navigator.clipboard.writeText(response.data.key);
+          toast.success('API key copied to clipboard!');
+        }
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to create API key');
+    } finally {
+      setApiKeysLoading(false);
+    }
+  };
+
+  const handleRevokeKey = async (keyId: string) => {
+    if (!confirm('Are you sure you want to revoke this API key? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setApiKeysLoading(true);
+      await apiKeyAPI.revoke(keyId);
+      toast.success('API key revoked');
+      await fetchApiKeys();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to revoke API key');
+    } finally {
+      setApiKeysLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -435,6 +515,139 @@ export default function Settings() {
                     </TouchOptimizedButton>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'developer' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-['Playfair_Display'] font-bold text-white">
+                    Developer API
+                  </h2>
+                  <TouchOptimizedButton
+                    variant="primary"
+                    icon={<PlusIcon className="w-4 h-4" />}
+                    onClick={() => setShowCreateKey(!showCreateKey)}
+                  >
+                    Create API Key
+                  </TouchOptimizedButton>
+                </div>
+
+                <div className="space-y-4">
+                  {showCreateKey && (
+                    <SpaceCard variant="elevated" className="p-6 border border-cyan-500/30">
+                      <h3 className="text-lg font-semibold text-white mb-4">Create New API Key</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-white mb-2">
+                            Key Name
+                          </label>
+                          <input
+                            type="text"
+                            value={newKeyName}
+                            onChange={(e) => setNewKeyName(e.target.value)}
+                            placeholder="e.g., Production App, Development"
+                            className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <TouchOptimizedButton
+                            variant="primary"
+                            onClick={handleCreateKey}
+                            disabled={apiKeysLoading}
+                          >
+                            {apiKeysLoading ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                Creating...
+                              </>
+                            ) : (
+                              'Create Key'
+                            )}
+                          </TouchOptimizedButton>
+                          <TouchOptimizedButton
+                            variant="secondary"
+                            onClick={() => {
+                              setShowCreateKey(false);
+                              setNewKeyName('');
+                            }}
+                          >
+                            Cancel
+                          </TouchOptimizedButton>
+                        </div>
+                      </div>
+                    </SpaceCard>
+                  )}
+
+                  {apiKeysLoading && !showCreateKey ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+                    </div>
+                  ) : apiKeys.length === 0 ? (
+                    <SpaceCard variant="elevated" className="p-8 text-center">
+                      <KeyIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-white mb-2">No API Keys</h3>
+                      <p className="text-white/70 mb-4">
+                        Create an API key to access NumerAI's API programmatically
+                      </p>
+                    </SpaceCard>
+                  ) : (
+                    <div className="space-y-4">
+                      {apiKeys.map((key: any) => (
+                        <SpaceCard key={key.id} variant="elevated" className="p-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <KeyIcon className="w-5 h-5 text-cyan-400" />
+                                <h3 className="text-lg font-semibold text-white">{key.name || 'Unnamed Key'}</h3>
+                                <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                  key.is_active ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-300'
+                                }`}>
+                                  {key.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                              </div>
+                              <p className="text-sm text-white/60 mb-2">
+                                Created: {key.created_at ? new Date(key.created_at).toLocaleDateString() : 'Unknown'}
+                              </p>
+                              {key.last_used_at && (
+                                <p className="text-sm text-white/60">
+                                  Last used: {new Date(key.last_used_at).toLocaleDateString()}
+                                </p>
+                              )}
+                              {key.prefix && (
+                                <p className="text-xs text-white/40 font-mono mt-2">
+                                  {key.prefix}...
+                                </p>
+                              )}
+                            </div>
+                            <TouchOptimizedButton
+                              variant="ghost"
+                              size="sm"
+                              icon={<TrashIcon className="w-4 h-4" />}
+                              onClick={() => handleRevokeKey(key.id)}
+                              className="text-red-400 hover:text-red-300"
+                            >
+                              Revoke
+                            </TouchOptimizedButton>
+                          </div>
+                        </SpaceCard>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <SpaceCard variant="elevated" className="p-6 bg-cyan-500/10 border border-cyan-500/20">
+                  <h3 className="text-lg font-semibold text-white mb-3">API Documentation</h3>
+                  <p className="text-white/70 text-sm mb-4">
+                    Visit our API documentation to learn how to use your API keys and integrate NumerAI into your applications.
+                  </p>
+                  <TouchOptimizedButton
+                    variant="secondary"
+                    onClick={() => window.open('/api/schema/swagger-ui/', '_blank')}
+                  >
+                    View API Docs
+                  </TouchOptimizedButton>
+                </SpaceCard>
               </div>
             )}
           </SpaceCard>

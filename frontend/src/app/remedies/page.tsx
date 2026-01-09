@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { SparklesIcon, GemIcon, PaletteIcon, FlowerIcon, ClockIcon, CheckCircleIcon } from 'lucide-react';
+import { SparklesIcon, GemIcon, PaletteIcon, FlowerIcon, ClockIcon, CheckCircleIcon, BarChart3, Link2, Bell, TrendingUp } from 'lucide-react';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
 import { SpaceCard } from '@/components/space/space-card';
 import { SpaceButton } from '@/components/space/space-button';
@@ -15,10 +15,18 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { toast } from 'sonner';
 import { MagneticCard } from '@/components/magnetic/magnetic-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
+import { PersonalizedRemedies } from '@/components/remedies/personalized-remedies';
+import { RemedyTracker } from '@/components/remedies/remedy-tracker';
+import { EffectivenessChart } from '@/components/remedies/effectiveness-chart';
+import { RemedyCombinations } from '@/components/remedies/remedy-combinations';
+import { ReminderSettings } from '@/components/remedies/reminder-settings';
+
+type RemedyTabType = 'personalized' | 'tracking' | 'effectiveness' | 'combinations' | 'reminders' | 'browse';
 
 export default function Remedies() {
   const { user } = useAuth();
   const { tier } = useSubscription();
+  const [activeTab, setActiveTab] = useState<RemedyTabType>('personalized');
   const [selectedCategory, setSelectedCategory] = useState('gemstones');
   const [lifePathNumber, setLifePathNumber] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);

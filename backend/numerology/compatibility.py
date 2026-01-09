@@ -3,7 +3,7 @@ Compatibility analysis engine for NumerAI.
 Enhanced compatibility algorithms using multiple numerology factors.
 """
 from datetime import date
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 from .numerology import NumerologyCalculator
 from .interpretations import get_interpretation
 
@@ -414,7 +414,7 @@ class CompatibilityAnalyzer:
         return advice
     
     def analyze_compatibility(self, user_full_name: str, user_birth_date: date,
-                            partner_full_name: str, partner_birth_date: date) -> Dict:
+                            partner_full_name: str, partner_birth_date: date) -> dict:
         """
         Perform complete compatibility analysis.
         
@@ -458,9 +458,9 @@ class CompatibilityAnalyzer:
     
     def detailed_compatibility_breakdown(
         self,
-        user_numbers: Dict[str, int],
-        partner_numbers: Dict[str, int]
-    ) -> Dict[str, Any]:
+        user_numbers: dict[str, int],
+        partner_numbers: dict[str, int]
+    ) -> Dict[str, any]:
         """
         Provide detailed number-by-number compatibility breakdown.
         
@@ -505,7 +505,7 @@ class CompatibilityAnalyzer:
         partner_numbers: Dict[str, int],
         relationship_start_date: date,
         years_ahead: int = 10
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, any]:
         """
         Predict relationship compatibility over time.
         
@@ -566,7 +566,7 @@ class CompatibilityAnalyzer:
         user_numbers: Dict[str, int],
         partner_numbers: Dict[str, int],
         conflict_type: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, any]:
         """
         Provide conflict resolution guidance based on numerology.
         
@@ -602,7 +602,7 @@ class CompatibilityAnalyzer:
         self,
         user_numbers: Dict[str, int],
         partner_numbers: Dict[str, int]
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, any]:
         """
         Analyze communication styles based on numerology.
         
@@ -645,7 +645,7 @@ class CompatibilityAnalyzer:
         else:
             return f'Numbers {user_num} and {partner_num} differ significantly - may require understanding'
     
-    def _get_number_pair_strengths(self, user_num: int, partner_num: int) -> List[str]:
+    def _get_number_pair_strengths(self, user_num: int, partner_num: int) -> list[str]:
         """Get strengths for a number pair."""
         strengths = []
         
@@ -658,7 +658,7 @@ class CompatibilityAnalyzer:
         
         return strengths
     
-    def _get_number_pair_challenges(self, user_num: int, partner_num: int) -> List[str]:
+    def _get_number_pair_challenges(self, user_num: int, partner_num: int) -> list[str]:
         """Get challenges for a number pair."""
         challenges = []
         
@@ -672,7 +672,7 @@ class CompatibilityAnalyzer:
         
         return challenges
     
-    def _generate_overall_assessment(self, breakdown: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_overall_assessment(self, breakdown: dict[str, any]) -> dict[str, any]:
         """Generate overall assessment from breakdown."""
         scores = [b['compatibility_score'] for b in breakdown.values()]
         avg_score = sum(scores) / len(scores) if scores else 0
@@ -694,7 +694,7 @@ class CompatibilityAnalyzer:
             'weakest_area': min(breakdown.items(), key=lambda x: x[1]['compatibility_score'])[0] if breakdown else None
         }
     
-    def _extract_key_insights(self, breakdown: Dict[str, Any]) -> List[str]:
+    def _extract_key_insights(self, breakdown: dict[str, any]) -> list[str]:
         """Extract key insights from breakdown."""
         insights = []
         
@@ -710,9 +710,9 @@ class CompatibilityAnalyzer:
         self,
         user_py: int,
         partner_py: int,
-        user_numbers: Dict[str, int],
-        partner_numbers: Dict[str, int]
-    ) -> Dict[str, Any]:
+        user_numbers: dict[str, int],
+        partner_numbers: dict[str, int]
+    ) -> dict[str, any]:
         """Calculate compatibility for a specific year."""
         # Base compatibility from personal years
         py_compatibility = self._calculate_factor_compatibility(user_py, partner_py)
@@ -730,7 +730,7 @@ class CompatibilityAnalyzer:
             'predictions': self._get_year_predictions(user_py, partner_py, year_score)
         }
     
-    def _get_year_themes(self, user_py: int, partner_py: int) -> List[str]:
+    def _get_year_themes(self, user_py: int, partner_py: int) -> list[str]:
         """Get themes for a year based on personal years."""
         themes = []
         
@@ -748,7 +748,7 @@ class CompatibilityAnalyzer:
         user_py: int,
         partner_py: int,
         score: float
-    ) -> List[str]:
+    ) -> list[str]:
         """Get predictions for a year."""
         predictions = []
         
@@ -765,7 +765,7 @@ class CompatibilityAnalyzer:
         
         return predictions
     
-    def _calculate_timeline_trend(self, timeline: List[Dict[str, Any]]) -> str:
+    def _calculate_timeline_trend(self, timeline: list[dict[str, any]]) -> str:
         """Calculate overall trend from timeline."""
         if len(timeline) < 2:
             return 'stable'
@@ -782,9 +782,9 @@ class CompatibilityAnalyzer:
     
     def _identify_conflict_areas(
         self,
-        user_numbers: Dict[str, int],
-        partner_numbers: Dict[str, int]
-    ) -> List[Dict[str, Any]]:
+        user_numbers: dict[str, int],
+        partner_numbers: dict[str, int]
+    ) -> list[dict[str, any]]:
         """Identify potential conflict areas."""
         conflict_areas = []
         
@@ -807,7 +807,7 @@ class CompatibilityAnalyzer:
         
         return conflict_areas
     
-    def _get_communication_style(self, numbers: Dict[str, int]) -> Dict[str, Any]:
+    def _get_communication_style(self, numbers: dict[str, int]) -> dict[str, any]:
         """Get communication style based on numerology."""
         personality = numbers.get('personality_number', 1)
         soul_urge = numbers.get('soul_urge_number', 1)
@@ -836,8 +836,8 @@ class CompatibilityAnalyzer:
     
     def _combine_communication_styles(
         self,
-        primary: Dict[str, Any],
-        secondary: Dict[str, Any]
+        primary: dict[str, any],
+        secondary: dict[str, any]
     ) -> str:
         """Combine primary and secondary communication styles."""
         if primary['style'] == secondary['style']:
@@ -847,12 +847,12 @@ class CompatibilityAnalyzer:
     
     def _generate_resolution_strategies(
         self,
-        user_numbers: Dict[str, int],
-        partner_numbers: Dict[str, int],
-        conflict_areas: List[Dict[str, Any]],
-        user_style: Dict[str, Any],
-        partner_style: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+            user_numbers: dict[str, int],
+        partner_numbers: dict[str, int],
+        conflict_areas: list[dict[str, any]],
+        user_style: dict[str, any],
+        partner_style: dict[str, any]
+    ) -> list[dict[str, any]]:
         """Generate conflict resolution strategies."""
         strategies = []
         
@@ -867,9 +867,9 @@ class CompatibilityAnalyzer:
     
     def _get_area_specific_strategy(
         self,
-        conflict: Dict[str, Any],
-        user_style: Dict[str, Any],
-        partner_style: Dict[str, Any]
+        conflict: dict[str, any],
+        user_style: dict[str, any],
+        partner_style: dict[str, any]
     ) -> str:
         """Get strategy for specific conflict area."""
         area = conflict['area']
@@ -885,8 +885,8 @@ class CompatibilityAnalyzer:
     
     def _get_conflict_communication_approach(
         self,
-        user_style: Dict[str, Any],
-        partner_style: Dict[str, Any]
+        user_style: dict[str, any],
+        partner_style: dict[str, any]
     ) -> str:
         """Get communication approach for conflicts."""
         user_primary = user_style['primary_style']['style']
@@ -901,9 +901,9 @@ class CompatibilityAnalyzer:
     
     def _get_conflict_prevention_tips(
         self,
-        user_numbers: Dict[str, int],
-        partner_numbers: Dict[str, int]
-    ) -> List[str]:
+        user_numbers: dict[str, int],
+        partner_numbers: dict[str, int]
+    ) -> list[str]:
         """Get tips for preventing conflicts."""
         tips = []
         
@@ -916,9 +916,9 @@ class CompatibilityAnalyzer:
     
     def _calculate_communication_compatibility(
         self,
-        user_style: Dict[str, Any],
-        partner_style: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        user_style: dict[str, any],
+        partner_style: dict[str, any]
+    ) -> dict[str, any]:
         """Calculate communication compatibility."""
         user_primary = user_style['primary_style']['style']
         partner_primary = partner_style['primary_style']['style']
@@ -944,9 +944,9 @@ class CompatibilityAnalyzer:
     
     def _get_communication_tips(
         self,
-        user_style: Dict[str, Any],
-        partner_style: Dict[str, Any]
-    ) -> List[str]:
+        user_style: dict[str, any],
+        partner_style: dict[str, any]
+    ) -> list[str]:
         """Get communication tips based on styles."""
         tips = []
         
@@ -964,8 +964,8 @@ class CompatibilityAnalyzer:
     
     def _identify_communication_challenges(
         self,
-        user_style: Dict[str, Any],
-        partner_style: Dict[str, Any]
+        user_style: dict[str, any],
+        partner_style: dict[str, any]
     ) -> List[str]:
         """Identify potential communication challenges."""
         challenges = []

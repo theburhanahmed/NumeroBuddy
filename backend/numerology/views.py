@@ -4792,6 +4792,129 @@ def get_family_compatibility_matrix(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def get_family_unit_numerology(request):
+    """Get family unit numerology analysis."""
+    from feature_flags.services import FeatureFlagService
+    from .services.generational_numerology import GenerationalNumerologyService
+    
+    user = request.user
+    
+    if not FeatureFlagService.can_access(user, 'numerology_generational'):
+        return Response({
+            'error': 'Generational Numerology feature is not available'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        person_ids = request.data.get('person_ids', []) if request.method == 'POST' else request.query_params.getlist('person_ids')
+        
+        if not person_ids:
+            family_members = Person.objects.filter(user=user, is_active=True)
+        else:
+            family_members = Person.objects.filter(
+                id__in=person_ids,
+                user=user,
+                is_active=True
+            )
+        
+        if not family_members.exists():
+            return Response({
+                'error': 'No family members found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Prepare family members data
+        family_members_data = []
+        for member in family_members:
+            try:
+                profile = PersonNumerologyProfile.objects.get(person=member)
+                family_members_data.append({
+                    'name': member.name,
+                    'birth_date': member.birth_date.isoformat() if member.birth_date else None,
+                    'relationship': member.relationship or 'unknown'
+                })
+            except PersonNumerologyProfile.DoesNotExist:
+                continue
+        
+        if not family_members_data:
+            return Response({
+                'error': 'No family members with numerology profiles found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        service = GenerationalNumerologyService()
+        family_unit = service.calculate_family_unit_numerology(family_members_data)
+        
+        return Response({
+            'success': True,
+            'family_unit': family_unit
+        })
+    except Exception as e:
+        logger.error(f"Error getting family unit numerology: {str(e)}")
+        return Response({
+            'error': f'Failed to get family unit numerology: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def track_generational_cycles(request):
+    """Track generational cycles for family members."""
+    from feature_flags.services import FeatureFlagService
+    from .services.generational_numerology import GenerationalNumerologyService
+    
+    user = request.user
+    
+    if not FeatureFlagService.can_access(user, 'numerology_generational'):
+        return Response({
+            'error': 'Generational Numerology feature is not available'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        person_ids = request.data.get('person_ids', []) if request.method == 'POST' else request.query_params.getlist('person_ids')
+        
+        if not person_ids:
+            family_members = Person.objects.filter(user=user, is_active=True)
+        else:
+            family_members = Person.objects.filter(
+                id__in=person_ids,
+                user=user,
+                is_active=True
+            )
+        
+        if not family_members.exists():
+            return Response({
+                'error': 'No family members found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Prepare family members data
+        family_members_data = []
+        for member in family_members:
+            if member.birth_date:
+                family_members_data.append({
+                    'name': member.name,
+                    'birth_date': member.birth_date.isoformat(),
+                    'relationship': member.relationship or 'unknown'
+                })
+        
+        if not family_members_data:
+            return Response({
+                'error': 'No family members with birth dates found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        service = GenerationalNumerologyService()
+        cycles = service.track_generational_cycles(family_members_data)
+        
+        return Response({
+            'success': True,
+            'cycles': cycles
+        })
+    except Exception as e:
+        logger.error(f"Error tracking generational cycles: {str(e)}")
+        return Response({
+            'error': f'Failed to track generational cycles: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 # ============================================================================
 # Feng Shui × Numerology Hybrid Endpoints
 # ============================================================================

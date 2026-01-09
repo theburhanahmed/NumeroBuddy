@@ -250,3 +250,23 @@ export const notificationAPI = {
   bulkUpdatePreferences: (data: { preferences: Array<{ notification_type: string; channel: string; enabled: boolean }> }) =>
     apiClient.post('/notifications/preferences/bulk-update/', data),
 };
+
+export const apiKeyAPI = {
+  list: () => apiClient.get('/users/api-keys/'),
+  create: (data: { name: string }) => apiClient.post('/users/api-keys/', data),
+  revoke: (keyId: string) => apiClient.delete(`/users/api-keys/${keyId}/`),
+  deactivate: (keyId: string) => apiClient.post(`/users/api-keys/${keyId}/deactivate/`),
+};
+
+export const developerAPI = {
+  register: (data: { name: string; description?: string }) =>
+    apiClient.post('/developer/register/', data),
+  listKeys: () => apiClient.get('/developer/keys/'),
+  getUsageStats: (keyId: string) => apiClient.get(`/developer/keys/${keyId}/usage/`),
+};
+
+export const rewardsAPI = {
+  getUserPoints: () => apiClient.get('/rewards/points/'),
+  getUserAchievements: () => apiClient.get('/rewards/achievements/'),
+  getRewardCatalog: () => apiClient.get('/rewards/catalog/'),
+};
