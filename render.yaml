@@ -50,7 +50,7 @@ services:
         value: noreply@numerai.app
 
   # PostgreSQL Database
-  - type: pspg
+  - type: pgsql
     name: numerai-db
     plan: starter
     region: oregon
