@@ -2,6 +2,7 @@
 Name Correction service for phonetic optimization and cultural compatibility.
 """
 from typing import Dict, List, Any, Optional, Tuple
+from datetime import date
 from ..numerology import NumerologyCalculator
 
 

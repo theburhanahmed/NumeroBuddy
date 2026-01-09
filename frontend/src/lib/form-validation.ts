@@ -33,30 +33,40 @@ export function validateField(
 ): ValidationResult {
   const skipRequired = options?.skipRequired || false;
   
+  // Ensure rules is an array
+  if (!Array.isArray(rules) || rules.length === 0) {
+    return { isValid: true, error: '', isDirty: value.length > 0 };
+  }
+  
+  // Ensure value is a string
+  const stringValue = typeof value === 'string' ? value : String(value || '');
+  
   for (const rule of rules) {
-    if (rule.required && !skipRequired && !value.trim()) {
-      return { isValid: false, error: rule.message, isDirty: true };
+    if (!rule) continue;
+    
+    if (rule.required && !skipRequired && !stringValue.trim()) {
+      return { isValid: false, error: rule.message || '', isDirty: true };
     }
-    if (rule.minLength && value.length > 0 && value.length < rule.minLength) {
-      return { isValid: false, error: rule.message, isDirty: true };
+    if (rule.minLength && stringValue.length > 0 && stringValue.length < rule.minLength) {
+      return { isValid: false, error: rule.message || '', isDirty: true };
     }
-    if (rule.maxLength && value.length > rule.maxLength) {
-      return { isValid: false, error: rule.message, isDirty: true };
+    if (rule.maxLength && stringValue.length > rule.maxLength) {
+      return { isValid: false, error: rule.message || '', isDirty: true };
     }
-    if (rule.pattern && value.length > 0 && !rule.pattern.test(value)) {
-      return { isValid: false, error: rule.message, isDirty: true };
+    if (rule.pattern && stringValue.length > 0 && !rule.pattern.test(stringValue)) {
+      return { isValid: false, error: rule.message || '', isDirty: true };
     }
-    if (rule.custom && value.length > 0) {
-      const result = rule.custom(value);
+    if (rule.custom && stringValue.length > 0) {
+      const result = rule.custom(stringValue);
       if (result === false) {
-        return { isValid: false, error: rule.message, isDirty: true };
+        return { isValid: false, error: rule.message || '', isDirty: true };
       }
       if (typeof result === 'string') {
         return { isValid: false, error: result, isDirty: true };
       }
     }
   }
-  return { isValid: true, error: '', isDirty: value.length > 0 };
+  return { isValid: true, error: '', isDirty: stringValue.length > 0 };
 }
 
 /**
@@ -73,7 +83,8 @@ export function validateForm(
     const value = formData[field] || '';
     const result = validateField(value, fieldRules);
     if (!result.isValid) {
-      errors[field] = result.error;
+      // Ensure error is always a string
+      errors[field] = typeof result.error === 'string' ? result.error : String(result.error || '');
       isValid = false;
     }
   }
@@ -97,7 +108,8 @@ export function useFieldValidation(
   const validate = React.useCallback(
     (val: string, skipRequired = false) => {
       const result = validateField(val, rules, { skipRequired });
-      setError(result.error);
+      // Ensure error is always a string
+      setError(typeof result.error === 'string' ? result.error : String(result.error || ''));
       setIsValid(result.isValid);
       return result;
     },
