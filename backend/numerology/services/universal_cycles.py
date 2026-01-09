@@ -2,7 +2,7 @@
 Universal Cycles service for numerology.
 Calculates global year, month, and day numbers.
 """
-from typing import Dict, Any, List
+from typing import Any, Dict, List, Optional
 from datetime import date, datetime
 from numerology.numerology import NumerologyCalculator
 
@@ -13,7 +13,7 @@ class UniversalCyclesService:
     def __init__(self):
         self.calculator = NumerologyCalculator()
     
-    def calculate_universal_year(self, year: int = None) -> Dict[str, Any]:
+    def calculate_universal_year(self, year: int = None) -> dict[str, any]:
         """
         Calculate Universal Year Number.
         
@@ -39,7 +39,7 @@ class UniversalCyclesService:
             'interpretation': self._get_universal_year_interpretation(year_number, year)
         }
     
-    def calculate_universal_month(self, year: int = None, month: int = None) -> Dict[str, Any]:
+    def calculate_universal_month(self, year: int = None, month: int = None) -> dict[str, any]:
         """
         Calculate Universal Month Number.
         
@@ -73,7 +73,7 @@ class UniversalCyclesService:
             'interpretation': self._get_universal_month_interpretation(month_number, year, month)
         }
     
-    def calculate_universal_day(self, target_date: date = None) -> Dict[str, Any]:
+    def calculate_universal_day(self, target_date: date = None) -> dict[str, any]:
         """
         Calculate Universal Day Number.
         
@@ -104,7 +104,7 @@ class UniversalCyclesService:
             'interpretation': self._get_universal_day_interpretation(day_number, target_date)
         }
     
-    def calculate_personal_hour(self, birth_date: date, target_datetime: datetime = None) -> Dict[str, Any]:
+    def calculate_personal_hour(self, birth_date: date, target_datetime: datetime = None) -> dict[str, any]:
         """
         Calculate Personal Hour Number.
         
@@ -141,7 +141,7 @@ class UniversalCyclesService:
             'interpretation': self._get_personal_hour_interpretation(hour_number, hour)
         }
     
-    def analyze_cycle_transitions(self, birth_date: date, start_date: date = None, end_date: date = None) -> Dict[str, Any]:
+    def analyze_cycle_transitions(self, birth_date: date, start_date: date = None, end_date: date = None) -> dict[str, any]:
         """
         Analyze cycle transitions for a date range.
         
@@ -205,7 +205,7 @@ class UniversalCyclesService:
             'transition_count': len(transitions)
         }
     
-    def get_cycle_recommendations(self, birth_date: date, target_date: date = None) -> Dict[str, Any]:
+    def get_cycle_recommendations(self, birth_date: date, target_date: date = None) -> dict[str, any]:
         """
         Get cycle-based recommendations for a date.
         
@@ -325,7 +325,7 @@ class UniversalCyclesService:
         personal_day: int,
         universal_year: int,
         universal_month: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate cycle-based recommendations."""
         recommendations = []
         
@@ -353,7 +353,7 @@ class UniversalCyclesService:
         self,
         birth_date: date,
         years_ahead: int = 27
-    ) -> Dict[str, Any]:
+    ) -> dict[str, any]:
         """
         Calculate all essence cycles (9-year cycles) for a person.
         
@@ -390,7 +390,7 @@ class UniversalCyclesService:
         self,
         birth_date: date,
         years_ahead: int = 27
-    ) -> Dict[str, Any]:
+    ) -> dict[str, any]:
         """
         Analyze essence cycle transitions.
         
@@ -433,7 +433,7 @@ class UniversalCyclesService:
     def get_essence_interpretation(
         self,
         cycle_number: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, any]:
         """
         Get detailed interpretation for an essence cycle.
         
@@ -456,7 +456,7 @@ class UniversalCyclesService:
         self,
         birth_date: date,
         years_ahead: int = 27
-    ) -> Dict[str, Any]:
+    ) -> dict[str, any]:
         """
         Forecast essence cycle trends.
         
@@ -496,7 +496,7 @@ class UniversalCyclesService:
         self,
         birth_date: date,
         cycle_number: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, any]:
         """Get essence cycle information for a specific cycle number."""
         start_age = (cycle_number - 1) * 9
         end_age = start_age + 8
@@ -512,7 +512,7 @@ class UniversalCyclesService:
             'challenges': self._get_essence_challenges(cycle_number)
         }
     
-    def _get_current_essence_cycle(self, birth_date: date) -> Dict[str, Any]:
+    def _get_current_essence_cycle(self, birth_date: date) -> dict[str, any]:
         """Get current essence cycle."""
         current_age = (date.today() - birth_date).days // 365
         cycle_number = (current_age // 9) + 1
@@ -538,8 +538,8 @@ class UniversalCyclesService:
     
     def _get_transition_meaning(
         self,
-        from_cycle: Dict[str, Any],
-        to_cycle: Optional[Dict[str, Any]]
+        from_cycle: dict[str, any],
+        to_cycle: Optional[dict[str, any]],
     ) -> str:
         """Get meaning of transition between cycles."""
         if not to_cycle:
@@ -563,9 +563,9 @@ class UniversalCyclesService:
     
     def _get_transition_preparation(
         self,
-        from_cycle: Dict[str, Any],
-        to_cycle: Optional[Dict[str, Any]]
-    ) -> List[str]:
+        from_cycle: dict[str, any],
+        to_cycle: Optional[dict[str, any]]
+    ) -> list[str]:
         """Get preparation guidance for transition."""
         if not to_cycle:
             return ['Prepare for completion phase', 'Reflect on life lessons']
@@ -582,7 +582,7 @@ class UniversalCyclesService:
         
         return preparation.get(to_num, ['Prepare for new cycle', 'Align with cycle themes'])
     
-    def _get_essence_themes(self, cycle_number: int) -> List[str]:
+    def _get_essence_themes(self, cycle_number: int) -> list[str]:
         """Get key themes for essence cycle."""
         themes = {
             1: ['New beginnings', 'Leadership', 'Independence'],
@@ -597,7 +597,7 @@ class UniversalCyclesService:
         }
         return themes.get(cycle_number, ['Growth', 'Development'])
     
-    def _get_essence_opportunities(self, cycle_number: int) -> List[str]:
+    def _get_essence_opportunities(self, cycle_number: int) -> list[str]:
         """Get opportunities for essence cycle."""
         opportunities = {
             1: ['Start new projects', 'Take leadership', 'Be independent'],
@@ -606,7 +606,7 @@ class UniversalCyclesService:
         }
         return opportunities.get(cycle_number, ['Growth opportunities', 'Personal development'])
     
-    def _get_essence_challenges(self, cycle_number: int) -> List[str]:
+    def _get_essence_challenges(self, cycle_number: int) -> list[str]:
         """Get challenges for essence cycle."""
         challenges = {
             5: ['Too much change', 'Instability', 'Need for balance'],
@@ -614,7 +614,7 @@ class UniversalCyclesService:
         }
         return challenges.get(cycle_number, ['General challenges', 'Personal growth'])
     
-    def _get_essence_recommendations(self, cycle_number: int) -> List[str]:
+    def _get_essence_recommendations(self, cycle_number: int) -> list[str]:
         """Get recommendations for essence cycle."""
         recommendations = {
             1: ['Take initiative', 'Lead with confidence', 'Start new ventures'],
@@ -625,9 +625,9 @@ class UniversalCyclesService:
     
     def _generate_essence_summary(
         self,
-        cycles: List[Dict[str, Any]],
-        current_cycle: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        cycles: list[dict[str, any]],
+        current_cycle: dict[str, any]
+    ) -> dict[str, any]:
         """Generate summary of essence cycles."""
         return {
             'total_cycles': len(cycles),
@@ -637,7 +637,7 @@ class UniversalCyclesService:
             'next_cycle': cycles[current_cycle['cycle_number']] if current_cycle['cycle_number'] < 9 else None
         }
     
-    def _identify_essence_trends(self, cycles: List[Dict[str, Any]]) -> List[str]:
+    def _identify_essence_trends(self, cycles: list[dict[str, any]]) -> list[str]:
         """Identify trends across essence cycles."""
         trends = []
         

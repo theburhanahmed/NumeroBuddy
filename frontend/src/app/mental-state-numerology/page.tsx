@@ -1,148 +1,148 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSubscription } from '@/contexts/SubscriptionContext';
-import { numerologyAPI } from '@/lib/numerology-api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/auth-context';
+import { mentalStateAIAPI } from '@/lib/numerology-api';
+import { SpaceCard } from '@/components/space/space-card';
+import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
+import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { Loader2, Brain, AlertTriangle, TrendingUp, Heart, Calendar } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { motion } from 'framer-motion';
+import { EmotionalStateTracker } from '@/components/numerology/emotional-state-tracker';
+import { StressPatternChart } from '@/components/numerology/stress-pattern-chart';
+import { WellbeingRecommendations } from '@/components/numerology/wellbeing-recommendations';
+import { MoodCyclePredictor } from '@/components/numerology/mood-cycle-predictor';
+
+type TabType = 'overview' | 'tracker' | 'stress-patterns' | 'wellbeing' | 'mood-predictions';
 
 export default function MentalStateNumerologyPage() {
-  const { hasAccess } = useSubscription();
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  
+  const [overview, setOverview] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [tracking, setTracking] = useState<any>(null);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [moodPredictions, setMoodPredictions] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   useEffect(() => {
-    if (!hasAccess('numerology_mental_state')) {
+    if (!isAuthenticated) {
+      router.push('/login');
       return;
     }
-    loadData();
-  }, [hasAccess]);
+  }, [isAuthenticated, router]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [recs, predictions] = await Promise.all([
-        numerologyAPI.getWellbeingRecommendations(),
-        numerologyAPI.getMoodPredictions()
-      ]);
-      setRecommendations(recs.recommendations || []);
-      setMoodPredictions(predictions.predictions);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTrack = async () => {
-    try {
-      setLoading(true);
-      const result = await numerologyAPI.trackMentalState({
-        emotional_state: 'neutral',
-        stress_level: 50,
-        mood_score: 50
-      });
-      setTracking(result.tracking);
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to track mental state');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!hasAccess('numerology_mental_state')) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Mental State AI × Numerology</h2>
-            <p className="text-gray-600">
-              This feature is available for Elite subscribers. Please upgrade to access.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const tabs = [
+    { id: 'overview' as TabType, label: 'Overview', icon: Brain },
+    { id: 'tracker' as TabType, label: 'Track Emotions', icon: Heart },
+    { id: 'stress-patterns' as TabType, label: 'Stress Patterns', icon: TrendingUp },
+    { id: 'wellbeing' as TabType, label: 'Wellbeing', icon: Heart },
+    { id: 'mood-predictions' as TabType, label: 'Mood Predictions', icon: Calendar },
+  ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Mental State AI × Numerology</h1>
+    <CosmicPageLayout>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">Mental State Numerology</h1>
+            <p className="text-white/70">Track emotions, identify patterns, and optimize wellbeing using numerology</p>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Track Your State</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={handleTrack} disabled={loading} className="w-full">
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Tracking...
-                </>
-              ) : (
-                'Track Today\'s Mental State'
-              )}
-            </Button>
-            {tracking && (
-              <div className="mt-4 p-4 bg-gray-50 rounded">
-                <p className="text-sm">
-                  Tracked on {new Date(tracking.date).toLocaleDateString()}
-                </p>
-                <p className="text-sm">Mood Score: {tracking.mood_score}/100</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {/* Tab Navigation */}
+          <div className="mb-6 border-b border-white/10">
+            <nav className="flex space-x-1 overflow-x-auto">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors
+                      border-b-2 whitespace-nowrap
+                      ${activeTab === tab.id
+                        ? 'border-cyan-500 text-cyan-400'
+                        : 'border-transparent text-white/60 hover:text-white/80 hover:border-white/20'
+                      }
+                    `}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Wellbeing Recommendations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : recommendations.length > 0 ? (
-              <div className="space-y-2">
-                {recommendations.slice(0, 3).map((rec: any, idx: number) => (
-                  <div key={idx} className="p-3 bg-blue-50 rounded">
-                    <h4 className="font-semibold text-sm">{rec.title}</h4>
-                    <p className="text-xs text-gray-600 mt-1">{rec.description}</p>
+          {/* Tab Content */}
+          <div className="mt-6">
+            {activeTab === 'overview' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <SpaceCard variant="elevated" className="p-6">
+                  <h2 className="text-2xl font-bold text-white mb-4">Mental State Overview</h2>
+                  <p className="text-white/80 mb-6">
+                    Track your emotional state, identify stress patterns correlated with numerology cycles,
+                    and receive personalized wellbeing recommendations based on your numerology profile.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <SpaceCard variant="outlined" className="p-4">
+                      <Heart className="w-6 h-6 text-pink-400 mb-2" />
+                      <h3 className="text-lg font-semibold text-white mb-2">Emotional Tracking</h3>
+                      <p className="text-white/70 text-sm">Track daily emotional states and mood patterns</p>
+                    </SpaceCard>
+                    
+                    <SpaceCard variant="outlined" className="p-4">
+                      <TrendingUp className="w-6 h-6 text-red-400 mb-2" />
+                      <h3 className="text-lg font-semibold text-white mb-2">Stress Patterns</h3>
+                      <p className="text-white/70 text-sm">Identify stress patterns and numerology correlations</p>
+                    </SpaceCard>
+                    
+                    <SpaceCard variant="outlined" className="p-4">
+                      <Heart className="w-6 h-6 text-green-400 mb-2" />
+                      <h3 className="text-lg font-semibold text-white mb-2">Wellbeing Recommendations</h3>
+                      <p className="text-white/70 text-sm">Get personalized wellbeing advice based on your cycles</p>
+                    </SpaceCard>
+                    
+                    <SpaceCard variant="outlined" className="p-4">
+                      <Calendar className="w-6 h-6 text-purple-400 mb-2" />
+                      <h3 className="text-lg font-semibold text-white mb-2">Mood Predictions</h3>
+                      <p className="text-white/70 text-sm">Predict mood cycles based on numerology</p>
+                    </SpaceCard>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600">No recommendations available</p>
+                </SpaceCard>
+              </motion.div>
             )}
-          </CardContent>
-        </Card>
 
-        {moodPredictions && (
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Mood Cycle Predictions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                Predictions for the next 12 months based on your numerology cycles
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {moodPredictions.slice(0, 6).map((pred: any, idx: number) => (
-                  <div key={idx} className="p-3 bg-purple-50 rounded text-center">
-                    <p className="text-xs font-semibold">{pred.month}/{pred.year}</p>
-                    <p className="text-sm text-purple-600">{pred.predicted_mood}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            {activeTab === 'tracker' && (
+              <EmotionalStateTracker />
+            )}
+
+            {activeTab === 'stress-patterns' && (
+              <StressPatternChart />
+            )}
+
+            {activeTab === 'wellbeing' && (
+              <WellbeingRecommendations />
+            )}
+
+            {activeTab === 'mood-predictions' && (
+              <MoodCyclePredictor />
+            )}
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </CosmicPageLayout>
   );
 }
-

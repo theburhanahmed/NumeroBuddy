@@ -163,6 +163,8 @@ urlpatterns = [
     path('numerology/generational/karmic-contracts/', views.get_karmic_contracts, name='get-karmic-contracts'),
     path('numerology/generational/patterns/', views.get_generational_patterns, name='get-generational-patterns'),
     path('numerology/generational/compatibility-matrix/', views.get_family_compatibility_matrix, name='get-family-compatibility-matrix'),
+    path('numerology/generational/family-unit/', views.get_family_unit_numerology, name='get-family-unit-numerology'),
+    path('numerology/generational/cycles/', views.track_generational_cycles, name='track-generational-cycles'),
     
     # Feng Shui × Numerology Hybrid endpoints
     path('numerology/feng-shui/analyze/', views.feng_shui_analyze, name='feng-shui-analyze'),

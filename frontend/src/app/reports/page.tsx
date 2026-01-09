@@ -11,7 +11,11 @@ import {
   Download,
   Filter,
   Calendar,
-  User
+  User,
+  Settings,
+  Compare,
+  Clock,
+  Layout
 } from 'lucide-react';
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
@@ -20,12 +24,19 @@ import { PageDescription } from '@/components/ui/page-description';
 import { useAuth } from '@/contexts/auth-context';
 import { reportAPI, peopleAPI } from '@/lib/numerology-api';
 import { GeneratedReport, Person, ReportTemplate } from '@/types';
+import { ReportBuilder } from '@/components/reports/report-builder';
+import { ReportTemplates } from '@/components/reports/report-templates';
+import { ReportComparison } from '@/components/reports/report-comparison';
+import { ScheduledReports } from '@/components/reports/scheduled-reports';
 
 // Types imported from '@/types'
+
+type TabType = 'my-reports' | 'builder' | 'templates' | 'scheduled' | 'comparison';
 
 export default function ReportsPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<TabType>('my-reports');
   const [reports, setReports] = useState<GeneratedReport[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [templates, setTemplates] = useState<ReportTemplate[]>([]);
@@ -170,6 +181,86 @@ export default function ReportsPage() {
               "Export reports as PDFs to share with others or keep for reference"
             ]}
           />
+
+          {/* Tabs */}
+          <div className="flex flex-wrap gap-3 border-b border-gray-800 pb-4 mb-6">
+            <motion.button
+              onClick={() => setActiveTab('my-reports')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                activeTab === 'my-reports'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FileText className="w-5 h-5" />
+              <span className="font-medium">My Reports</span>
+            </motion.button>
+            <motion.button
+              onClick={() => setActiveTab('builder')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                activeTab === 'builder'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Layout className="w-5 h-5" />
+              <span className="font-medium">Report Builder</span>
+            </motion.button>
+            <motion.button
+              onClick={() => setActiveTab('templates')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                activeTab === 'templates'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Settings className="w-5 h-5" />
+              <span className="font-medium">Templates</span>
+            </motion.button>
+            <motion.button
+              onClick={() => setActiveTab('scheduled')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                activeTab === 'scheduled'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Clock className="w-5 h-5" />
+              <span className="font-medium">Scheduled</span>
+            </motion.button>
+            <motion.button
+              onClick={() => setActiveTab('comparison')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                activeTab === 'comparison'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Compare className="w-5 h-5" />
+              <span className="font-medium">Comparison</span>
+            </motion.button>
+          </div>
+
+          {/* Tab Content */}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {activeTab === 'my-reports' && (
+              <>
 
           {/* Search and Filters */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -342,6 +433,13 @@ export default function ReportsPage() {
               </div>
             )}
           </div>
+              </>
+            )}
+            {activeTab === 'builder' && <ReportBuilder />}
+            {activeTab === 'templates' && <ReportTemplates />}
+            {activeTab === 'scheduled' && <ScheduledReports />}
+            {activeTab === 'comparison' && <ReportComparison />}
+          </motion.div>
         </motion.div>
       </div>
     </CosmicPageLayout>

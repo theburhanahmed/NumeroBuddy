@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import { numerologyAPI } from '@/lib/numerology-api';
+import { numerologyAPI, healthNumerologyAPI } from '@/lib/numerology-api';
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
-import { Loader2, Heart, AlertTriangle, Calendar, TrendingUp, Activity } from 'lucide-react';
+import { Loader2, Heart, AlertTriangle, Calendar, TrendingUp, Activity, Stethoscope } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 
@@ -17,9 +17,13 @@ export default function HealthNumerologyPage() {
   const { toast } = useToast();
   
   const [healthData, setHealthData] = useState<any>(null);
+  const [detailedCycles, setDetailedCycles] = useState<any>(null);
+  const [medicalTiming, setMedicalTiming] = useState<any>(null);
+  const [emotionalData, setEmotionalData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [tabLoading, setTabLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'cycles' | 'risks' | 'wellness' | 'vulnerabilities'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'cycles' | 'risks' | 'wellness' | 'vulnerabilities' | 'medical'>('overview');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -34,8 +38,14 @@ export default function HealthNumerologyPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await numerologyAPI.getHealthAnalysis();
-      setHealthData(data);
+      const [analysisData, emotionalVuln] = await Promise.all([
+        numerologyAPI.getHealthAnalysis(),
+        healthNumerologyAPI.calculateEmotionalVulnerabilities({}).catch(() => null),
+      ]);
+      setHealthData(analysisData);
+      if (emotionalVuln) {
+        setEmotionalData(emotionalVuln);
+      }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Failed to load health numerology';
       setError(errorMessage);
@@ -55,6 +65,58 @@ export default function HealthNumerologyPage() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDetailedCycles = async () => {
+    if (detailedCycles) return; // Already loaded
+    
+    try {
+      setTabLoading('cycles');
+      const userProfile = await numerologyAPI.getProfile();
+      const birthDate = userProfile?.birth_date || user?.date_of_birth;
+      const fullName = userProfile?.full_name || `${user?.first_name} ${user?.last_name}`;
+      
+      if (birthDate) {
+        const currentYear = new Date().getFullYear();
+        const data = await healthNumerologyAPI.calculateHealthCycles({
+          birth_date: birthDate,
+          full_name: fullName,
+          start_year: currentYear,
+          end_year: currentYear + 10,
+        });
+        setDetailedCycles(data);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch detailed cycles:', err);
+    } finally {
+      setTabLoading(null);
+    }
+  };
+
+  const handleTabChange = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    
+    // Load additional data when specific tabs are accessed
+    if (tab === 'cycles' && !detailedCycles) {
+      fetchDetailedCycles();
+    }
+    if (tab === 'vulnerabilities' && !emotionalData) {
+      loadEmotionalData();
+    }
+  };
+
+  const loadEmotionalData = async () => {
+    if (emotionalData) return;
+    
+    try {
+      setTabLoading('vulnerabilities');
+      const data = await healthNumerologyAPI.calculateEmotionalVulnerabilities({});
+      setEmotionalData(data);
+    } catch (err: any) {
+      console.error('Failed to load emotional data:', err);
+    } finally {
+      setTabLoading(null);
     }
   };
 
@@ -114,6 +176,7 @@ export default function HealthNumerologyPage() {
     { id: 'risks', label: 'Risk Periods', icon: AlertTriangle },
     { id: 'wellness', label: 'Wellness Windows', icon: Heart },
     { id: 'vulnerabilities', label: 'Emotional', icon: Heart },
+    { id: 'medical', label: 'Medical Timing', icon: Stethoscope },
   ];
 
   return (
@@ -171,7 +234,7 @@ export default function HealthNumerologyPage() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => handleTabChange(tab.id as any)}
                 className={`
                   px-6 py-3 rounded-xl font-medium transition-all
                   flex items-center gap-2
@@ -179,9 +242,15 @@ export default function HealthNumerologyPage() {
                     ? 'bg-gradient-to-r from-cyan-500/20 to-purple-500/20 text-cyan-400 border border-cyan-500/30'
                     : 'text-white/70 hover:text-white hover:bg-[#1a2942]/60'
                   }
+                  ${tabLoading === tab.id ? 'opacity-50 cursor-wait' : ''}
                 `}
+                disabled={tabLoading === tab.id}
               >
-                <Icon className="w-4 h-4" />
+                {tabLoading === tab.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Icon className="w-4 h-4" />
+                )}
                 <span>{tab.label}</span>
               </button>
             );
@@ -220,28 +289,46 @@ export default function HealthNumerologyPage() {
             </div>
           )}
 
-          {activeTab === 'cycles' && healthData.health_cycles && (
+          {activeTab === 'cycles' && (
             <div className="space-y-4">
-              {healthData.health_cycles.yearly_health_analysis?.slice(0, 10).map((year: any, index: number) => (
-                <SpaceCard key={index} variant="premium" className="p-6" glow>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-lg font-semibold text-white mb-1">Year {year.year}</h4>
-                      <p className="text-white/70 text-sm">Personal Year {year.personal_year}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className={`text-2xl font-bold ${
-                        year.health_score >= 75 ? 'text-green-400' :
-                        year.health_score >= 60 ? 'text-yellow-400' :
-                        'text-red-400'
-                      }`}>
-                        {year.health_score}
+              {tabLoading === 'cycles' ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+                </div>
+              ) : (
+                <>
+                  {(detailedCycles?.cycles || healthData?.health_cycles?.yearly_health_analysis || []).slice(0, 10).map((year: any, index: number) => (
+                    <SpaceCard key={index} variant="premium" className="p-6" glow>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-lg font-semibold text-white mb-1">Year {year.year || year.year_period}</h4>
+                          <p className="text-white/70 text-sm">Personal Year {year.personal_year || year.personal_year_number}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className={`text-2xl font-bold ${
+                            (year.health_score || year.health_index) >= 75 ? 'text-green-400' :
+                            (year.health_score || year.health_index) >= 60 ? 'text-yellow-400' :
+                            'text-red-400'
+                          }`}>
+                            {year.health_score || year.health_index || '—'}
+                          </div>
+                          <p className="text-white/70 text-xs capitalize">{year.risk_level || year.overall_risk || 'normal'}</p>
+                        </div>
                       </div>
-                      <p className="text-white/70 text-xs capitalize">{year.risk_level}</p>
-                    </div>
-                  </div>
-                </SpaceCard>
-              ))}
+                      {year.insights && (
+                        <div className="mt-4 pt-4 border-t border-cyan-500/20">
+                          <p className="text-white/80 text-sm">{year.insights}</p>
+                        </div>
+                      )}
+                    </SpaceCard>
+                  ))}
+                  {(!detailedCycles && !healthData?.health_cycles?.yearly_health_analysis) && (
+                    <SpaceCard variant="premium" className="p-6 text-center">
+                      <p className="text-white/70">No cycle data available</p>
+                    </SpaceCard>
+                  )}
+                </>
+              )}
             </div>
           )}
 
@@ -327,43 +414,186 @@ export default function HealthNumerologyPage() {
             </div>
           )}
 
-          {activeTab === 'vulnerabilities' && healthData.emotional_vulnerabilities && (
+          {activeTab === 'vulnerabilities' && (
+            <div className="space-y-6">
+              {tabLoading === 'vulnerabilities' ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+                </div>
+              ) : (
+                <>
+                  <SpaceCard variant="premium" className="p-6" glow>
+                    <h3 className="text-xl font-bold text-white mb-4">Emotional Vulnerabilities</h3>
+                    {(emotionalData?.vulnerabilities || healthData?.emotional_vulnerabilities?.vulnerabilities || []).map((vuln: any, index: number) => (
+                      <div key={index} className="mb-4 pb-4 border-b border-cyan-500/20 last:border-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl font-bold text-cyan-400">{vuln.number || vuln.vulnerability_number}</span>
+                          <div>
+                            <p className="text-white font-semibold">{vuln.source || vuln.source_number}</p>
+                            <span className={`inline-block px-2 py-0.5 rounded text-xs ${
+                              (vuln.severity || vuln.risk_level) === 'high' ? 'bg-red-500/20 text-red-300' :
+                              (vuln.severity || vuln.risk_level) === 'moderate' ? 'bg-yellow-500/20 text-yellow-300' :
+                              'bg-blue-500/20 text-blue-300'
+                            }`}>
+                              {vuln.severity || vuln.risk_level || 'low'}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-white/90">{vuln.vulnerability || vuln.description || vuln.analysis}</p>
+                      </div>
+                    ))}
+                    {(!emotionalData && !healthData?.emotional_vulnerabilities) && (
+                      <p className="text-white/70 text-center py-4">No vulnerability data available</p>
+                    )}
+                  </SpaceCard>
+
+                  {(emotionalData?.coping_strategies || healthData?.emotional_vulnerabilities?.coping_strategies) && (
+                    <SpaceCard variant="premium" className="p-6" glow>
+                      <h3 className="text-xl font-bold text-white mb-4">Coping Strategies</h3>
+                      <ul className="space-y-2">
+                        {(emotionalData?.coping_strategies || healthData?.emotional_vulnerabilities?.coping_strategies || []).map((strategy: string, index: number) => (
+                          <li key={index} className="text-white/90 flex items-start gap-2">
+                            <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
+                            {strategy}
+                          </li>
+                        ))}
+                      </ul>
+                    </SpaceCard>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'medical' && (
             <div className="space-y-6">
               <SpaceCard variant="premium" className="p-6" glow>
-                <h3 className="text-xl font-bold text-white mb-4">Emotional Vulnerabilities</h3>
-                {healthData.emotional_vulnerabilities.vulnerabilities?.map((vuln: any, index: number) => (
-                  <div key={index} className="mb-4 pb-4 border-b border-cyan-500/20 last:border-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl font-bold text-cyan-400">{vuln.number}</span>
-                      <div>
-                        <p className="text-white font-semibold">{vuln.source}</p>
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs ${
-                          vuln.severity === 'high' ? 'bg-red-500/20 text-red-300' :
-                          vuln.severity === 'moderate' ? 'bg-yellow-500/20 text-yellow-300' :
-                          'bg-blue-500/20 text-blue-300'
-                        }`}>
-                          {vuln.severity}
-                        </span>
-                      </div>
+                <h3 className="text-xl font-bold text-white mb-4">Medical Procedure Timing</h3>
+                <p className="text-white/70 mb-4">
+                  Calculate optimal timing for medical procedures based on your numerology cycles.
+                </p>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-white/70 text-sm mb-2">Procedure Type</label>
+                      <select 
+                        id="procedure-type"
+                        className="w-full bg-[#1a2942] border border-cyan-500/30 rounded-lg px-4 py-2 text-white"
+                        defaultValue="surgery"
+                      >
+                        <option value="surgery">Surgery</option>
+                        <option value="dental">Dental Procedure</option>
+                        <option value="diagnostic">Diagnostic Test</option>
+                        <option value="therapy">Therapy Session</option>
+                        <option value="vaccination">Vaccination</option>
+                        <option value="checkup">Routine Checkup</option>
+                      </select>
                     </div>
-                    <p className="text-white/90">{vuln.vulnerability}</p>
+                    <div>
+                      <label className="block text-white/70 text-sm mb-2">Preferred Month Range</label>
+                      <input
+                        type="month"
+                        id="preferred-month"
+                        className="w-full bg-[#1a2942] border border-cyan-500/30 rounded-lg px-4 py-2 text-white"
+                        defaultValue={new Date().toISOString().slice(0, 7)}
+                      />
+                    </div>
                   </div>
-                ))}
+                  <TouchOptimizedButton
+                    variant="primary"
+                    onClick={async () => {
+                      try {
+                        setTabLoading('medical');
+                        const procedureType = (document.getElementById('procedure-type') as HTMLSelectElement)?.value || 'surgery';
+                        const preferredMonth = (document.getElementById('preferred-month') as HTMLInputElement)?.value || new Date().toISOString().slice(0, 7);
+                        const [year, month] = preferredMonth.split('-');
+                        const startDate = `${year}-${month}-01`;
+                        const endDate = `${year}-${month}-${new Date(parseInt(year), parseInt(month), 0).getDate()}`;
+                        
+                        const userProfile = await numerologyAPI.getProfile();
+                        const birthDate = userProfile?.birth_date || user?.date_of_birth;
+                        
+                        if (!birthDate) {
+                          toast({
+                            title: 'Error',
+                            description: 'Please set your birth date in your profile',
+                            variant: 'destructive',
+                          });
+                          return;
+                        }
+                        
+                        const timingData = await healthNumerologyAPI.calculateMedicalTiming({
+                          birth_date: birthDate,
+                          procedure_type: procedureType,
+                          start_date: startDate,
+                          end_date: endDate,
+                        });
+                        setMedicalTiming(timingData);
+                      } catch (err: any) {
+                        toast({
+                          title: 'Error',
+                          description: err.response?.data?.error || 'Failed to calculate medical timing',
+                          variant: 'destructive',
+                        });
+                      } finally {
+                        setTabLoading(null);
+                      }
+                    }}
+                    disabled={tabLoading === 'medical'}
+                    className="w-full"
+                  >
+                    {tabLoading === 'medical' ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Calculating...
+                      </>
+                    ) : (
+                      'Calculate Optimal Timing'
+                    )}
+                  </TouchOptimizedButton>
+                  
+                  {medicalTiming && (
+                    <div className="mt-6 space-y-4">
+                      <div className="border-t border-cyan-500/20 pt-4">
+                        <h4 className="text-lg font-semibold text-white mb-3">Recommended Dates</h4>
+                        {medicalTiming.recommended_dates?.map((date: any, index: number) => (
+                          <SpaceCard key={index} variant="elevated" className="p-4 mb-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-white font-semibold">{date.date}</p>
+                                <p className="text-white/70 text-sm">Score: {date.score}/100</p>
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                date.score >= 80 ? 'bg-green-500/20 text-green-300' :
+                                date.score >= 60 ? 'bg-yellow-500/20 text-yellow-300' :
+                                'bg-orange-500/20 text-orange-300'
+                              }`}>
+                                {date.score >= 80 ? 'Optimal' : date.score >= 60 ? 'Good' : 'Fair'}
+                              </span>
+                            </div>
+                            {date.reasoning && (
+                              <p className="text-white/80 text-sm mt-2">{date.reasoning}</p>
+                            )}
+                          </SpaceCard>
+                        ))}
+                      </div>
+                      {medicalTiming.warnings && medicalTiming.warnings.length > 0 && (
+                        <div className="border-t border-red-500/20 pt-4">
+                          <h4 className="text-lg font-semibold text-red-300 mb-3">Warnings</h4>
+                          <ul className="space-y-2">
+                            {medicalTiming.warnings.map((warning: string, index: number) => (
+                              <li key={index} className="text-red-300 text-sm flex items-start gap-2">
+                                <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                {warning}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </SpaceCard>
-
-              {healthData.emotional_vulnerabilities.coping_strategies && (
-                <SpaceCard variant="premium" className="p-6" glow>
-                  <h3 className="text-xl font-bold text-white mb-4">Coping Strategies</h3>
-                  <ul className="space-y-2">
-                    {healthData.emotional_vulnerabilities.coping_strategies.map((strategy: string, index: number) => (
-                      <li key={index} className="text-white/90 flex items-start gap-2">
-                        <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
-                        {strategy}
-                      </li>
-                    ))}
-                  </ul>
-                </SpaceCard>
-              )}
             </div>
           )}
         </div>

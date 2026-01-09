@@ -27,6 +27,11 @@ import { CosmicNavbar } from '@/components/navigation/cosmic-navbar';
 import { ChaldeanInsightsCard } from '@/components/numerology/ChaldeanInsightsCard';
 import { ZodiacPlanetCard } from '@/components/numerology/ZodiacPlanetCard';
 import { LoShuGridVisualization } from '@/components/numerology/LoShuGridVisualization';
+import { QuickActions } from '@/components/dashboard/quick-actions';
+import { Insights } from '@/components/dashboard/insights';
+import { ActivityFeed } from '@/components/dashboard/activity-feed';
+import { Recommendations } from '@/components/dashboard/recommendations';
+import { Rewards } from '@/components/dashboard/rewards';
 
 interface UserProfile {
   full_name?: string;
@@ -724,6 +729,50 @@ export default function Dashboard() {
                 />
               </motion.div>
             )}
+
+            {/* Dashboard Widgets */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+              >
+                <QuickActionsWidget />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.0 }}
+              >
+                <InsightsWidget />
+              </motion.div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 }}
+              >
+                <ActivityFeed />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2 }}
+              >
+                <Recommendations />
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.3 }}
+              className="mt-6"
+            >
+              <Rewards />
+            </motion.div>
           </motion.div>
         )}
       </div>
