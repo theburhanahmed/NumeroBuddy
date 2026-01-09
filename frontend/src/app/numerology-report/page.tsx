@@ -982,7 +982,6 @@ function ReportContent({
                   )}
                 </div>
               )}
-            </div>
           </SpaceCard>
         </motion.div>
       )}

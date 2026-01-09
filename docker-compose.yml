@@ -132,6 +132,25 @@ services:
     networks:
       - numerai-network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    container_name: numerai-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    depends_on:
+      - backend
+    networks:
+      - numerai-network
+
 volumes:
   postgres_data:
   redis_data:

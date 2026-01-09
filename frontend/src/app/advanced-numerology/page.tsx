@@ -1,10 +1,12 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { AlertCircleIcon, TrendingUpIcon, SparklesIcon, BookOpenIcon } from 'lucide-react';
-import { CosmicCosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { useAuth } from '@/contexts/auth-context';
