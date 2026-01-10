@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { UserIcon, MessageSquareIcon, HeartIcon, BookOpenIcon, SparklesIcon, StarIcon, TrendingUpIcon, Users2Icon, CalendarIcon, ArrowRightIcon } from 'lucide-react';
 import { AccessibleSpaceBackground } from '@/components/space/accessible-space-background';
@@ -41,12 +41,12 @@ interface UserProfile {
 
 export default function Dashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  const { isOnboardingComplete } = useOnboarding();
+  const { isOnboardingComplete, showOnboarding, triggerOnboarding } = useOnboarding();
   const { openChat } = useAIChat();
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [statsRef, statsVisible] = useIntersectionObserver({
     threshold: 0.1,
   });
@@ -170,18 +170,40 @@ export default function Dashboard() {
   }, [user]);
 
   useEffect(() => {
-    if (!isLoading && !dataLoading) {
-      // Check if user needs onboarding
-      if (user && !user.hasCompletedOnboarding && !isOnboardingComplete) {
-        setShowOnboarding(true);
-      } else if (user && userProfile) {
+    if (!isLoading && !dataLoading && !authLoading && user) {
+      // Check if onboarding should be triggered for new users
+      const onboardingParam = searchParams ? searchParams.get('onboarding') : null;
+      const isNewUserFromParam = onboardingParam === 'true';
+      
+      // Check if user profile is incomplete (indicator of new user)
+      const isProfileIncomplete = !userProfile?.date_of_birth;
+      
+      // Check if user profile was recently created (within last 5 minutes)
+      // This helps catch users who just signed up but haven't completed profile
+      const isRecentlyCreated = userProfile?.created_at 
+        ? (Date.now() - new Date(userProfile.created_at).getTime()) < 5 * 60 * 1000
+        : !userProfile; // If no profile exists yet, user is definitely new
+
+      // Trigger onboarding if:
+      // 1. User explicitly came from sign-up flow (onboarding=true param), OR
+      // 2. User profile is incomplete (no date of birth) AND user was recently created
+      // AND onboarding hasn't been completed
+      if (!isOnboardingComplete && (isNewUserFromParam || (isProfileIncomplete && isRecentlyCreated))) {
+        triggerOnboarding();
+      } else if (user && userProfile && !showOnboarding && !isNewUserFromParam) {
+        // Only show welcome message if onboarding is not being shown and not a new user
         const userName = userProfile.full_name || user.full_name || 'there';
-        toast.success(`Welcome back, ${userName.split(' ')[0]}!`, {
-          description: dailyReading ? 'Your daily reading is ready' : 'Welcome to your dashboard'
-        });
+        // Show welcome message only once per session (check if already shown)
+        const welcomeShown = sessionStorage.getItem('dashboard_welcome_shown');
+        if (!welcomeShown) {
+          toast.success(`Welcome back, ${userName.split(' ')[0]}!`, {
+            description: dailyReading ? 'Your daily reading is ready' : 'Welcome to your dashboard'
+          });
+          sessionStorage.setItem('dashboard_welcome_shown', 'true');
+        }
       }
     }
-  }, [isLoading, dataLoading, user, userProfile, dailyReading, isOnboardingComplete]);
+  }, [isLoading, dataLoading, authLoading, user, userProfile, dailyReading, isOnboardingComplete, showOnboarding, searchParams, triggerOnboarding]);
 
   const formatBirthDate = (dateStr?: string) => {
     if (!dateStr) return null;

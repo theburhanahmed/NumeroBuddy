@@ -18,7 +18,6 @@ import { SkipToContent } from "@/components/accessibility/skip-to-content";
 import { FocusVisibleStyles } from "@/components/accessibility/focus-visible-styles";
 import { BackToTop } from "@/components/accessibility/back-to-top";
 import { ContextualHelp } from "@/components/help/contextual-help";
-import { OnboardingModal } from "@/components/OnboardingModal";
 import { AnalyticsInitializer } from "@/components/analytics-initializer";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { registerServiceWorker } from "@/lib/service-worker";
@@ -94,7 +93,6 @@ export default function RootLayout({
                     <AIChatModal />
                     <BackToTop />
                     <ContextualHelp />
-                    <OnboardingModal />
                     <InstallPrompt />
                     <MobileBottomNav />
 

@@ -51,9 +51,9 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Health check
+# Health check (curl is available in runtime image)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8000/api/v1/health/ || exit 1
+  CMD curl -f http://localhost:${PORT:-8000}/api/v1/health/ || exit 1
 
 # Default command (can be overridden in docker-compose)
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "2", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "numerai.wsgi:application"]
