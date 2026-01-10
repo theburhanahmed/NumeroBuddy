@@ -3,13 +3,14 @@ services:
   - type: web
     name: numerai-backend
     runtime: python
-    plan: starter
-    region: oregon
+    plan: starter  # Upgrade to standard or higher for production
+    region: oregon  # Change to your preferred region (us-east, us-west, eu-west, etc.)
     branch: main
     rootDir: backend
     buildCommand: chmod +x build.sh && ./build.sh
     startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile - numerai.wsgi:application
     healthCheckPath: /api/v1/health/
+    autoDeploy: true  # Auto-deploy on git push
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
