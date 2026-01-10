@@ -25,10 +25,10 @@ class Migration(migrations.Migration):
                 ('rate_limit', models.IntegerField(default=100)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('last_used_at', models.DateTimeField(blank=True, null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='api_keys', to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='developer_api_keys', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'db_table': 'api_keys',
+                'db_table': 'developer_api_keys',
                 'ordering': ['-created_at'],
             },
         ),
