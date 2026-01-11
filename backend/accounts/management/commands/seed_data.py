@@ -14,9 +14,11 @@ from django.db import transaction
 # Import all models
 from accounts.models import (
     UserProfile, OTPCode, RefreshToken, DeviceToken,
-    PasswordResetToken, Notification, EmailTemplate, AuditLog,
-    NotificationPreference, PrivacySettings, APIKey
+    PasswordResetToken, Notification, EmailTemplate, AuditLog
 )
+from accounts.models_notification_prefs import NotificationPreference
+from accounts.models_privacy import PrivacySettings
+from accounts.models_api_key import APIKey
 from payments.models import Subscription, Payment, BillingHistory, WebhookEvent
 from feature_flags.models import FeatureFlag, SubscriptionFeatureAccess
 from numerology.models import (
