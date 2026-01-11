@@ -634,8 +634,8 @@ class Command(BaseCommand):
 
         # Create numerology patterns
         NumerologyPattern.objects.create(
-            name='Master Number Pattern',
-            pattern_type='master_number',
-            description='Pattern involving master numbers 11, 22, 33',
+            pattern_type='sequence',
             pattern_data={'numbers': [11, 22, 33]},
+            description='Pattern involving master numbers 11, 22, 33',
+            significance='Master numbers represent heightened spiritual energy and potential.',
         )
