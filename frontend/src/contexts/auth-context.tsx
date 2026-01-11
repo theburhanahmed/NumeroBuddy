@@ -53,6 +53,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...currentUser,
         email: profileData.email || currentUser?.email,
         full_name: profileData.full_name || currentUser?.full_name,
+        // Update subscription fields from backend
+        is_premium: profileData.is_premium !== undefined ? profileData.is_premium : currentUser?.is_premium,
+        subscription_plan: profileData.subscription_plan || currentUser?.subscription_plan || 'free',
         // Keep other user fields from current state
       };
       

@@ -27,7 +27,7 @@ This will:
 
 #### Skip Migrations
 
-If migrations have already been run:
+If migrations have already been run or if you're experiencing migration dependency issues:
 
 ```bash
 python manage.py seed_data --skip-migrations
@@ -41,10 +41,22 @@ python manage.py seed_data --skip-migrations
 python manage.py seed_data --clear
 ```
 
+#### Ignore Migration Errors
+
+⚠️ **Use with caution**: Continue seeding even if migrations fail:
+
+```bash
+python manage.py seed_data --ignore-migration-errors
+```
+
 ### Combined Usage
 
 ```bash
+# Skip migrations and seed data
 python manage.py seed_data --skip-migrations --clear
+
+# Continue even if migrations fail (not recommended)
+python manage.py seed_data --ignore-migration-errors
 ```
 
 ## What Gets Seeded
@@ -144,11 +156,19 @@ pip install -r requirements.txt
 
 ### Migration Errors
 
-If migrations fail, you can skip them:
+If migrations fail (especially `InconsistentMigrationHistory` errors), you have two options:
 
-```bash
-python manage.py seed_data --skip-migrations
-```
+1. **Skip migrations** (recommended if tables already exist):
+   ```bash
+   python manage.py seed_data --skip-migrations
+   ```
+
+2. **Ignore migration errors** (use with caution):
+   ```bash
+   python manage.py seed_data --ignore-migration-errors
+   ```
+
+**Note**: If you're seeing migration dependency errors (e.g., "0004_emailtemplate is applied before 0003_notification"), it's safer to use `--skip-migrations` since the tables likely already exist.
 
 ### Data Already Exists
 

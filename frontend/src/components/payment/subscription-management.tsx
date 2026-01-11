@@ -7,6 +7,8 @@ import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
 import { paymentsAPI } from '@/lib/api-client';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/auth-context';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { format } from 'date-fns';
 
 interface Subscription {
@@ -25,6 +27,8 @@ export function SubscriptionManagement() {
   const [updating, setUpdating] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
+  const { refreshFeatures } = useSubscription();
 
   const loadSubscription = useCallback(async () => {
     try {
@@ -57,6 +61,10 @@ export function SubscriptionManagement() {
         description: 'Subscription canceled successfully',
       });
       await loadSubscription();
+      // Refresh user data to update subscription status
+      await refreshUser();
+      // Refresh subscription context
+      await refreshFeatures();
       setShowCancelDialog(false);
     } catch (error: any) {
       toast({
@@ -78,6 +86,10 @@ export function SubscriptionManagement() {
         description: 'Subscription plan updated successfully',
       });
       await loadSubscription();
+      // Refresh user data to update subscription status
+      await refreshUser();
+      // Refresh subscription context
+      await refreshFeatures();
     } catch (error: any) {
       toast({
         title: 'Error',

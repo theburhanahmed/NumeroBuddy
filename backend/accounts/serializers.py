@@ -305,11 +305,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
         required=False,
         allow_blank=False
     )
+    is_premium = serializers.BooleanField(source='user.is_premium', read_only=True)
+    subscription_plan = serializers.CharField(source='user.subscription_plan', read_only=True)
     
     class Meta:
         model = UserProfile
-        fields = ['email', 'full_name', 'date_of_birth', 'gender', 'timezone', 'location', 'profile_picture_url', 'bio']
-        read_only_fields = ['email']
+        fields = ['email', 'full_name', 'date_of_birth', 'gender', 'timezone', 'location', 'profile_picture_url', 'bio', 'is_premium', 'subscription_plan']
+        read_only_fields = ['email', 'is_premium', 'subscription_plan']
     
     def update(self, instance, validated_data):
         """Update both UserProfile and User model fields."""
