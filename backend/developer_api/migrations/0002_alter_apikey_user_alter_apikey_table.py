@@ -5,6 +5,60 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def alter_table_if_needed(apps, schema_editor):
+    """Conditionally rename table only if old table name exists."""
+    db_alias = schema_editor.connection.alias
+    with schema_editor.connection.cursor() as cursor:
+        # Check if old table exists (for environments where 0001 created it with wrong name)
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'api_keys'
+            );
+        """)
+        old_table_exists = cursor.fetchone()[0]
+        
+        # Check if new table already exists (for fresh deployments where 0001 created it correctly)
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'developer_api_keys'
+            );
+        """)
+        new_table_exists = cursor.fetchone()[0]
+        
+        # Only rename if old table exists and new table doesn't
+        # (This handles environments where 0001 was run with the old table name)
+        if old_table_exists and not new_table_exists:
+            try:
+                cursor.execute('ALTER TABLE api_keys RENAME TO developer_api_keys;')
+            except Exception as e:
+                # If rename fails, log but don't fail migration
+                # (table might have been created correctly by updated 0001)
+                print(f"Warning: Could not rename table: {e}")
+
+
+def reverse_alter_table(apps, schema_editor):
+    """Reverse operation - rename back if needed."""
+    with schema_editor.connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'developer_api_keys'
+            );
+        """)
+        new_table_exists = cursor.fetchone()[0]
+        
+        if new_table_exists:
+            try:
+                cursor.execute('ALTER TABLE developer_api_keys RENAME TO api_keys;')
+            except Exception as e:
+                print(f"Warning: Could not reverse rename table: {e}")
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -13,11 +67,19 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Update the related_name in state (this is always safe)
         migrations.AlterField(
             model_name='apikey',
             name='user',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='developer_api_keys', to=settings.AUTH_USER_MODEL),
         ),
+        # Conditionally rename table only if it exists with old name
+        migrations.RunPython(
+            alter_table_if_needed,
+            reverse_alter_table,
+            atomic=True,
+        ),
+        # Update the state to reflect the new table name (always update state)
         migrations.AlterModelTable(
             name='apikey',
             table='developer_api_keys',

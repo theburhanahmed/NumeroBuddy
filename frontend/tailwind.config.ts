@@ -66,6 +66,23 @@ const config = {
           'cyan-glow': tokens.colors.space.cyanGlow,
           white: tokens.colors.space.white,
         },
+        // 3D-specific colors for WebGL
+        '3d': {
+          glow: {
+            cyan: 'rgba(0, 212, 255, 0.6)',
+            purple: 'rgba(168, 85, 247, 0.6)',
+            blue: 'rgba(59, 130, 246, 0.6)',
+            pink: 'rgba(236, 72, 153, 0.6)',
+            gold: 'rgba(245, 158, 11, 0.6)',
+          },
+          energy: {
+            cyan: '#00d4ff',
+            purple: '#a855f7',
+            blue: '#3b82f6',
+            pink: '#ec4899',
+            gold: '#f59e0b',
+          },
+        },
       },
       spacing: {
         ...Object.fromEntries(

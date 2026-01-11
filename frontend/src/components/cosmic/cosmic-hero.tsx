@@ -4,6 +4,8 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRightIcon } from 'lucide-react'
 import { SpaceButton } from '../space/space-button'
+import { Hero3DScene } from '@/components/3d/hero/hero-3d-scene'
+import { use3DPerformance } from '@/hooks/use-3d-performance'
 
 interface CosmicHeroProps {
   badge?: string
@@ -22,6 +24,8 @@ interface CosmicHeroProps {
     value: string
     label: string
   }>
+  enableWebGL?: boolean
+  lifePathNumber?: number
 }
 
 export function CosmicHero({
@@ -32,7 +36,11 @@ export function CosmicHero({
   primaryCTA,
   secondaryCTA,
   stats,
+  enableWebGL = true,
+  lifePathNumber = 7,
 }: CosmicHeroProps) {
+  const { shouldRender3D, capabilities } = use3DPerformance()
+  const useWebGL = enableWebGL && shouldRender3D && capabilities.hasWebGL
   return (
     <section className="relative min-h-screen flex items-center px-4 sm:px-6 pt-24 overflow-hidden">
       <div className="max-w-7xl mx-auto w-full">
@@ -191,7 +199,7 @@ export function CosmicHero({
             )}
           </motion.div>
 
-          {/* Right Content - Giant Glowing Planet */}
+          {/* Right Content - Giant Glowing Planet or WebGL Scene */}
           <motion.div
             initial={{
               opacity: 0,
@@ -207,7 +215,16 @@ export function CosmicHero({
             }}
             className="relative h-[600px] flex items-center justify-center"
           >
-            {/* Main Planet */}
+            {/* WebGL Version (if enabled and available) */}
+            {useWebGL ? (
+              <Hero3DScene
+                lifePathNumber={lifePathNumber}
+                className="w-full h-full"
+              />
+            ) : (
+              /* CSS Fallback - Main Planet */
+              <>
+                {/* Main Planet */}
             <motion.div
               className="relative w-96 h-96"
               animate={{
@@ -410,6 +427,8 @@ export function CosmicHero({
                 </div>
               </motion.div>
             </motion.div>
+              </>
+            )}
           </motion.div>
         </div>
       </div>

@@ -10,11 +10,15 @@ import { SpaceButton } from '@/components/space/space-button';
 import { CrystalNumerologyCube } from '@/components/3d/crystal-numerology-cube';
 import { OptimizedPremium3DPlanet } from '@/components/3d/optimized-premium-3d-planet';
 import { CosmicTooltip } from '@/components/cosmic/cosmic-tooltip';
+import { LoShu3DGrid } from '@/components/3d/birth-chart/lo-shu-3d-grid';
+import { CanvasWrapper } from '@/components/3d/canvas-wrapper';
+import { Suspense } from 'react';
+import { Environment } from '@react-three/drei';
 import { numerologyAPI } from '@/lib/numerology-api';
 import { userAPI } from '@/lib/api-client';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
-import type { BirthChart } from '@/lib/numerology-api';
+import type { BirthChart, DetailedLoShuGrid } from '@/lib/numerology-api';
 
 export default function BirthChart() {
   const router = useRouter();
@@ -31,6 +35,7 @@ export default function BirthChart() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [pinnacles, setPinnacles] = useState<any[]>([]);
   const [challenges, setChallenges] = useState<any[]>([]);
+  const [loShuGrid, setLoShuGrid] = useState<DetailedLoShuGrid | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,6 +54,15 @@ export default function BirthChart() {
         } catch (error) {
           console.error('Failed to fetch birth chart:', error);
           setBirthChart(null);
+        }
+
+        // Fetch Lo Shu Grid for 3D visualization
+        try {
+          const loShu = await numerologyAPI.getDetailedLoShuGrid();
+          setLoShuGrid(loShu);
+        } catch (error) {
+          console.error('Failed to fetch Lo Shu Grid:', error);
+          // Not critical, continue without 3D grid
         }
 
         // Fetch user profile for name
@@ -238,6 +252,102 @@ export default function BirthChart() {
         </SpaceCard>
       </motion.div>
 
+      {/* 3D Lo Shu Grid - WOW Moment */}
+      {loShuGrid && (
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            delay: 0.2,
+          }}
+          className="mb-8"
+        >
+          <SpaceCard variant="premium" className="p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-['Playfair_Display'] font-bold text-white">
+                3D Lo Shu Grid
+              </h2>
+              <CosmicTooltip content="Your numerology energy map in 3D space" icon />
+            </div>
+
+            {/* Convert grid data to 3x3 format for 3D grid */}
+            {(() => {
+              // Lo Shu Grid layout: 4 9 2 / 3 5 7 / 8 1 6
+              const gridLayout = [
+                [4, 9, 2],
+                [3, 5, 7],
+                [8, 1, 6],
+              ]
+              
+              // Convert DetailedLoShuGrid to 3x3 array with numbers or null
+              const grid3D: (number | null)[][] = gridLayout.map(row =>
+                row.map(position => {
+                  const key = position === 4 ? 'top_left' :
+                              position === 9 ? 'top_center' :
+                              position === 2 ? 'top_right' :
+                              position === 3 ? 'middle_left' :
+                              position === 5 ? 'center' :
+                              position === 7 ? 'middle_right' :
+                              position === 8 ? 'bottom_left' :
+                              position === 1 ? 'bottom_center' :
+                              'bottom_right'
+                  const cellData = loShuGrid.grid[key]
+                  return cellData?.is_present && cellData.count > 0 ? position : null
+                })
+              )
+
+              // Render 3D grid - LoShu3DGrid handles fallback internally
+              return (
+                <div className="relative w-full h-[600px] flex items-center justify-center">
+                  {/* Try WebGL first, falls back to CSS automatically */}
+                  <CanvasWrapper
+                    className="w-full h-full"
+                    fallback={
+                      /* CSS fallback rendered by LoShu3DGrid when WebGL unavailable */
+                      <LoShu3DGrid
+                        grid={grid3D}
+                        onNumberClick={(number, row, col) => {
+                          toast.info(`Number ${number} - Click for details`)
+                        }}
+                        enableHover={true}
+                      />
+                    }
+                  >
+                    <Suspense
+                      fallback={
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
+                        </div>
+                      }
+                    >
+                      <ambientLight intensity={0.5} />
+                      <pointLight position={[10, 10, 10]} intensity={1} />
+                      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#00d4ff" />
+                      <Environment preset="city" />
+                      {/* LoShu3DGrid detects it's inside Canvas and renders WebGL version */}
+                      <LoShu3DGrid
+                        grid={grid3D}
+                        onNumberClick={(number, row, col) => {
+                          toast.info(`Number ${number} - Click for details`)
+                        }}
+                        enableHover={true}
+                        forceMode="webgl"
+                      />
+                    </Suspense>
+                  </CanvasWrapper>
+                </div>
+              )
+            })()}
+          </SpaceCard>
+        </motion.div>
+      )}
+
       {/* Cosmic Chart Visualization */}
       <motion.div
         initial={{
@@ -249,7 +359,7 @@ export default function BirthChart() {
           y: 0,
         }}
         transition={{
-          delay: 0.2,
+          delay: 0.3,
         }}
         className="mb-8"
       >
