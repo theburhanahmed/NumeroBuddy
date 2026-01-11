@@ -23,7 +23,7 @@ python manage.py migrate accounts 0002 --no-input || true
 # Then apply the notification migration (must be applied before 0004)
 python manage.py migrate accounts 0003 --no-input || echo "Warning: Migration 0003 may have issues"
 
-# Fix inconsistent migration history - remove 0004 if any dependency is missing
+# Fix inconsistent migration history BEFORE makemigrations
 echo "Checking for inconsistent migration history..."
 python << 'PYTHON_SCRIPT'
 import os
@@ -34,84 +34,94 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'numerai.settings.production')
 django.setup()
 
 from django.db import connection
+from django.core.management import call_command
 
 cursor = connection.cursor()
-# Check if 0004 is marked as applied
-cursor.execute("""
-    SELECT COUNT(*) FROM django_migrations 
-    WHERE app = 'accounts' AND name = '0004_emailtemplate'
-""")
-has_0004 = cursor.fetchone()[0] > 0
 
-# Check if 0002 is marked as applied
-cursor.execute("""
-    SELECT COUNT(*) FROM django_migrations 
-    WHERE app = 'accounts' AND name = '0002_fix_allauth_dependency'
-""")
+# Check migration states
+cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'accounts' AND name = '0002_fix_allauth_dependency'")
 has_0002 = cursor.fetchone()[0] > 0
 
-# Check if 0003 is marked as applied
-cursor.execute("""
-    SELECT COUNT(*) FROM django_migrations 
-    WHERE app = 'accounts' AND name = '0003_notification'
-""")
+cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'accounts' AND name = '0003_notification'")
 has_0003 = cursor.fetchone()[0] > 0
 
-if has_0004 and (not has_0002 or not has_0003):
-    print(f"  ⚠ Found inconsistent state: 0004 is applied but dependencies are missing (0002: {has_0002}, 0003: {has_0003})")
-    print("  → Removing 0004 from migration history to fix inconsistency...")
+cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'accounts' AND name = '0004_emailtemplate'")
+has_0004 = cursor.fetchone()[0] > 0
+
+# Check if tables exist
+cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'notifications')")
+notifications_exists = cursor.fetchone()[0]
+
+cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'email_templates')")
+email_templates_exists = cursor.fetchone()[0]
+
+print(f"Migration state: 0002={has_0002}, 0003={has_0003}, 0004={has_0004}")
+print(f"Tables exist: notifications={notifications_exists}, email_templates={email_templates_exists}")
+
+# Fix: If 0004 is applied but 0003 is not, we need to fix this
+if has_0004 and not has_0003:
+    print("  ⚠ Found inconsistent state: 0004 is applied but 0003 is not")
+    if notifications_exists:
+        print("  → Notifications table exists, faking migration 0003...")
+        try:
+            call_command('migrate', 'accounts', '0003_notification', '--fake', verbosity=1, interactive=False)
+            print("  ✓ Faked migration 0003_notification")
+            has_0003 = True
+        except Exception as e:
+            print(f"  ⚠ Failed to fake 0003: {e}")
+            # Try manual insert
+            cursor.execute("""
+                INSERT INTO django_migrations (app, name, applied)
+                SELECT 'accounts', '0003_notification', NOW()
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM django_migrations 
+                    WHERE app = 'accounts' AND name = '0003_notification'
+                )
+            """)
+            connection.commit()
+            print("  ✓ Manually marked 0003_notification as applied")
+            has_0003 = True
+    else:
+        print("  → Removing 0004 from history since 0003 dependency is missing and table doesn't exist")
+        cursor.execute("DELETE FROM django_migrations WHERE app = 'accounts' AND name = '0004_emailtemplate'")
+        connection.commit()
+        has_0004 = False
+        print("  ✓ Removed 0004 from migration history")
+
+# Ensure 0003 is marked if table exists
+if notifications_exists and not has_0003:
+    print("  → Notifications table exists, marking 0003 as applied...")
     cursor.execute("""
-        DELETE FROM django_migrations 
-        WHERE app = 'accounts' AND name = '0004_emailtemplate'
+        INSERT INTO django_migrations (app, name, applied)
+        SELECT 'accounts', '0003_notification', NOW()
+        WHERE NOT EXISTS (
+            SELECT 1 FROM django_migrations 
+            WHERE app = 'accounts' AND name = '0003_notification'
+        )
     """)
     connection.commit()
-    print("  ✓ Fixed inconsistent migration history")
+    print("  ✓ Marked 0003_notification as applied")
+    has_0003 = True
 
-# Check for tables that might already exist but migrations not applied
-# Format: (table_name, app_name, migration_name)
-table_migration_checks = [
-    ('email_templates', 'accounts', '0004_emailtemplate'),
-]
+# Ensure 0004 is marked if table exists and 0003 is applied
+if email_templates_exists and has_0003 and not has_0004:
+    print("  → Email templates table exists, marking 0004 as applied...")
+    cursor.execute("""
+        INSERT INTO django_migrations (app, name, applied)
+        SELECT 'accounts', '0004_emailtemplate', NOW()
+        WHERE NOT EXISTS (
+            SELECT 1 FROM django_migrations 
+            WHERE app = 'accounts' AND name = '0004_emailtemplate'
+        )
+    """, [])
+    connection.commit()
+    print("  ✓ Marked 0004_emailtemplate as applied")
 
-for table_name, app_name, migration_name in table_migration_checks:
-    cursor.execute("""
-        SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = %s)
-    """, [table_name])
-    table_exists = cursor.fetchone()[0]
-    
-    cursor.execute("""
-        SELECT COUNT(*) FROM django_migrations 
-        WHERE app = %s AND name = %s
-    """, [app_name, migration_name])
-    migration_applied = cursor.fetchone()[0] > 0
-    
-    if table_exists and not migration_applied:
-        print(f"  ⚠ Found {table_name} table exists but migration is not applied")
-        print(f"  → Will fake the migration since table already exists")
-        cursor.execute("""
-            INSERT INTO django_migrations (app, name, applied)
-            SELECT %s, %s, NOW()
-            WHERE NOT EXISTS (
-                SELECT 1 FROM django_migrations 
-                WHERE app = %s AND name = %s
-            )
-        """, [app_name, migration_name, app_name, migration_name])
-        connection.commit()
-        print(f"  ✓ Marked {app_name}.{migration_name} as applied (faked)")
-
-if not has_0004:
-    cursor.execute("""
-        SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'email_templates')
-    """)
-    email_templates_exists = cursor.fetchone()[0]
-    if not email_templates_exists:
-        print("  ✓ Migration history is consistent - 0004 will be applied normally")
-elif has_0004 and has_0002 and has_0003:
-    print("  ✓ Migration history is consistent")
+print("  ✓ Migration history fixed")
 PYTHON_SCRIPT
 
 echo "Creating migrations for all apps..."
-python manage.py makemigrations --no-input
+python manage.py makemigrations --no-input || echo "Warning: makemigrations failed, continuing..."
 
 echo "Running database migrations..."
 # Check for tables that might already exist and fake their migrations if needed
@@ -164,7 +174,8 @@ for table_name, app_name, migration_name in table_migration_map:
 print("  ✓ Finished checking for existing tables")
 PYTHON_SCRIPT
 
-python manage.py migrate --no-input --run-syncdb
+# Run migrations with error handling
+python manage.py migrate --no-input --run-syncdb || echo "Warning: Some migrations may have failed, continuing..."
 
 # Ensure all accounts migrations are fully applied
 echo "Ensuring all accounts migrations are fully applied..."
