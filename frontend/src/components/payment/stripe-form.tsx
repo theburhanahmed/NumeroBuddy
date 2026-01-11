@@ -11,6 +11,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { paymentsAPI } from '@/lib/api-client';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/auth-context';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Loader2 } from 'lucide-react';
 
 const stripePromise = loadStripe(
@@ -28,6 +30,8 @@ function CheckoutForm({ plan, onSuccess, onError }: StripeFormProps) {
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
+  const { refreshFeatures } = useSubscription();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -99,6 +103,10 @@ function CheckoutForm({ plan, onSuccess, onError }: StripeFormProps) {
           title: 'Success!',
           description: 'Your subscription has been activated.',
         });
+        // Refresh user data to update subscription status
+        await refreshUser();
+        // Refresh subscription context
+        await refreshFeatures();
         onSuccess?.();
       }
     } catch (error: any) {

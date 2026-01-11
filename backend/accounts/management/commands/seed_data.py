@@ -48,17 +48,23 @@ class Command(BaseCommand):
         parser.add_argument(
             '--skip-migrations',
             action='store_true',
-            help='Skip running migrations (use if already migrated)',
+            help='Skip running migrations (use if already migrated or migration issues exist)',
         )
         parser.add_argument(
             '--clear',
             action='store_true',
             help='Clear existing data before seeding (WARNING: deletes all data)',
         )
+        parser.add_argument(
+            '--ignore-migration-errors',
+            action='store_true',
+            help='Continue seeding even if migrations fail (use with caution)',
+        )
 
     def handle(self, *args, **options):
         skip_migrations = options['skip_migrations']
         clear_data = options['clear']
+        ignore_migration_errors = options['ignore_migration_errors']
 
         self.stdout.write(self.style.SUCCESS('=' * 60))
         self.stdout.write(self.style.SUCCESS('NumerAI Database Seeding'))
@@ -74,18 +80,31 @@ class Command(BaseCommand):
                 error_msg = str(e)
                 if 'InconsistentMigrationHistory' in error_msg:
                     self.stdout.write(self.style.ERROR(
-                        f'✗ Migration dependency error: {error_msg}\n'
+                        f'✗ Migration dependency error detected.\n'
+                        f'Error: {error_msg[:200]}...\n'
                         f'This indicates inconsistent migration history in the database.\n'
-                        f'Please run: python manage.py migrate --run-syncdb\n'
-                        f'Or use --skip-migrations to skip migrations and seed data anyway.'
                     ))
+                    if ignore_migration_errors:
+                        self.stdout.write(self.style.WARNING(
+                            '⚠ Continuing despite migration errors (--ignore-migration-errors flag set)'
+                        ))
+                    else:
+                        self.stdout.write(self.style.WARNING(
+                            '\nRecommendation: Use --skip-migrations if tables already exist.\n'
+                            'Or use --ignore-migration-errors to continue anyway (use with caution).'
+                        ))
+                        return
                 else:
                     self.stdout.write(self.style.ERROR(f'✗ Migration error: {e}'))
-                
-                self.stdout.write(self.style.WARNING(
-                    '\nYou can skip migrations and seed data anyway using: --skip-migrations'
-                ))
-                return
+                    if ignore_migration_errors:
+                        self.stdout.write(self.style.WARNING(
+                            '⚠ Continuing despite migration errors (--ignore-migration-errors flag set)'
+                        ))
+                    else:
+                        self.stdout.write(self.style.WARNING(
+                            '\nUse --skip-migrations to skip migrations and seed data anyway.'
+                        ))
+                        return
         else:
             self.stdout.write(self.style.WARNING('\n[Step 1/6] Skipping migrations'))
 
