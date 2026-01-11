@@ -80,7 +80,6 @@ export function NotificationBadge({ onClick }: NotificationBadgeProps) {
     
     // Try to use SSE for real-time updates, fallback to polling
     let eventSource: EventSource | null = null;
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
     
     if (accessToken && typeof window !== 'undefined' && 'EventSource' in window) {
       try {

@@ -55,8 +55,40 @@
   * {
     @apply border-border;
   }
+  html {
+    /* Default to dark theme to prevent white flash */
+    @apply dark;
+    /* Fallback dark background before CSS variables load */
+    background-color: hsl(222.2 84% 4.9%);
+    color: hsl(210 40% 98%);
+  }
   body {
     @apply bg-background text-foreground;
+    /* Fallback dark background */
+    background-color: hsl(222.2 84% 4.9%);
+    color: hsl(210 40% 98%);
+  }
+  
+  /* Ensure text elements inherit color properly unless explicitly styled */
+  p, span, div:not([class*="text-"]), a:not([class*="text-"]), li, td, th, label {
+    color: inherit;
+  }
+  
+  /* Headings inherit foreground color unless explicitly styled */
+  h1:not([class*="text-"]), 
+  h2:not([class*="text-"]), 
+  h3:not([class*="text-"]), 
+  h4:not([class*="text-"]), 
+  h5:not([class*="text-"]), 
+  h6:not([class*="text-"]) {
+    color: hsl(var(--foreground));
+  }
+  
+  /* Ensure inputs and form elements use foreground color for text */
+  input:not([type="color"]):not([class*="text-"]), 
+  textarea:not([class*="text-"]), 
+  select:not([class*="text-"]) {
+    color: hsl(var(--foreground));
   }
 }
 
@@ -225,6 +257,8 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.025em;
+  /* Ensure headings use foreground color unless explicitly styled */
+  color: hsl(var(--foreground));
 }
 
 /* Heading Styles */
@@ -272,12 +306,16 @@ body {
   font-size: 1rem; /* 16px */
   line-height: 1.5;
   font-weight: 400;
+  /* Color is set in @layer base, but ensure it's here too */
+  color: hsl(var(--foreground));
 }
 
 p {
   font-size: 1rem;
   line-height: 1.625;
   margin-bottom: 1rem;
+  /* Ensure paragraphs inherit foreground color */
+  color: inherit;
 }
 
 /* Text Size Utilities */

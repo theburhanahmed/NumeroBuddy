@@ -1641,8 +1641,8 @@ def get_full_numerology_report(request):
         profile = NumerologyProfile.objects.get(user=user)
     except NumerologyProfile.DoesNotExist:
         return Response({
-            'error': 'Please calculate your numerology profile first.'
-        }, status=status.HTTP_400_BAD_REQUEST)
+            'error': 'Numerology profile not found. Please calculate your numerology profile first using the /api/v1/numerology/calculate/ endpoint.'
+        }, status=status.HTTP_404_NOT_FOUND)
     
     try:
         # Get subscription tier and available features
@@ -2478,7 +2478,7 @@ def get_weekly_report(request, week_start_date_str=None, person_id=None):
             # Validate: don't allow future dates
             if week_start_date > today:
                 return Response({
-                    'error': f'Cannot generate report for future dates. Requested: {week_start_date}, Today: {today}'
+                    'error': f'Cannot generate report for future dates. Please provide a date on or before today ({today.isoformat()}). Requested date: {week_start_date.isoformat()}'
                 }, status=status.HTTP_400_BAD_REQUEST)
         else:
             # Default to current week (Sunday)
@@ -6664,40 +6664,63 @@ def get_chaldean_analysis(request):
         profile = NumerologyProfile.objects.get(user=user)
         
         # Get birth date
-        if not hasattr(user, 'profile') or not user.profile.date_of_birth:
+        try:
+            if not hasattr(user, 'profile') or not hasattr(user.profile, 'date_of_birth') or not user.profile.date_of_birth:
+                return Response({
+                    'error': 'Birth date is required for Chaldean analysis. Please update your profile with your birth date.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except AttributeError:
             return Response({
-                'error': 'Birth date is required for Chaldean analysis.'
+                'error': 'User profile not found. Please complete your profile first.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
         birth_date = user.profile.date_of_birth
         
-        # Calculate Chaldean numbers
-        calculator = NumerologyCalculator(profile.calculation_system)
-        
-        driver_number = calculator.calculate_driver_number(birth_date)
-        conductor_number = calculator.calculate_conductor_number(birth_date)
-        birthday_number = calculator.calculate_birthday_number(birth_date)
-        driver_conductor_compatibility = calculator.calculate_driver_conductor_compatibility(birth_date)
+        # Calculate Chaldean numbers (these work with any system)
+        try:
+            calculator = NumerologyCalculator(profile.calculation_system)
+            
+            driver_number = calculator.calculate_driver_number(birth_date)
+            conductor_number = calculator.calculate_conductor_number(birth_date)
+            birthday_number = calculator.calculate_birthday_number(birth_date)
+            driver_conductor_compatibility = calculator.calculate_driver_conductor_compatibility(birth_date)
+        except Exception as calc_error:
+            logger.error(f'Error calculating Chaldean numbers: {str(calc_error)}\n{traceback.format_exc()}')
+            return Response({
+                'error': 'Failed to calculate Chaldean numbers.',
+                'message': str(calc_error) if settings.DEBUG else 'An error occurred during calculation.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Get interpretations
-        driver_interpretation = get_driver_interpretation(driver_number)
-        conductor_interpretation = get_conductor_interpretation(conductor_number)
-        birthday_interpretation = get_birthday_interpretation(birthday_number)
+        try:
+            driver_interpretation = get_driver_interpretation(driver_number)
+            conductor_interpretation = get_conductor_interpretation(conductor_number)
+            birthday_interpretation = get_birthday_interpretation(birthday_number)
+        except Exception as interp_error:
+            logger.error(f'Error getting interpretations: {str(interp_error)}\n{traceback.format_exc()}')
+            # Continue with empty interpretations rather than failing
+            driver_interpretation = {}
+            conductor_interpretation = {}
+            birthday_interpretation = {}
         
         # Update profile with new numbers if not already set
-        updated = False
-        if profile.driver_number != driver_number:
-            profile.driver_number = driver_number
-            updated = True
-        if profile.conductor_number != conductor_number:
-            profile.conductor_number = conductor_number
-            updated = True
-        if profile.birthday_number != birthday_number:
-            profile.birthday_number = birthday_number
-            updated = True
-        
-        if updated:
-            profile.save()
+        try:
+            updated = False
+            if profile.driver_number != driver_number:
+                profile.driver_number = driver_number
+                updated = True
+            if profile.conductor_number != conductor_number:
+                profile.conductor_number = conductor_number
+                updated = True
+            if profile.birthday_number != birthday_number:
+                profile.birthday_number = birthday_number
+                updated = True
+            
+            if updated:
+                profile.save()
+        except Exception as save_error:
+            logger.warning(f'Error saving Chaldean numbers to profile: {str(save_error)}')
+            # Continue even if save fails
         
         response_data = {
             'driver_number': {
@@ -6723,6 +6746,12 @@ def get_chaldean_analysis(request):
         return Response({
             'error': 'Numerology profile not found. Please calculate your profile first.'
         }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f'Unexpected error in get_chaldean_analysis: {str(e)}\n{traceback.format_exc()}')
+        return Response({
+            'error': 'An error occurred while processing your request.',
+            'message': str(e) if settings.DEBUG else 'Please try again later.'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -6767,34 +6796,56 @@ def get_detailed_lo_shu_grid(request):
         
         # Get user info
         user_full_name = None
-        if hasattr(user, 'full_name') and user.full_name:
-            user_full_name = user.full_name
-        elif hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
-            user_full_name = user.profile.full_name
+        try:
+            if hasattr(user, 'full_name') and user.full_name:
+                user_full_name = user.full_name
+            elif hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
+                user_full_name = user.profile.full_name
+        except AttributeError:
+            pass
         
-        if not user_full_name or not user.profile.date_of_birth:
+        try:
+            birth_date = user.profile.date_of_birth if hasattr(user, 'profile') and hasattr(user.profile, 'date_of_birth') and user.profile.date_of_birth else None
+        except AttributeError:
+            birth_date = None
+        
+        if not user_full_name or not birth_date:
+            missing = []
+            if not user_full_name:
+                missing.append('full name')
+            if not birth_date:
+                missing.append('birth date')
             return Response({
-                'error': 'Full name and birth date are required for Lo Shu Grid calculation.'
+                'error': f'Missing required information: {", ".join(missing)}. Please update your profile.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        birth_date = user.profile.date_of_birth
-        
         # Calculate enhanced Lo Shu Grid
-        calculator = NumerologyCalculator(profile.calculation_system)
-        lo_shu_data = calculator.calculate_lo_shu_grid(user_full_name, birth_date)
+        try:
+            calculator = NumerologyCalculator(profile.calculation_system)
+            lo_shu_data = calculator.calculate_lo_shu_grid(user_full_name, birth_date)
+        except Exception as calc_error:
+            logger.error(f'Error calculating Lo Shu Grid: {str(calc_error)}\n{traceback.format_exc()}')
+            return Response({
+                'error': 'Failed to calculate Lo Shu Grid.',
+                'message': str(calc_error) if settings.DEBUG else 'An error occurred during calculation.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Save personality arrows to profile
-        if lo_shu_data.get('personality_arrows'):
-            profile.personality_arrows = lo_shu_data['personality_arrows']
-            profile.lo_shu_grid = {
-                'grid': lo_shu_data.get('grid', {}),
-                'missing_numbers': lo_shu_data.get('missing_numbers', []),
-                'strong_numbers': lo_shu_data.get('strong_numbers', []),
-                'repeating_numbers': lo_shu_data.get('repeating_numbers', []),
-                'number_frequency': lo_shu_data.get('number_frequency', {}),
-                'interpretation': lo_shu_data.get('interpretation', '')
-            }
-            profile.save()
+        try:
+            if lo_shu_data.get('personality_arrows'):
+                profile.personality_arrows = lo_shu_data['personality_arrows']
+                profile.lo_shu_grid = {
+                    'grid': lo_shu_data.get('grid', {}),
+                    'missing_numbers': lo_shu_data.get('missing_numbers', []),
+                    'strong_numbers': lo_shu_data.get('strong_numbers', []),
+                    'repeating_numbers': lo_shu_data.get('repeating_numbers', []),
+                    'number_frequency': lo_shu_data.get('number_frequency', {}),
+                    'interpretation': lo_shu_data.get('interpretation', '')
+                }
+                profile.save()
+        except Exception as save_error:
+            logger.warning(f'Error saving Lo Shu Grid to profile: {str(save_error)}')
+            # Continue even if save fails
         
         # Build response
         response_data = {
@@ -6826,6 +6877,12 @@ def get_detailed_lo_shu_grid(request):
         return Response({
             'error': 'Numerology profile not found. Please calculate your profile first.'
         }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f'Unexpected error in get_detailed_lo_shu_grid: {str(e)}\n{traceback.format_exc()}')
+        return Response({
+            'error': 'An error occurred while processing your request.',
+            'message': str(e) if settings.DEBUG else 'Please try again later.'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -6867,30 +6924,57 @@ def get_zodiac_numerology(request):
         profile = NumerologyProfile.objects.get(user=user)
         
         # Get birth date
-        if not hasattr(user, 'profile') or not user.profile.date_of_birth:
+        try:
+            if not hasattr(user, 'profile') or not hasattr(user.profile, 'date_of_birth') or not user.profile.date_of_birth:
+                return Response({
+                    'error': 'Birth date is required for zodiac-numerology analysis. Please update your profile with your birth date.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except AttributeError:
             return Response({
-                'error': 'Birth date is required for zodiac-numerology analysis.'
+                'error': 'User profile not found. Please complete your profile first.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
         birth_date = user.profile.date_of_birth
         
         # Initialize service
-        service = ZodiacNumerologyService(system=profile.calculation_system)
+        try:
+            service = ZodiacNumerologyService(system=profile.calculation_system)
+        except Exception as service_error:
+            logger.error(f'Error initializing ZodiacNumerologyService: {str(service_error)}\n{traceback.format_exc()}')
+            return Response({
+                'error': 'Failed to initialize zodiac-numerology service.',
+                'message': str(service_error) if settings.DEBUG else 'An error occurred.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Get full zodiac-numerology profile
-        zodiac_profile = service.get_full_zodiac_numerology_profile(
-            birth_date=birth_date,
-            life_path_number=profile.life_path_number,
-            driver_number=profile.driver_number,
-            conductor_number=profile.conductor_number
-        )
+        try:
+            zodiac_profile = service.get_full_zodiac_numerology_profile(
+                birth_date=birth_date,
+                life_path_number=profile.life_path_number,
+                driver_number=profile.driver_number,
+                conductor_number=profile.conductor_number
+            )
+        except Exception as profile_error:
+            logger.error(f'Error getting zodiac-numerology profile: {str(profile_error)}\n{traceback.format_exc()}')
+            return Response({
+                'error': 'Failed to calculate zodiac-numerology profile.',
+                'message': str(profile_error) if settings.DEBUG else 'An error occurred during calculation.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Get planetary periods
-        planetary_periods = service.get_planetary_periods(birth_date)
+        try:
+            planetary_periods = service.get_planetary_periods(birth_date)
+        except Exception as periods_error:
+            logger.warning(f'Error getting planetary periods: {str(periods_error)}')
+            planetary_periods = []  # Continue with empty periods
         
         # Save zodiac data to profile
-        profile.zodiac_planet_data = zodiac_profile
-        profile.save()
+        try:
+            profile.zodiac_planet_data = zodiac_profile
+            profile.save()
+        except Exception as save_error:
+            logger.warning(f'Error saving zodiac data to profile: {str(save_error)}')
+            # Continue even if save fails
         
         response_data = {
             **zodiac_profile,
@@ -6905,6 +6989,12 @@ def get_zodiac_numerology(request):
         return Response({
             'error': 'Numerology profile not found. Please calculate your profile first.'
         }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f'Unexpected error in get_zodiac_numerology: {str(e)}\n{traceback.format_exc()}')
+        return Response({
+            'error': 'An error occurred while processing your request.',
+            'message': str(e) if settings.DEBUG else 'Please try again later.'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])

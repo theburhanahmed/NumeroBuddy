@@ -354,7 +354,7 @@ export default function NumerologyReport() {
           y: -20
         }}>
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                <h2 className="text-3xl font-bold text-foreground mb-3">
                   Choose Your Subscription
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">

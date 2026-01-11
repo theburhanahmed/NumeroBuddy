@@ -16,13 +16,19 @@ export function ThemeProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
+    // Set dark mode by default on mount to prevent flash of white
+    document.documentElement.classList.add('dark');
+    
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    } else {
+      // Default to dark mode if no saved preference
+      setTheme('dark');
     }
   }, []);
 

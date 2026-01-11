@@ -74,7 +74,7 @@ export default function RootLayout({
   // Root layout - Next.js requires html and body tags
   // Wrap with all providers so they're available to all routes
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>

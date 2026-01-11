@@ -90,17 +90,12 @@ export default function BirthChartDemoPage() {
                   />
                 }
               >
-                <Suspense
-                  fallback={
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-                    </div>
-                  }
-                >
                   <ambientLight intensity={0.5} />
                   <pointLight position={[10, 10, 10]} intensity={1} />
                   <pointLight position={[-10, -10, -10]} intensity={0.5} color="#00d4ff" />
-                  <Environment preset="city" />
+                  <Suspense fallback={null}>
+                    <Environment preset="city" />
+                  </Suspense>
                   <LoShu3DGrid
                     grid={demoGrid}
                     onNumberClick={(number, row, col) => {
@@ -109,7 +104,6 @@ export default function BirthChartDemoPage() {
                     enableHover={true}
                     forceMode="webgl"
                   />
-                </Suspense>
               </CanvasWrapper>
             </div>
 

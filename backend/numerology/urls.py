@@ -33,12 +33,13 @@ urlpatterns = [
     path('people/<uuid:person_id>/calculate/', views.calculate_person_numerology, name='calculate-person-numerology'),
     path('people/<uuid:person_id>/profile/', views.get_person_numerology_profile, name='person-numerology-profile'),
     
-    # Lo Shu Grid
-    path('numerology/lo-shu-grid/', views.get_lo_shu_grid, name='lo-shu-grid'),
+    # Lo Shu Grid (specific routes first)
+    path('numerology/lo-shu-grid/detailed/', views.get_detailed_lo_shu_grid, name='detailed-lo-shu-grid'),
     path('numerology/lo-shu-grid/arrows/', views.get_lo_shu_arrows, name='lo-shu-grid-arrows'),
     path('numerology/lo-shu-grid/remedies/', views.get_lo_shu_remedies, name='lo-shu-grid-remedies'),
     path('numerology/lo-shu-grid/compare/', views.compare_lo_shu_grids, name='lo-shu-grid-compare'),
     path('numerology/lo-shu-grid/visualization/', views.get_lo_shu_visualization, name='lo-shu-grid-visualization'),
+    path('numerology/lo-shu-grid/', views.get_lo_shu_grid, name='lo-shu-grid'),
     
     # Pinnacles and Challenges
     path('numerology/pinnacles/detailed/', views.get_pinnacles_detailed, name='pinnacles-detailed'),
@@ -183,9 +184,8 @@ urlpatterns = [
     path('numerology/mental-state/mood-predictions/', views.get_mood_predictions, name='get-mood-predictions'),
     path('numerology/mental-state/emotional-compatibility/', views.get_emotional_compatibility, name='emotional-compatibility'),
     
-    # DivineAPI-Style Endpoints (Chaldean Analysis, Enhanced Lo Shu, Zodiac)
+    # DivineAPI-Style Endpoints (Chaldean Analysis, Zodiac)
     path('numerology/chaldean-analysis/', views.get_chaldean_analysis, name='chaldean-analysis'),
-    path('numerology/lo-shu-grid/detailed/', views.get_detailed_lo_shu_grid, name='detailed-lo-shu-grid'),
     path('numerology/zodiac-planet/', views.get_zodiac_numerology, name='zodiac-numerology'),
     path('numerology/attitude-number/', views.get_enhanced_attitude_number, name='enhanced-attitude-number'),
     path('numerology/core-numbers/', views.get_complete_core_numbers, name='complete-core-numbers'),
