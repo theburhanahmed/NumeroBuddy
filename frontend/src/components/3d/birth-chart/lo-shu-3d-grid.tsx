@@ -39,9 +39,14 @@ export function LoShu3DGrid({
 }: LoShu3DGridProps) {
   const { shouldRender3D, capabilities } = use3DPerformance()
 
-  // If force mode is set, use it
-  if (forceMode === 'webgl' && shouldRender3D && capabilities.hasWebGL) {
-    return <LoShu3DGridWebGL grid={grid} onNumberClick={onNumberClick} enableHover={enableHover} />
+  // If force mode is set to webgl, MUST return WebGL component (or null if unavailable)
+  // Never return div when forceMode='webgl' as this breaks Canvas rendering
+  if (forceMode === 'webgl') {
+    if (shouldRender3D && capabilities.hasWebGL) {
+      return <LoShu3DGridWebGL grid={grid} onNumberClick={onNumberClick} enableHover={enableHover} />
+    }
+    // If WebGL unavailable but forceMode='webgl', return null (should not happen but safe fallback)
+    return null
   }
 
   // If WebGL unavailable or force CSS, render CSS fallback

@@ -42,7 +42,6 @@ function GoogleCallbackContent() {
 
       try {
         // Send code to backend to exchange for access token and authenticate
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
         const response = await fetch(`${API_URL}/auth/social/google/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

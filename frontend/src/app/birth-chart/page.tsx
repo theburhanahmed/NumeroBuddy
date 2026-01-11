@@ -319,27 +319,21 @@ export default function BirthChart() {
                       />
                     }
                   >
-                    <Suspense
-                      fallback={
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-                        </div>
-                      }
-                    >
-                      <ambientLight intensity={0.5} />
-                      <pointLight position={[10, 10, 10]} intensity={1} />
-                      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#00d4ff" />
+                    <ambientLight intensity={0.5} />
+                    <pointLight position={[10, 10, 10]} intensity={1} />
+                    <pointLight position={[-10, -10, -10]} intensity={0.5} color="#00d4ff" />
+                    <Suspense fallback={null}>
                       <Environment preset="city" />
-                      {/* LoShu3DGrid detects it's inside Canvas and renders WebGL version */}
-                      <LoShu3DGrid
-                        grid={grid3D}
-                        onNumberClick={(number, row, col) => {
-                          toast.info(`Number ${number} - Click for details`)
-                        }}
-                        enableHover={true}
-                        forceMode="webgl"
-                      />
                     </Suspense>
+                    {/* LoShu3DGrid detects it's inside Canvas and renders WebGL version */}
+                    <LoShu3DGrid
+                      grid={grid3D}
+                      onNumberClick={(number, row, col) => {
+                        toast.info(`Number ${number} - Click for details`)
+                      }}
+                      enableHover={true}
+                      forceMode="webgl"
+                    />
                   </CanvasWrapper>
                 </div>
               )

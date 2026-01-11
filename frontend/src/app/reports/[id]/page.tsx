@@ -56,7 +56,7 @@ export default function ReportDetailPage({ params }: { params: { id: string } })
     try {
       // Create a link to the PDF endpoint
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${params.id}/pdf/`, {
+      const response = await fetch(`${API_URL}/reports/${params.id}/pdf/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

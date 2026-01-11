@@ -147,12 +147,13 @@ export class WebSocketClient {
   }
 }
 
+import { API_URL } from './api-config';
+
 /**
  * Create WebSocket client for consultation chat.
  */
 export function createChatWebSocket(consultationId: string, token: string): WebSocketClient {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-  const wsUrl = apiUrl.replace(/^http/, 'ws') + `/ws/chat/${consultationId}/`;
+  const wsUrl = API_URL.replace(/^http/, 'ws') + `/ws/chat/${consultationId}/`;
   return new WebSocketClient(wsUrl);
 }
 
@@ -160,8 +161,7 @@ export function createChatWebSocket(consultationId: string, token: string): WebS
  * Create WebSocket client for notifications.
  */
 export function createNotificationWebSocket(token: string): WebSocketClient {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-  const wsUrl = apiUrl.replace(/^http/, 'ws') + '/ws/notifications/';
+  const wsUrl = API_URL.replace(/^http/, 'ws') + '/ws/notifications/';
   return new WebSocketClient(wsUrl);
 }
 
@@ -169,8 +169,7 @@ export function createNotificationWebSocket(token: string): WebSocketClient {
  * Create WebSocket client for presence tracking.
  */
 export function createPresenceWebSocket(token: string): WebSocketClient {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-  const wsUrl = apiUrl.replace(/^http/, 'ws') + '/ws/presence/';
+  const wsUrl = API_URL.replace(/^http/, 'ws') + '/ws/presence/';
   return new WebSocketClient(wsUrl);
 }
 

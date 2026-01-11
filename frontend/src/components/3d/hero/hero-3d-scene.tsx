@@ -50,20 +50,15 @@ export function Hero3DScene({
         </div>
       }
     >
-        <Suspense
-          fallback={
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
-            </div>
-          }
-        >
           {/* Lighting */}
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} intensity={1} />
           <pointLight position={[-10, -10, -10]} intensity={0.5} color="#00d4ff" />
 
           {/* Environment for better lighting */}
-          <Environment preset="city" />
+          <Suspense fallback={null}>
+            <Environment preset="city" />
+          </Suspense>
 
           {/* Camera is handled by CanvasWrapper */}
 
@@ -98,7 +93,6 @@ export function Hero3DScene({
             minPolarAngle={Math.PI / 3}
             maxPolarAngle={(2 * Math.PI) / 3}
           />
-        </Suspense>
       </CanvasWrapper>
   )
 }
