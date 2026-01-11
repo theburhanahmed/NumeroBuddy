@@ -37,7 +37,7 @@ def track_profile_calculation(sender, instance, created, **kwargs):
                 user=instance.user,
                 activity_type='numerology_profile_calculated',
                 activity_data={
-                    'system': instance.system,
+                    'system': instance.calculation_system,
                     'life_path_number': instance.life_path_number
                 },
                 feature_name='birth_chart'
