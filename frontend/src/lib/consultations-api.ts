@@ -46,7 +46,7 @@ export const consultationsAPI = {
     if (filters?.page_size) params.append('page_size', filters.page_size.toString());
     if (filters?.specialty) params.append('specialty', filters.specialty);
     
-    const response = await apiClient.get(`/consultations/experts/?${params.toString()}`);
+    const response = await apiClient.get(`/api/v1/experts/?${params.toString()}`);
     return response.data;
   },
 
@@ -54,7 +54,7 @@ export const consultationsAPI = {
    * Get expert details.
    */
   async getExpert(expertId: string): Promise<Expert> {
-    const response = await apiClient.get(`/consultations/experts/${expertId}/`);
+    const response = await apiClient.get(`/api/v1/experts/${expertId}/`);
     return response.data;
   },
 
@@ -77,7 +77,7 @@ export const consultationsAPI = {
     const params = new URLSearchParams({ date });
     if (duration) params.append('duration', duration.toString());
     
-    const response = await apiClient.get(`/consultations/experts/${expertId}/time-slots/?${params.toString()}`);
+    const response = await apiClient.get(`/api/v1/experts/${expertId}/time-slots/?${params.toString()}`);
     return response.data;
   },
 
@@ -96,7 +96,7 @@ export const consultationsAPI = {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
     
-    const response = await apiClient.get(`/consultations/consultations/upcoming/?${params.toString()}`);
+    const response = await apiClient.get(`/api/v1/consultations/upcoming/?${params.toString()}`);
     return response.data;
   },
 
@@ -104,7 +104,7 @@ export const consultationsAPI = {
    * Get past consultations.
    */
   async getPastConsultations(): Promise<ConsultationsResponse> {
-    const response = await apiClient.get('/consultations/consultations/past/');
+    const response = await apiClient.get('/api/v1/consultations/past/');
     return response.data;
   },
 
@@ -112,7 +112,7 @@ export const consultationsAPI = {
    * Get consultation details.
    */
   async getConsultation(consultationId: string): Promise<ConsultationDetail> {
-    const response = await apiClient.get(`/consultations/consultations/${consultationId}/`);
+    const response = await apiClient.get(`/api/v1/consultations/${consultationId}/`);
     return response.data;
   },
 
@@ -120,7 +120,7 @@ export const consultationsAPI = {
    * Confirm consultation (expert only).
    */
   async confirmConsultation(consultationId: string): Promise<Consultation> {
-    const response = await apiClient.post(`/consultations/consultations/${consultationId}/confirm/`);
+    const response = await apiClient.post(`/api/v1/consultations/${consultationId}/confirm/`);
     return response.data;
   },
 
@@ -128,7 +128,7 @@ export const consultationsAPI = {
    * Cancel consultation.
    */
   async cancelConsultation(consultationId: string, data: ConsultationCancelRequest): Promise<Consultation> {
-    const response = await apiClient.post(`/consultations/consultations/${consultationId}/cancel/`, data);
+    const response = await apiClient.post(`/api/v1/consultations/${consultationId}/cancel/`, data);
     return response.data;
   },
 
@@ -139,7 +139,7 @@ export const consultationsAPI = {
     consultationId: string,
     data: ConsultationRescheduleRequest
   ): Promise<Consultation> {
-    const response = await apiClient.post(`/consultations/consultations/${consultationId}/reschedule/`, data);
+    const response = await apiClient.post(`/api/v1/consultations/${consultationId}/reschedule/`, data);
     return response.data;
   },
 
@@ -147,7 +147,7 @@ export const consultationsAPI = {
    * Get meeting link.
    */
   async getMeetingLink(consultationId: string): Promise<MeetingLink> {
-    const response = await apiClient.get(`/consultations/consultations/${consultationId}/meeting-link/`);
+    const response = await apiClient.get(`/api/v1/consultations/${consultationId}/meeting-link/`);
     return response.data;
   },
 
@@ -155,7 +155,7 @@ export const consultationsAPI = {
    * Start meeting.
    */
   async startMeeting(consultationId: string): Promise<Consultation> {
-    const response = await apiClient.post(`/consultations/consultations/${consultationId}/start/`);
+    const response = await apiClient.post(`/api/v1/consultations/${consultationId}/start/`);
     return response.data;
   },
 
@@ -163,7 +163,7 @@ export const consultationsAPI = {
    * End meeting.
    */
   async endMeeting(consultationId: string): Promise<Consultation> {
-    const response = await apiClient.post(`/consultations/consultations/${consultationId}/end/`);
+    const response = await apiClient.post(`/api/v1/consultations/${consultationId}/end/`);
     return response.data;
   },
 
@@ -176,7 +176,7 @@ export const consultationsAPI = {
     reviewText: string,
     isAnonymous: boolean = false
   ): Promise<ConsultationReview> {
-    const response = await apiClient.post(`/consultations/consultations/${consultationId}/rate/`, {
+    const response = await apiClient.post(`/api/v1/consultations/${consultationId}/rate/`, {
       rating,
       review_text: reviewText,
       is_anonymous: isAnonymous,
@@ -188,7 +188,7 @@ export const consultationsAPI = {
    * Get expert dashboard (expert only).
    */
   async getExpertDashboard(): Promise<ExpertDashboard> {
-    const response = await apiClient.get('/consultations/experts/dashboard/');
+    const response = await apiClient.get('/api/v1/experts/dashboard/');
     return response.data;
   },
 
@@ -196,7 +196,7 @@ export const consultationsAPI = {
    * Update expert availability (expert only).
    */
   async updateExpertAvailability(availability: ExpertAvailability[]): Promise<{ message: string }> {
-    const response = await apiClient.post('/consultations/experts/availability/update/', availability);
+    const response = await apiClient.post('/api/v1/experts/availability/update/', availability);
     return response.data;
   },
 
@@ -207,7 +207,7 @@ export const consultationsAPI = {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
     
-    const response = await apiClient.get(`/consultations/experts/consultations/?${params.toString()}`);
+    const response = await apiClient.get(`/api/v1/experts/consultations/?${params.toString()}`);
     return response.data;
   },
 };

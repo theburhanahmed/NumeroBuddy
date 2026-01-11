@@ -23,7 +23,6 @@ import { useAuth } from '@/contexts/auth-context';
 import { numerologyAPI, ChaldeanAnalysis, ZodiacNumerologyProfile, DetailedLoShuGrid } from '@/lib/numerology-api';
 import { userAPI } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { CosmicNavbar } from '@/components/navigation/cosmic-navbar';
 import { ChaldeanInsightsCard } from '@/components/numerology/ChaldeanInsightsCard';
 import { ZodiacPlanetCard } from '@/components/numerology/ZodiacPlanetCard';
 import { LoShuGridVisualization } from '@/components/numerology/LoShuGridVisualization';
@@ -333,7 +332,6 @@ export default function Dashboard() {
   return (
     <div className="relative min-h-screen">
       <AccessibleSpaceBackground />
-      <CosmicNavbar />
       {showOnboarding && <OnboardingModal />}
       {showTour && (
         <InteractiveTour

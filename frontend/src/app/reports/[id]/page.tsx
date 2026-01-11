@@ -18,6 +18,7 @@ import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
 import { useAuth } from '@/contexts/auth-context';
 import { reportAPI } from '@/lib/numerology-api';
 import { GeneratedReport } from '@/types';
+import { API_URL } from '@/lib/api-config';
 
 interface Report {
   id: string;
@@ -56,7 +57,7 @@ export default function ReportDetailPage({ params }: { params: { id: string } })
     try {
       // Create a link to the PDF endpoint
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/reports/${params.id}/pdf/`, {
+      const response = await fetch(`${API_URL}/api/v1/reports/${params.id}/pdf/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

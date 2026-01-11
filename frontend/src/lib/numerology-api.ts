@@ -713,7 +713,7 @@ export const numerologyAPI = {
     message: string;
     profile: NumerologyProfile;
   }> {
-    const response = await apiClient.post('/numerology/calculate/', { system });
+    const response = await apiClient.post('/api/v1/numerology/calculate/', { system });
     return response.data;
   },
 
@@ -723,7 +723,7 @@ export const numerologyAPI = {
    */
   async getProfile(): Promise<NumerologyProfile | null> {
     try {
-      const response = await apiClient.get('/numerology/profile/');
+      const response = await apiClient.get('/api/v1/numerology/profile/');
       return response.data;
     } catch (error: any) {
       // If 404, profile doesn't exist - this is expected for new users
@@ -741,7 +741,7 @@ export const numerologyAPI = {
    */
   async getBirthChart(): Promise<BirthChart | null> {
     try {
-      const response = await apiClient.get('/numerology/birth-chart/');
+      const response = await apiClient.get('/api/v1/numerology/birth-chart/');
       return response.data;
     } catch (error: any) {
       // If 404, birth chart cannot be generated - this is expected for new users
@@ -760,7 +760,7 @@ export const numerologyAPI = {
   async getDailyReading(date?: string): Promise<DailyReading | null> {
     try {
       const params = date ? { date } : {};
-      const response = await apiClient.get('/numerology/daily-reading/', { params });
+      const response = await apiClient.get('/api/v1/numerology/daily-reading/', { params });
       return response.data;
     } catch (error: any) {
       // If 400 or 404, reading cannot be generated - this is expected for new users
@@ -776,7 +776,7 @@ export const numerologyAPI = {
    * Get reading history with pagination.
    */
   async getReadingHistory(page: number = 1, pageSize: number = 10): Promise<ReadingHistory> {
-    const response = await apiClient.get('/numerology/reading-history/', {
+    const response = await apiClient.get('/api/v1/numerology/reading-history/', {
       params: { page, page_size: pageSize }
     });
     return response.data;
@@ -786,7 +786,7 @@ export const numerologyAPI = {
    * Chat with AI numerologist.
    */
   async aiChat(message: string): Promise<AIChatResponse> {
-    const response = await apiClient.post('/ai/chat/', { message });
+    const response = await apiClient.post('/api/v1/ai/chat/', { message });
     return response.data;
   },
 
@@ -794,7 +794,7 @@ export const numerologyAPI = {
    * Get user's AI conversations.
    */
   async getConversations(): Promise<AIConversation[]> {
-    const response = await apiClient.get('/ai/conversations/');
+    const response = await apiClient.get('/api/v1/ai/conversations/');
     return response.data;
   },
 
@@ -802,7 +802,7 @@ export const numerologyAPI = {
    * Get messages for a specific conversation.
    */
   async getConversationMessages(conversationId: string): Promise<AIMessage[]> {
-    const response = await apiClient.get(`/ai/conversations/${conversationId}/messages/`);
+    const response = await apiClient.get(`/api/v1/ai/conversations/${conversationId}/messages/`);
     return response.data;
   },
 
@@ -812,7 +812,7 @@ export const numerologyAPI = {
    * Get detailed life path analysis for the user.
    */
   async getLifePathAnalysis(): Promise<LifePathAnalysis> {
-    const response = await apiClient.get('/numerology/life-path-analysis/');
+    const response = await apiClient.get('/api/v1/numerology/life-path-analysis/');
     return response.data;
   },
 
@@ -824,7 +824,7 @@ export const numerologyAPI = {
     partner_birth_date: string;
     relationship_type: 'romantic' | 'business' | 'friendship' | 'family';
   }): Promise<CompatibilityCheck> {
-    const response = await apiClient.post('/numerology/compatibility-check/', data);
+    const response = await apiClient.post('/api/v1/numerology/compatibility-check/', data);
     return response.data;
   },
 
@@ -832,7 +832,7 @@ export const numerologyAPI = {
    * Get user's compatibility check history.
    */
   async getCompatibilityHistory(): Promise<CompatibilityCheck[]> {
-    const response = await apiClient.get('/numerology/compatibility-history/');
+    const response = await apiClient.get('/api/v1/numerology/compatibility-history/');
     return response.data;
   },
 
@@ -840,7 +840,7 @@ export const numerologyAPI = {
    * Get personalized remedies for the user.
    */
   async getPersonalizedRemedies(): Promise<Remedy[]> {
-    const response = await apiClient.get('/numerology/remedies/');
+    const response = await apiClient.get('/api/v1/numerology/remedies/');
     return response.data;
   },
 
@@ -852,7 +852,7 @@ export const numerologyAPI = {
     is_completed: boolean;
     notes?: string;
   }): Promise<RemedyTracking> {
-    const response = await apiClient.post(`/numerology/remedies/${remedyId}/track/`, data);
+    const response = await apiClient.post(`/api/v1/numerology/remedies/${remedyId}/track/`, data);
     return response.data;
   },
 
@@ -860,7 +860,7 @@ export const numerologyAPI = {
    * Get full numerology report (combines birth date, name, and phone numerology).
    */
   async getFullNumerologyReport(): Promise<FullNumerologyReport> {
-    const response = await apiClient.get('/numerology/full-report/');
+    const response = await apiClient.get('/api/v1/numerology/full-report/');
     return response.data;
   },
 
@@ -869,7 +869,7 @@ export const numerologyAPI = {
    */
   async getLoShuGrid(enhanced: boolean = false): Promise<LoShuGrid & { arrows?: any; arrow_interpretation?: string; enhanced_interpretation?: string }> {
     const params = enhanced ? { enhanced: 'true' } : {};
-    const response = await apiClient.get('/numerology/lo-shu-grid/', { params });
+    const response = await apiClient.get('/api/v1/numerology/lo-shu-grid/', { params });
     return response.data;
   },
 
@@ -906,7 +906,7 @@ export const numerologyAPI = {
           person2_id: person2IdOrBirthDate
         };
     
-    const response = await apiClient.post('/numerology/lo-shu-grid/compare/', payload);
+    const response = await apiClient.post('/api/v1/numerology/lo-shu-grid/compare/', payload);
     return response.data;
   },
 
@@ -924,7 +924,7 @@ export const numerologyAPI = {
       type: 'strength' | 'weakness';
     }>;
   }> {
-    const response = await apiClient.get('/numerology/lo-shu-grid/arrows/');
+    const response = await apiClient.get('/api/v1/numerology/lo-shu-grid/arrows/');
     return response.data;
   },
 
@@ -937,7 +937,7 @@ export const numerologyAPI = {
     missing_number_details: MissingNumberDetail[];
     weakness_arrows: string[];
   }> {
-    const response = await apiClient.get('/numerology/lo-shu-grid/remedies/');
+    const response = await apiClient.get('/api/v1/numerology/lo-shu-grid/remedies/');
     return response.data;
   },
 
@@ -965,7 +965,7 @@ export const numerologyAPI = {
     strong_numbers: number[];
     repeating_numbers: number[];
   }> {
-    const response = await apiClient.get('/numerology/lo-shu-grid/visualization/');
+    const response = await apiClient.get('/api/v1/numerology/lo-shu-grid/visualization/');
     return response.data;
   },
 
@@ -986,7 +986,7 @@ export const numerologyAPI = {
     calculated_at: string;
     updated_at: string;
   }> {
-    const response = await apiClient.get('/numerology/health/');
+    const response = await apiClient.get('/api/v1/numerology/health/');
     return response.data;
   },
 
@@ -1005,7 +1005,7 @@ export const numerologyAPI = {
     emotional_vulnerabilities: any;
     overall_assessment: any;
   }> {
-    const response = await apiClient.get('/numerology/health/analysis/');
+    const response = await apiClient.get('/api/v1/numerology/health/analysis/');
     return response.data;
   },
 
@@ -1025,7 +1025,7 @@ export const numerologyAPI = {
     highest_risk_year: any;
     recommendations: string[];
   }> {
-    const response = await apiClient.get('/numerology/health/risk-periods/', {
+    const response = await apiClient.get('/api/v1/numerology/health/risk-periods/', {
       params: { years_ahead: yearsAhead }
     });
     return response.data;
@@ -1065,7 +1065,7 @@ export const numerologyAPI = {
       payload.person2_name = person2Name;
       payload.person2_birth_date = person2BirthDate;
     }
-    const response = await apiClient.post('/numerology/health/compatibility/', payload);
+    const response = await apiClient.post('/api/v1/numerology/health/compatibility/', payload);
     return response.data;
   },
 
@@ -1097,7 +1097,7 @@ export const numerologyAPI = {
     created_at: string;
     updated_at: string;
   }> {
-    const response = await apiClient.post('/numerology/name-correction/', data);
+    const response = await apiClient.post('/api/v1/numerology/name-correction/', data);
     return response.data;
   },
 
@@ -1116,7 +1116,7 @@ export const numerologyAPI = {
     calculated_at: string;
     updated_at: string;
   }> {
-    const response = await apiClient.get('/numerology/spiritual/');
+    const response = await apiClient.get('/api/v1/numerology/spiritual/');
     return response.data;
   },
 
@@ -1133,7 +1133,7 @@ export const numerologyAPI = {
     summary: string;
   }> {
     const params = forecastYears ? { forecast_years: forecastYears } : {};
-    const response = await apiClient.get('/numerology/predictive/', { params });
+    const response = await apiClient.get('/api/v1/numerology/predictive/', { params });
     return response.data;
   },
 
@@ -1142,8 +1142,8 @@ export const numerologyAPI = {
    */
   async getRajYogDetection(personId?: string): Promise<RajYogDetection> {
     const url = personId 
-      ? `/numerology/raj-yog/${personId}/`
-      : '/numerology/raj-yog/';
+      ? `/api/v1/numerology/raj-yog/${personId}/`
+      : '/api/v1/numerology/raj-yog/';
     const response = await apiClient.get(url);
     return response.data;
   },
@@ -1153,8 +1153,8 @@ export const numerologyAPI = {
    */
   async generateRajYogExplanation(personId?: string): Promise<Explanation> {
     const url = personId
-      ? `/numerology/raj-yog/explanation/${personId}/`
-      : '/numerology/raj-yog/explanation/';
+      ? `/api/v1/numerology/raj-yog/explanation/${personId}/`
+      : '/api/v1/numerology/raj-yog/explanation/';
     const response = await apiClient.post(url);
     return response.data;
   },
@@ -1163,7 +1163,7 @@ export const numerologyAPI = {
    * Get a specific explanation by ID.
    */
   async getExplanation(explanationId: string): Promise<Explanation> {
-    const response = await apiClient.get(`/numerology/explanations/${explanationId}/`);
+    const response = await apiClient.get(`/api/v1/numerology/explanations/${explanationId}/`);
     return response.data;
   },
 
@@ -1173,13 +1173,13 @@ export const numerologyAPI = {
    */
   async getWeeklyReport(weekStartDate?: string, personId?: string): Promise<WeeklyReport | null> {
     try {
-      let url = '/numerology/weekly-report/';
+      let url = '/api/v1/numerology/weekly-report/';
       if (personId && weekStartDate) {
-        url = `/numerology/weekly-report/${personId}/${weekStartDate}/`;
+        url = `/api/v1/numerology/weekly-report/${personId}/${weekStartDate}/`;
       } else if (personId) {
-        url = `/numerology/weekly-report/${personId}/`;
+        url = `/api/v1/numerology/weekly-report/${personId}/`;
       } else if (weekStartDate) {
-        url = `/numerology/weekly-report/${weekStartDate}/`;
+        url = `/api/v1/numerology/weekly-report/${weekStartDate}/`;
       }
       const response = await apiClient.get(url);
       return response.data;
@@ -1197,13 +1197,13 @@ export const numerologyAPI = {
    * Get yearly report for the current user or a specific person.
    */
   async getYearlyReport(year?: number, personId?: string): Promise<YearlyReport> {
-    let url = '/numerology/yearly-report/';
+    let url = '/api/v1/numerology/yearly-report/';
     if (personId && year) {
-      url = `/numerology/yearly-report/${personId}/${year}/`;
+      url = `/api/v1/numerology/yearly-report/${personId}/${year}/`;
     } else if (personId) {
-      url = `/numerology/yearly-report/${personId}/`;
+      url = `/api/v1/numerology/yearly-report/${personId}/`;
     } else if (year) {
-      url = `/numerology/yearly-report/${year}/`;
+      url = `/api/v1/numerology/yearly-report/${year}/`;
     }
     const response = await apiClient.get(url);
     return response.data;
@@ -1227,7 +1227,7 @@ export const numerologyAPI = {
     if (data.activity_type) params.activity_type = data.activity_type;
     if (data.start_date) params.start_date = data.start_date;
     if (data.end_date) params.end_date = data.end_date;
-    const response = await apiClient.get('/calendar/auspicious-dates/', { params });
+    const response = await apiClient.get('/api/v1/calendar/auspicious-dates/', { params });
     
     // Map response to include activity_type in each result
     const activityType = data.activity_type || '';
@@ -1253,7 +1253,7 @@ export const numerologyAPI = {
    * Analyze property using Feng Shui × Numerology.
    */
   async analyzeFengShui(houseNumber: string, propertyAddress?: string): Promise<any> {
-    const response = await apiClient.post('/numerology/feng-shui/analyze/', {
+    const response = await apiClient.post('/api/v1/numerology/feng-shui/analyze/', {
       house_number: houseNumber,
       property_address: propertyAddress || ''
     });
@@ -1264,7 +1264,7 @@ export const numerologyAPI = {
    * Get Feng Shui analysis by ID.
    */
   async getFengShuiAnalysis(analysisId: string): Promise<any> {
-    const response = await apiClient.get(`/numerology/feng-shui/analysis/${analysisId}/`);
+    const response = await apiClient.get(`/api/v1/numerology/feng-shui/analysis/${analysisId}/`);
     return response.data;
   },
 
@@ -1272,7 +1272,7 @@ export const numerologyAPI = {
    * Optimize space layout.
    */
   async optimizeSpace(analysisId: string, roomData: any): Promise<any> {
-    const response = await apiClient.post('/numerology/feng-shui/optimize-space/', {
+    const response = await apiClient.post('/api/v1/numerology/feng-shui/optimize-space/', {
       analysis_id: analysisId,
       room_data: roomData
     });
@@ -1293,7 +1293,7 @@ export const numerologyAPI = {
     numerology_cycle?: string;
     notes?: string;
   }): Promise<any> {
-    const response = await apiClient.post('/numerology/mental-state/track/', data);
+    const response = await apiClient.post('/api/v1/numerology/mental-state/track/', data);
     return response.data;
   },
 
@@ -1301,7 +1301,7 @@ export const numerologyAPI = {
    * Get mental state history.
    */
   async getMentalStateHistory(limit?: number): Promise<any> {
-    const response = await apiClient.get('/numerology/mental-state/history/', {
+    const response = await apiClient.get('/api/v1/numerology/mental-state/history/', {
       params: limit ? { limit } : {}
     });
     return response.data;
@@ -1311,7 +1311,7 @@ export const numerologyAPI = {
    * Get wellbeing recommendations.
    */
   async getWellbeingRecommendations(): Promise<any> {
-    const response = await apiClient.get('/numerology/mental-state/wellbeing-recommendations/');
+    const response = await apiClient.get('/api/v1/numerology/mental-state/wellbeing-recommendations/');
     return response.data;
   },
 
@@ -1319,7 +1319,7 @@ export const numerologyAPI = {
    * Get mood cycle predictions.
    */
   async getMoodPredictions(): Promise<any> {
-    const response = await apiClient.get('/numerology/mental-state/mood-predictions/');
+    const response = await apiClient.get('/api/v1/numerology/mental-state/mood-predictions/');
     return response.data;
   },
 
@@ -1331,7 +1331,7 @@ export const numerologyAPI = {
    * Get Chaldean numerology analysis (Driver, Conductor, Birthday numbers).
    */
   async getChaldeanAnalysis(): Promise<ChaldeanAnalysis> {
-    const response = await apiClient.get('/numerology/chaldean-analysis/');
+    const response = await apiClient.get('/api/v1/numerology/chaldean-analysis/');
     return response.data;
   },
 
@@ -1339,7 +1339,7 @@ export const numerologyAPI = {
    * Get detailed Lo Shu Grid with personality arrows and enhanced analysis.
    */
   async getDetailedLoShuGrid(): Promise<DetailedLoShuGrid> {
-    const response = await apiClient.get('/numerology/lo-shu-grid/detailed/');
+    const response = await apiClient.get('/api/v1/numerology/lo-shu-grid/detailed/');
     return response.data;
   },
 
@@ -1347,7 +1347,7 @@ export const numerologyAPI = {
    * Get zodiac-numerology integration with planetary associations.
    */
   async getZodiacNumerology(): Promise<ZodiacNumerologyProfile> {
-    const response = await apiClient.get('/numerology/zodiac-planet/');
+    const response = await apiClient.get('/api/v1/numerology/zodiac-planet/');
     return response.data;
   },
 
@@ -1355,7 +1355,7 @@ export const numerologyAPI = {
    * Get enhanced Attitude Number analysis.
    */
   async getEnhancedAttitudeNumber(): Promise<EnhancedAttitudeNumber> {
-    const response = await apiClient.get('/numerology/attitude-number/');
+    const response = await apiClient.get('/api/v1/numerology/attitude-number/');
     return response.data;
   },
 
@@ -1363,7 +1363,7 @@ export const numerologyAPI = {
    * Get all core numbers with comprehensive interpretations.
    */
   async getCompleteCoreNumbers(): Promise<CompleteCoreNumbers> {
-    const response = await apiClient.get('/numerology/core-numbers/');
+    const response = await apiClient.get('/api/v1/numerology/core-numbers/');
     return response.data;
   }
 };
@@ -1442,7 +1442,7 @@ export const nameNumerologyAPI = {
     transliterate?: boolean;
     force_refresh?: boolean;
   }): Promise<{ job_id: string; status: string }> {
-    const response = await apiClient.post('/name-numerology/generate/', data);
+    const response = await apiClient.post('/api/v1/name-numerology/generate/', data);
     return response.data;
   },
 
@@ -1454,7 +1454,7 @@ export const nameNumerologyAPI = {
     system: 'pythagorean' | 'chaldean';
     transliterate?: boolean;
   }): Promise<NamePreview> {
-    const response = await apiClient.post('/name-numerology/preview/', data);
+    const response = await apiClient.post('/api/v1/name-numerology/preview/', data);
     return response.data;
   },
 
@@ -1462,7 +1462,7 @@ export const nameNumerologyAPI = {
    * Get a specific name report by ID.
    */
   async getReport(userId: string, reportId: string): Promise<NameReport> {
-    const response = await apiClient.get(`/name-numerology/${userId}/${reportId}/`);
+    const response = await apiClient.get(`/api/v1/name-numerology/${userId}/${reportId}/`);
     return response.data;
   },
 
@@ -1478,7 +1478,7 @@ export const nameNumerologyAPI = {
       const params: any = {};
       if (nameType) params.name_type = nameType;
       if (system) params.system = system;
-      const response = await apiClient.get(`/name-numerology/${userId}/latest/`, { params });
+      const response = await apiClient.get(`/api/v1/name-numerology/${userId}/latest/`, { params });
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -1568,7 +1568,7 @@ export const phoneNumerologyAPI = {
     force_refresh?: boolean;
     convert_vanity?: boolean;
   }): Promise<{ job_id: string; status: string }> {
-    const response = await apiClient.post('/phone-numerology/generate/', data);
+    const response = await apiClient.post('/api/v1/phone-numerology/generate/', data);
     return response.data;
   },
 
@@ -1581,7 +1581,7 @@ export const phoneNumerologyAPI = {
     method?: 'core' | 'full' | 'compatibility';
     convert_vanity?: boolean;
   }): Promise<PhonePreview> {
-    const response = await apiClient.post('/phone-numerology/preview/', data);
+    const response = await apiClient.post('/api/v1/phone-numerology/preview/', data);
     return response.data;
   },
 
@@ -1589,7 +1589,7 @@ export const phoneNumerologyAPI = {
    * Get a specific phone report by ID.
    */
   async getReport(userId: string, reportId: string): Promise<PhoneReport> {
-    const response = await apiClient.get(`/phone-numerology/${userId}/${reportId}/`);
+    const response = await apiClient.get(`/api/v1/phone-numerology/${userId}/${reportId}/`);
     return response.data;
   },
 
@@ -1603,7 +1603,7 @@ export const phoneNumerologyAPI = {
     try {
       const params: any = {};
       if (method) params.method = method;
-      const response = await apiClient.get(`/phone-numerology/${userId}/latest/`, { params });
+      const response = await apiClient.get(`/api/v1/phone-numerology/${userId}/latest/`, { params });
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -1624,7 +1624,7 @@ export const phoneNumerologyAPI = {
     country_hint?: string;
     convert_vanity?: boolean;
   }): Promise<PhoneCompatibility> {
-    const response = await apiClient.post('/phone-numerology/compatibility/', data);
+    const response = await apiClient.post('/api/v1/phone-numerology/compatibility/', data);
     return response.data;
   }
 };
@@ -1635,7 +1635,7 @@ export const expertAPI = {
    * Get list of available experts.
    */
   async getExperts(): Promise<Expert[]> {
-    const response = await apiClient.get('/experts/');
+    const response = await apiClient.get('/api/v1/experts/');
     return response.data;
   },
 
@@ -1643,7 +1643,7 @@ export const expertAPI = {
    * Get details of a specific expert.
    */
   async getExpert(expertId: string): Promise<Expert> {
-    const response = await apiClient.get(`/experts/${expertId}/`);
+    const response = await apiClient.get(`/api/v1/experts/${expertId}/`);
     return response.data;
   }
 };
@@ -1660,7 +1660,7 @@ export const consultationAPI = {
     duration_minutes?: number;
     notes?: string;
   }): Promise<Consultation> {
-    const response = await apiClient.post('/consultations/book/', data);
+    const response = await apiClient.post('/api/v1/consultations/book/', data);
     return response.data;
   },
 
@@ -1668,7 +1668,7 @@ export const consultationAPI = {
    * Get user's upcoming consultations.
    */
   async getUpcomingConsultations(): Promise<Consultation[]> {
-    const response = await apiClient.get('/consultations/upcoming/');
+    const response = await apiClient.get('/api/v1/consultations/upcoming/');
     return response.data;
   },
 
@@ -1676,7 +1676,7 @@ export const consultationAPI = {
    * Get user's past consultations.
    */
   async getPastConsultations(): Promise<Consultation[]> {
-    const response = await apiClient.get('/consultations/past/');
+    const response = await apiClient.get('/api/v1/consultations/past/');
     return response.data;
   },
 
@@ -1688,7 +1688,7 @@ export const consultationAPI = {
     review_text?: string;
     is_anonymous?: boolean;
   }): Promise<ConsultationReview> {
-    const response = await apiClient.post(`/consultations/${consultationId}/rate/`, data);
+    const response = await apiClient.post(`/api/v1/consultations/${consultationId}/rate/`, data);
     return response.data;
   }
 };
@@ -1699,7 +1699,7 @@ export const peopleAPI = {
    * Get list of people for the current user.
    */
   async getPeople(): Promise<Person[]> {
-    const response = await apiClient.get('/people/');
+    const response = await apiClient.get('/api/v1/people/');
     // Handle paginated response
     if (response.data && 'results' in response.data) {
       return response.data.results;
@@ -1717,7 +1717,7 @@ export const peopleAPI = {
     relationship: string;
     notes?: string;
   }): Promise<Person> {
-    const response = await apiClient.post('/people/', data);
+    const response = await apiClient.post('/api/v1/people/', data);
     return response.data;
   },
 
@@ -1725,7 +1725,7 @@ export const peopleAPI = {
    * Get details of a specific person.
    */
   async getPerson(personId: string): Promise<Person> {
-    const response = await apiClient.get(`/people/${personId}/`);
+    const response = await apiClient.get(`/api/v1/people/${personId}/`);
     return response.data;
   },
 
@@ -1739,7 +1739,7 @@ export const peopleAPI = {
     notes?: string;
     is_active?: boolean;
   }): Promise<Person> {
-    const response = await apiClient.put(`/people/${personId}/`, data);
+    const response = await apiClient.put(`/api/v1/people/${personId}/`, data);
     return response.data;
   },
 
@@ -1747,7 +1747,7 @@ export const peopleAPI = {
    * Delete a specific person (soft delete).
    */
   async deletePerson(personId: string): Promise<void> {
-    await apiClient.delete(`/people/${personId}/`);
+    await apiClient.delete(`/api/v1/people/${personId}/`);
   },
 
   /**
@@ -1757,7 +1757,7 @@ export const peopleAPI = {
     message: string;
     profile: PersonNumerologyProfile;
   }> {
-    const response = await apiClient.post(`/people/${personId}/calculate/`, { system });
+    const response = await apiClient.post(`/api/v1/people/${personId}/calculate/`, { system });
     return response.data;
   },
 
@@ -1766,7 +1766,7 @@ export const peopleAPI = {
    */
   async getPersonNumerologyProfile(personId: string): Promise<PersonNumerologyProfile | null> {
     try {
-      const response = await apiClient.get(`/people/${personId}/profile/`);
+      const response = await apiClient.get(`/api/v1/people/${personId}/profile/`);
       return response.data;
     } catch (error: any) {
       // Handle 404 errors gracefully - it's okay if profile doesn't exist yet
@@ -1785,7 +1785,7 @@ export const reportAPI = {
    * Get list of available report templates.
    */
   async getReportTemplates(): Promise<ReportTemplate[]> {
-    const response = await apiClient.get('/report-templates/');
+    const response = await apiClient.get('/api/v1/report-templates/');
     // Handle paginated response
     if (response.data && 'results' in response.data) {
       return response.data.results;
@@ -1801,7 +1801,7 @@ export const reportAPI = {
     person_id: string;
     template_id: string;
   }): Promise<GeneratedReport> {
-    const response = await apiClient.post('/reports/generate/', data);
+    const response = await apiClient.post('/api/v1/reports/generate/', data);
     return response.data;
   },
 
@@ -1815,7 +1815,7 @@ export const reportAPI = {
     reports: GeneratedReport[];
     errors: string[];
   }> {
-    const response = await apiClient.post('/reports/bulk-generate/', data);
+    const response = await apiClient.post('/api/v1/reports/bulk-generate/', data);
     return response.data;
   },
 
@@ -1823,7 +1823,7 @@ export const reportAPI = {
    * Get list of user's generated reports.
    */
   async getGeneratedReports(): Promise<GeneratedReport[]> {
-    const response = await apiClient.get('/reports/');
+    const response = await apiClient.get('/api/v1/reports/');
     // Handle paginated response
     if (response.data && 'results' in response.data) {
       return response.data.results;
@@ -1836,7 +1836,7 @@ export const reportAPI = {
    * Get a specific generated report.
    */
   async getGeneratedReport(reportId: string): Promise<GeneratedReport> {
-    const response = await apiClient.get(`/reports/${reportId}/`);
+    const response = await apiClient.get(`/api/v1/reports/${reportId}/`);
     return response.data;
   },
 
@@ -1846,7 +1846,7 @@ export const reportAPI = {
     sections: string[];
     custom_config?: Record<string, any>;
   }): Promise<GeneratedReport> {
-    const response = await apiClient.post('/reports/custom/', data);
+    const response = await apiClient.post('/api/v1/reports/custom/', data);
     return response.data;
   },
 
@@ -1857,12 +1857,12 @@ export const reportAPI = {
     template_config: Record<string, any>;
     is_premium?: boolean;
   }): Promise<ReportTemplate> {
-    const response = await apiClient.post('/reports/templates/', data);
+    const response = await apiClient.post('/api/v1/reports/templates/', data);
     return response.data;
   },
 
   async getMyReportTemplates(): Promise<ReportTemplate[]> {
-    const response = await apiClient.get('/reports/templates/my/');
+    const response = await apiClient.get('/api/v1/reports/templates/my/');
     if (response.data && 'results' in response.data) {
       return response.data.results;
     }
@@ -1875,12 +1875,12 @@ export const reportAPI = {
     schedule_frequency: string;
     next_run_date: string;
   }): Promise<any> {
-    const response = await apiClient.post('/reports/schedule/', data);
+    const response = await apiClient.post('/api/v1/reports/schedule/', data);
     return response.data;
   },
 
   async getScheduledReports(): Promise<any[]> {
-    const response = await apiClient.get('/reports/scheduled/');
+    const response = await apiClient.get('/api/v1/reports/scheduled/');
     if (response.data && 'results' in response.data) {
       return response.data.results;
     }
@@ -1888,19 +1888,19 @@ export const reportAPI = {
   },
 
   async cancelScheduledReport(scheduledId: string): Promise<void> {
-    await apiClient.delete(`/reports/scheduled/${scheduledId}/`);
+    await apiClient.delete(`/api/v1/reports/scheduled/${scheduledId}/`);
   },
 
   async compareReports(data: {
     report1_id: string;
     report2_id: string;
   }): Promise<any> {
-    const response = await apiClient.post('/reports/compare/', data);
+    const response = await apiClient.post('/api/v1/reports/compare/', data);
     return response.data;
   },
 
   async exportReport(reportId: string, format: 'pdf' | 'docx' | 'json' | 'html'): Promise<Blob> {
-    const response = await apiClient.get(`/reports/${reportId}/export/${format}/`, {
+    const response = await apiClient.get(`/api/v1/reports/${reportId}/export/${format}/`, {
       responseType: 'blob'
     });
     return response.data;
@@ -1960,7 +1960,7 @@ export const dashboardAPI = {
    * Get unified dashboard overview.
    */
   async getOverview(): Promise<DashboardOverview> {
-    const response = await apiClient.get('/dashboard/overview/');
+    const response = await apiClient.get('/api/v1/dashboard/overview/');
     return response.data;
   },
 
@@ -1968,7 +1968,7 @@ export const dashboardAPI = {
    * Get user's dashboard widgets.
    */
   async getWidgets(): Promise<DashboardWidget[]> {
-    const response = await apiClient.get('/dashboard/widgets/');
+    const response = await apiClient.get('/api/v1/dashboard/widgets/');
     return response.data;
   },
 
@@ -1980,7 +1980,7 @@ export const dashboardAPI = {
     position?: number;
     config?: Record<string, any>;
   }): Promise<DashboardWidget> {
-    const response = await apiClient.post('/dashboard/widgets/', data);
+    const response = await apiClient.post('/api/v1/dashboard/widgets/', data);
     return response.data;
   },
 
@@ -1988,7 +1988,7 @@ export const dashboardAPI = {
    * Update a dashboard widget.
    */
   async updateWidget(widgetId: string, data: Partial<DashboardWidget>): Promise<DashboardWidget> {
-    const response = await apiClient.put(`/dashboard/widgets/${widgetId}/`, data);
+    const response = await apiClient.put(`/api/v1/dashboard/widgets/${widgetId}/`, data);
     return response.data;
   },
 
@@ -1996,14 +1996,14 @@ export const dashboardAPI = {
    * Delete a dashboard widget.
    */
   async deleteWidget(widgetId: string): Promise<void> {
-    await apiClient.delete(`/dashboard/widgets/${widgetId}/`);
+    await apiClient.delete(`/api/v1/dashboard/widgets/${widgetId}/`);
   },
 
   /**
    * Reorder dashboard widgets.
    */
   async reorderWidgets(widgetPositions: Array<{ id: string; position: number }>): Promise<DashboardWidget[]> {
-    const response = await apiClient.post('/dashboard/widgets/reorder/', {
+    const response = await apiClient.post('/api/v1/dashboard/widgets/reorder/', {
       widget_positions: widgetPositions
     });
     return response.data;
@@ -2016,7 +2016,7 @@ export const dashboardAPI = {
     const params: any = {};
     if (limit) params.limit = limit;
     if (unreadOnly) params.unread_only = 'true';
-    const response = await apiClient.get('/dashboard/insights/', { params });
+    const response = await apiClient.get('/api/v1/dashboard/insights/', { params });
     return response.data;
   },
 
@@ -2024,7 +2024,7 @@ export const dashboardAPI = {
    * Mark an insight as read.
    */
   async markInsightRead(insightId: string): Promise<QuickInsight> {
-    const response = await apiClient.post(`/dashboard/insights/${insightId}/mark-read/`);
+    const response = await apiClient.post(`/api/v1/dashboard/insights/${insightId}/mark-read/`);
     return response.data;
   }
 };
@@ -2098,7 +2098,7 @@ export const calendarAPI = {
     const params: any = {};
     if (startDate) params.start_date = startDate;
     if (endDate) params.end_date = endDate;
-    const response = await apiClient.get('/calendar/events/', { params });
+    const response = await apiClient.get('/api/v1/calendar/events/', { params });
     // Handle paginated response
     if (response.data && 'results' in response.data) {
       return response.data.results;
@@ -2126,7 +2126,7 @@ export const calendarAPI = {
     if (data.start_date) params.start_date = data.start_date;
     if (data.end_date) params.end_date = data.end_date;
     if (data.preferred_numbers) params.preferred_numbers = data.preferred_numbers.join(',');
-    const response = await apiClient.get('/calendar/auspicious-dates/', { params });
+    const response = await apiClient.get('/api/v1/calendar/auspicious-dates/', { params });
     return response.data;
   },
 
@@ -2143,7 +2143,7 @@ export const calendarAPI = {
     is_recurring?: boolean;
     recurrence_pattern?: string;
   }): Promise<CalendarReminder> {
-    const response = await apiClient.post('/calendar/reminders/', data);
+    const response = await apiClient.post('/api/v1/calendar/reminders/', data);
     return response.data;
   },
 
@@ -2159,7 +2159,7 @@ export const calendarAPI = {
     const params: any = {};
     if (startDate) params.start_date = startDate;
     if (daysAhead) params.days_ahead = daysAhead;
-    const response = await apiClient.get('/calendar/cycles/', { params });
+    const response = await apiClient.get('/api/v1/calendar/cycles/', { params });
     return response.data;
   },
 
@@ -2169,7 +2169,7 @@ export const calendarAPI = {
   async getDateInsight(date?: string): Promise<DateInsight> {
     const params: any = {};
     if (date) params.date = date;
-    const response = await apiClient.get('/calendar/date-insight/', { params });
+    const response = await apiClient.get('/api/v1/calendar/date-insight/', { params });
     return response.data;
   }
 };
@@ -2202,7 +2202,7 @@ export const coPilotAPI = {
    * Get proactive suggestions from Co-Pilot.
    */
   async getSuggestions(): Promise<CoPilotSuggestion[]> {
-    const response = await apiClient.post('/ai-co-pilot/suggest/');
+    const response = await apiClient.post('/api/v1/ai-co-pilot/suggest/');
     return response.data;
   },
 
@@ -2213,7 +2213,7 @@ export const coPilotAPI = {
     decision_text: string;
     decision_date?: string;
   }): Promise<DecisionAnalysis> {
-    const response = await apiClient.post('/ai-co-pilot/analyze-decision/', data);
+    const response = await apiClient.post('/api/v1/ai-co-pilot/analyze-decision/', data);
     return response.data;
   },
 
@@ -2221,7 +2221,7 @@ export const coPilotAPI = {
    * Get personalized insights.
    */
   async getInsights(): Promise<CoPilotSuggestion[]> {
-    const response = await apiClient.get('/ai-co-pilot/insights/');
+    const response = await apiClient.get('/api/v1/ai-co-pilot/insights/');
     return response.data;
   }
 };
@@ -2247,7 +2247,7 @@ export const decisionAPI = {
     decision_category?: string;
     decision_date?: string;
   }): Promise<DecisionAnalysis> {
-    const response = await apiClient.post('/decisions/analyze/', data);
+    const response = await apiClient.post('/api/v1/decisions/analyze/', data);
     return response.data;
   },
 
@@ -2257,7 +2257,7 @@ export const decisionAPI = {
   async getHistory(limit?: number): Promise<Decision[]> {
     const params: any = {};
     if (limit) params.limit = limit;
-    const response = await apiClient.get('/decisions/history/', { params });
+    const response = await apiClient.get('/api/v1/decisions/history/', { params });
     return response.data;
   },
 
@@ -2271,7 +2271,7 @@ export const decisionAPI = {
     actual_date?: string;
     notes?: string;
   }): Promise<void> {
-    await apiClient.post(`/decisions/${decisionId}/outcome/`, data);
+    await apiClient.post(`/api/v1/decisions/${decisionId}/outcome/`, data);
   },
 
   /**
@@ -2280,7 +2280,7 @@ export const decisionAPI = {
   async getRecommendations(category?: string): Promise<any[]> {
     const params: any = {};
     if (category) params.category = category;
-    const response = await apiClient.get('/decisions/recommendations/', { params });
+    const response = await apiClient.get('/api/v1/decisions/recommendations/', { params });
     return response.data;
   },
 
@@ -2292,7 +2292,7 @@ export const decisionAPI = {
     success_rate: number;
     average_satisfaction: number;
   }> {
-    const response = await apiClient.get('/decisions/success-rate/');
+    const response = await apiClient.get('/api/v1/decisions/success-rate/');
     return response.data;
   }
 };
@@ -2359,7 +2359,7 @@ export const analyticsAPI = {
   async getPersonalAnalytics(days?: number): Promise<PersonalAnalytics> {
     const params: any = {};
     if (days) params.days = days;
-    const response = await apiClient.get('/analytics/personal/', { params });
+    const response = await apiClient.get('/api/v1/analytics/personal/', { params });
     return response.data;
   },
 
@@ -2370,7 +2370,7 @@ export const analyticsAPI = {
     const params: any = {};
     if (days) params.days = days;
     if (category) params.category = category;
-    const response = await apiClient.get('/analytics/business/', { params });
+    const response = await apiClient.get('/api/v1/analytics/business/', { params });
     return response.data;
   },
 
@@ -2395,7 +2395,7 @@ export const analyticsAPI = {
    * Get behavioral insights.
    */
   async getInsights(): Promise<any[]> {
-    const response = await apiClient.get('/analytics/insights/');
+    const response = await apiClient.get('/api/v1/analytics/insights/');
     return response.data;
   },
 
@@ -2405,7 +2405,7 @@ export const analyticsAPI = {
   async getGrowthMetrics(periodDays?: number): Promise<any> {
     const params: any = {};
     if (periodDays) params.period_days = periodDays;
-    const response = await apiClient.get('/analytics/growth/', { params });
+    const response = await apiClient.get('/api/v1/analytics/growth/', { params });
     return response.data;
   },
 
@@ -2417,7 +2417,7 @@ export const analyticsAPI = {
     action_details?: Record<string, any>;
     session_id?: string;
   }): Promise<void> {
-    await apiClient.post('/analytics/track/', data);
+    await apiClient.post('/api/v1/analytics/track/', data);
   }
 };
 
@@ -2427,7 +2427,7 @@ export const assetNumerologyAPI = {
    * Calculate vehicle numerology
    */
   calculateVehicle: async (data: { license_plate: string }) => {
-    const response = await apiClient.post('/numerology/vehicle/', data);
+    const response = await apiClient.post('/api/v1/numerology/vehicle/', data);
     return response.data;
   },
 
@@ -2435,7 +2435,7 @@ export const assetNumerologyAPI = {
    * Calculate property numerology
    */
   calculateProperty: async (data: { house_number: string; floor_number?: number }) => {
-    const response = await apiClient.post('/numerology/property/', data);
+    const response = await apiClient.post('/api/v1/numerology/property/', data);
     return response.data;
   },
 
@@ -2447,7 +2447,7 @@ export const assetNumerologyAPI = {
     registration_number?: string;
     launch_date?: string;
   }) => {
-    const response = await apiClient.post('/numerology/business/', data);
+    const response = await apiClient.post('/api/v1/numerology/business/', data);
     return response.data;
   },
 
@@ -2455,7 +2455,7 @@ export const assetNumerologyAPI = {
    * Calculate phone numerology (asset version)
    */
   calculatePhoneAsset: async (data: { phone_number: string }) => {
-    const response = await apiClient.post('/numerology/phone-asset/', data);
+    const response = await apiClient.post('/api/v1/numerology/phone-asset/', data);
     return response.data;
   },
 };
@@ -2469,7 +2469,7 @@ export const relationshipNumerologyAPI = {
     profile_2: any;
     relationship_type?: string;
   }) => {
-    const response = await apiClient.post('/numerology/relationship/enhanced-compatibility/', data);
+    const response = await apiClient.post('/api/v1/numerology/relationship/enhanced-compatibility/', data);
     return response.data;
   },
 
@@ -2480,7 +2480,7 @@ export const relationshipNumerologyAPI = {
     user_profile: any;
     partner_profiles: Array<{ name: string; id?: string; profile: any }>;
   }) => {
-    const response = await apiClient.post('/numerology/relationship/compare-partners/', data);
+    const response = await apiClient.post('/api/v1/numerology/relationship/compare-partners/', data);
     return response.data;
   },
 
@@ -2492,7 +2492,7 @@ export const relationshipNumerologyAPI = {
     profile_2: any;
     marriage_date?: string;
   }) => {
-    const response = await apiClient.post('/numerology/relationship/marriage-harmony/', data);
+    const response = await apiClient.post('/api/v1/numerology/relationship/marriage-harmony/', data);
     return response.data;
   },
 
@@ -2503,7 +2503,7 @@ export const relationshipNumerologyAPI = {
     profile_1: any;
     profile_2: any;
   }) => {
-    const response = await apiClient.post('/numerology/relationship/sexual-energy/', data);
+    const response = await apiClient.post('/api/v1/numerology/relationship/sexual-energy/', data);
     return response.data;
   },
 
@@ -2515,7 +2515,7 @@ export const relationshipNumerologyAPI = {
     profile_2: any;
     relationship_start_date?: string;
   }) => {
-    const response = await apiClient.post('/numerology/relationship/breakup-risks/', data);
+    const response = await apiClient.post('/api/v1/numerology/relationship/breakup-risks/', data);
     return response.data;
   },
 
@@ -2528,7 +2528,7 @@ export const relationshipNumerologyAPI = {
     event_type?: string;
     preferred_dates?: string[];
   }) => {
-    const response = await apiClient.post('/numerology/relationship/timing/', data);
+    const response = await apiClient.post('/api/v1/numerology/relationship/timing/', data);
     return response.data;
   },
 
@@ -2541,7 +2541,7 @@ export const relationshipNumerologyAPI = {
     relationship_start_date?: string;
     current_date?: string;
   }) => {
-    const response = await apiClient.post('/numerology/relationship/health-tracking/', data);
+    const response = await apiClient.post('/api/v1/numerology/relationship/health-tracking/', data);
     return response.data;
   },
 
@@ -2553,7 +2553,7 @@ export const relationshipNumerologyAPI = {
     profile_2: any;
     relationship_type?: string;
   }) => {
-    const response = await apiClient.post('/numerology/relationship/growth-tips/', data);
+    const response = await apiClient.post('/api/v1/numerology/relationship/growth-tips/', data);
     return response.data;
   },
 };
@@ -2569,7 +2569,7 @@ export const timingNumerologyAPI = {
     end_date: string;
     limit?: number;
   }) => {
-    const response = await apiClient.post('/numerology/timing/best-dates/', data);
+    const response = await apiClient.post('/api/v1/numerology/timing/best-dates/', data);
     return response.data;
   },
 
@@ -2581,7 +2581,7 @@ export const timingNumerologyAPI = {
     start_date: string;
     end_date: string;
   }) => {
-    const response = await apiClient.post('/numerology/timing/danger-dates/', data);
+    const response = await apiClient.post('/api/v1/numerology/timing/danger-dates/', data);
     return response.data;
   },
 
@@ -2592,7 +2592,7 @@ export const timingNumerologyAPI = {
     target_date?: string;
     year?: number;
   }) => {
-    const response = await apiClient.get('/numerology/timing/global-influences/', { params });
+    const response = await apiClient.get('/api/v1/numerology/timing/global-influences/', { params });
     return response.data;
   },
 
@@ -2604,7 +2604,7 @@ export const timingNumerologyAPI = {
     birth_date_2: string;
     target_date: string;
   }) => {
-    const response = await apiClient.post('/numerology/timing/compatibility/', data);
+    const response = await apiClient.post('/api/v1/numerology/timing/compatibility/', data);
     return response.data;
   },
 
@@ -2617,7 +2617,7 @@ export const timingNumerologyAPI = {
     preferred_month?: number;
     preferred_year?: number;
   }) => {
-    const response = await apiClient.post('/numerology/timing/optimize/', data);
+    const response = await apiClient.post('/api/v1/numerology/timing/optimize/', data);
     return response.data;
   },
 };
@@ -2632,7 +2632,7 @@ export const healthNumerologyAPI = {
     start_year?: number;
     end_year?: number;
   }) => {
-    const response = await apiClient.post('/numerology/health/cycles/', data);
+    const response = await apiClient.post('/api/v1/numerology/health/cycles/', data);
     return response.data;
   },
 
@@ -2645,7 +2645,7 @@ export const healthNumerologyAPI = {
     start_date: string;
     end_date: string;
   }) => {
-    const response = await apiClient.post('/numerology/health/medical-timing/', data);
+    const response = await apiClient.post('/api/v1/numerology/health/medical-timing/', data);
     return response.data;
   },
 
@@ -2656,7 +2656,7 @@ export const healthNumerologyAPI = {
     birth_date?: string;
     full_name?: string;
   }) => {
-    const response = await apiClient.post('/numerology/health/emotional-vulnerabilities/', data);
+    const response = await apiClient.post('/api/v1/numerology/health/emotional-vulnerabilities/', data);
     return response.data;
   },
 };
@@ -2670,7 +2670,7 @@ export const nameCorrectionAPI = {
     target_number?: number;
     cultural_context?: string;
   }) => {
-    const response = await apiClient.post('/numerology/name-correction/analyze/', data);
+    const response = await apiClient.post('/api/v1/numerology/name-correction/analyze/', data);
     return response.data;
   },
 };
@@ -2680,7 +2680,7 @@ export const spiritualNumerologyAPI = {
    * Get spiritual numerology profile
    */
   getSpiritualProfile: async (params?: { person_id?: string }) => {
-    const response = await apiClient.get('/numerology/spiritual/', { params });
+    const response = await apiClient.get('/api/v1/numerology/spiritual/', { params });
     return response.data;
   },
 
@@ -2688,7 +2688,7 @@ export const spiritualNumerologyAPI = {
    * Get detailed soul contracts.
    */
   getSoulContracts: async () => {
-    const response = await apiClient.get('/numerology/spiritual/soul-contracts/');
+    const response = await apiClient.get('/api/v1/numerology/spiritual/soul-contracts/');
     return response.data;
   },
 
@@ -2697,7 +2697,7 @@ export const spiritualNumerologyAPI = {
    */
   getKarmicTimeline: async (forecastYears?: number) => {
     const params = forecastYears ? { forecast_years: forecastYears } : {};
-    const response = await apiClient.get('/numerology/spiritual/karmic-timeline/', { params });
+    const response = await apiClient.get('/api/v1/numerology/spiritual/karmic-timeline/', { params });
     return response.data;
   },
 
@@ -2705,7 +2705,7 @@ export const spiritualNumerologyAPI = {
    * Get detailed rebirth cycles.
    */
   getRebirthCycles: async () => {
-    const response = await apiClient.get('/numerology/spiritual/rebirth-cycles/');
+    const response = await apiClient.get('/api/v1/numerology/spiritual/rebirth-cycles/');
     return response.data;
   },
 
@@ -2713,7 +2713,7 @@ export const spiritualNumerologyAPI = {
    * Get divine gifts identification.
    */
   getDivineGifts: async () => {
-    const response = await apiClient.get('/numerology/spiritual/divine-gifts/');
+    const response = await apiClient.get('/api/v1/numerology/spiritual/divine-gifts/');
     return response.data;
   },
 
@@ -2722,7 +2722,7 @@ export const spiritualNumerologyAPI = {
    */
   getMeditationTiming: async (targetDate?: string) => {
     const params = targetDate ? { target_date: targetDate } : {};
-    const response = await apiClient.get('/numerology/spiritual/meditation-timing/', { params });
+    const response = await apiClient.get('/api/v1/numerology/spiritual/meditation-timing/', { params });
     return response.data;
   },
 };
@@ -2732,7 +2732,7 @@ export const predictiveNumerologyAPI = {
    * Get predictive numerology profile
    */
   getPredictiveProfile: async (params?: { person_id?: string; year?: number; forecast_years?: number }) => {
-    const response = await apiClient.get('/numerology/predictive/', { params });
+    const response = await apiClient.get('/api/v1/numerology/predictive/', { params });
     return response.data;
   },
 
@@ -2741,7 +2741,7 @@ export const predictiveNumerologyAPI = {
    */
   get9YearCycle: async (forecastYears?: number) => {
     const params = forecastYears ? { forecast_years: forecastYears } : {};
-    const response = await apiClient.get('/numerology/predictive/9-year-cycle/', { params });
+    const response = await apiClient.get('/api/v1/numerology/predictive/9-year-cycle/', { params });
     return response.data;
   },
 
@@ -2750,7 +2750,7 @@ export const predictiveNumerologyAPI = {
    */
   getBreakthroughYears: async (forecastYears?: number) => {
     const params = forecastYears ? { forecast_years: forecastYears } : {};
-    const response = await apiClient.get('/numerology/predictive/breakthrough-years/', { params });
+    const response = await apiClient.get('/api/v1/numerology/predictive/breakthrough-years/', { params });
     return response.data;
   },
 
@@ -2759,7 +2759,7 @@ export const predictiveNumerologyAPI = {
    */
   getCrisisYears: async (forecastYears?: number) => {
     const params = forecastYears ? { forecast_years: forecastYears } : {};
-    const response = await apiClient.get('/numerology/predictive/crisis-years/', { params });
+    const response = await apiClient.get('/api/v1/numerology/predictive/crisis-years/', { params });
     return response.data;
   },
 
@@ -2768,7 +2768,7 @@ export const predictiveNumerologyAPI = {
    */
   getOpportunityPeriods: async (forecastYears?: number) => {
     const params = forecastYears ? { forecast_years: forecastYears } : {};
-    const response = await apiClient.get('/numerology/predictive/opportunities/', { params });
+    const response = await apiClient.get('/api/v1/numerology/predictive/opportunities/', { params });
     return response.data;
   },
 
@@ -2777,7 +2777,7 @@ export const predictiveNumerologyAPI = {
    */
   getLifeMilestones: async (forecastYears?: number) => {
     const params = forecastYears ? { forecast_years: forecastYears } : {};
-    const response = await apiClient.get('/numerology/predictive/milestones/', { params });
+    const response = await apiClient.get('/api/v1/numerology/predictive/milestones/', { params });
     return response.data;
   },
 
@@ -2786,7 +2786,7 @@ export const predictiveNumerologyAPI = {
    */
   getYearlyForecast: async (year?: number) => {
     const params = year ? { year } : {};
-    const response = await apiClient.get('/numerology/predictive/yearly-forecast/', { params });
+    const response = await apiClient.get('/api/v1/numerology/predictive/yearly-forecast/', { params });
     return response.data;
   },
 };
@@ -2796,7 +2796,7 @@ export const generationalNumerologyAPI = {
    * Analyze family generational numerology
    */
   analyzeFamily: async (data: { family_member_ids: string[] }) => {
-    const response = await apiClient.post('/numerology/generational/family-analysis/', data);
+    const response = await apiClient.post('/api/v1/numerology/generational/family-analysis/', data);
     return response.data;
   },
 
@@ -2804,7 +2804,7 @@ export const generationalNumerologyAPI = {
    * Get generational family analysis
    */
   getGenerationalFamilyAnalysis: async () => {
-    const response = await apiClient.get('/numerology/generational/family-analysis/get/');
+    const response = await apiClient.get('/api/v1/numerology/generational/family-analysis/get/');
     return response.data;
   },
 
@@ -2813,7 +2813,7 @@ export const generationalNumerologyAPI = {
    */
   getGenerationalPatterns: async (personIds?: string[]) => {
     const params = personIds ? { person_ids: personIds } : {};
-    const response = await apiClient.get('/numerology/generational/patterns/', { params });
+    const response = await apiClient.get('/api/v1/numerology/generational/patterns/', { params });
     return response.data;
   },
 
@@ -2821,7 +2821,7 @@ export const generationalNumerologyAPI = {
    * Analyze karmic contracts
    */
   analyzeKarmicContract: async (data: { parent_id: string; child_id: string }) => {
-    const response = await apiClient.post('/numerology/generational/karmic-contract/', data);
+    const response = await apiClient.post('/api/v1/numerology/generational/karmic-contract/', data);
     return response.data;
   },
 
@@ -2829,7 +2829,7 @@ export const generationalNumerologyAPI = {
    * Get all karmic contracts
    */
   getKarmicContracts: async () => {
-    const response = await apiClient.get('/numerology/generational/karmic-contracts/');
+    const response = await apiClient.get('/api/v1/numerology/generational/karmic-contracts/');
     return response.data;
   },
 
@@ -2838,7 +2838,7 @@ export const generationalNumerologyAPI = {
    */
   getFamilyCompatibilityMatrix: async (personIds?: string[]) => {
     const params = personIds ? { person_ids: personIds } : {};
-    const response = await apiClient.get('/numerology/generational/compatibility-matrix/', { params });
+    const response = await apiClient.get('/api/v1/numerology/generational/compatibility-matrix/', { params });
     return response.data;
   },
 
@@ -2847,10 +2847,10 @@ export const generationalNumerologyAPI = {
    */
   getFamilyUnitNumerology: async (personIds?: string[]) => {
     if (personIds && personIds.length > 0) {
-      const response = await apiClient.post('/numerology/generational/family-unit/', { person_ids: personIds });
+      const response = await apiClient.post('/api/v1/numerology/generational/family-unit/', { person_ids: personIds });
       return response.data;
     } else {
-      const response = await apiClient.get('/numerology/generational/family-unit/');
+      const response = await apiClient.get('/api/v1/numerology/generational/family-unit/');
       return response.data;
     }
   },
@@ -2860,10 +2860,10 @@ export const generationalNumerologyAPI = {
    */
   trackGenerationalCycles: async (personIds?: string[]) => {
     if (personIds && personIds.length > 0) {
-      const response = await apiClient.post('/numerology/generational/cycles/', { person_ids: personIds });
+      const response = await apiClient.post('/api/v1/numerology/generational/cycles/', { person_ids: personIds });
       return response.data;
     } else {
-      const response = await apiClient.get('/numerology/generational/cycles/');
+      const response = await apiClient.get('/api/v1/numerology/generational/cycles/');
       return response.data;
     }
   },
@@ -2879,7 +2879,7 @@ export const fengShuiHybridAPI = {
     floor_number?: number;
     room_layout?: any;
   }) => {
-    const response = await apiClient.post('/numerology/feng-shui/analyze/', data);
+    const response = await apiClient.post('/api/v1/numerology/feng-shui/analyze/', data);
     return response.data;
   },
 
@@ -2887,7 +2887,7 @@ export const fengShuiHybridAPI = {
    * Get Feng Shui analysis
    */
   getAnalysis: async (analysisId: string) => {
-    const response = await apiClient.get(`/numerology/feng-shui/analysis/${analysisId}/`);
+    const response = await apiClient.get(`/api/v1/numerology/feng-shui/analysis/${analysisId}/`);
     return response.data;
   },
 
@@ -2902,7 +2902,7 @@ export const fengShuiHybridAPI = {
       direction?: string;
     };
   }) => {
-    const response = await apiClient.post('/numerology/feng-shui/optimize-space/', data);
+    const response = await apiClient.post('/api/v1/numerology/feng-shui/optimize-space/', data);
     return response.data;
   },
 
@@ -2910,7 +2910,7 @@ export const fengShuiHybridAPI = {
    * Get energy flow analysis
    */
   getEnergyFlow: async (analysisId: string) => {
-    const response = await apiClient.get('/numerology/feng-shui/energy-flow/', {
+    const response = await apiClient.get('/api/v1/numerology/feng-shui/energy-flow/', {
       params: { analysis_id: analysisId }
     });
     return response.data;
@@ -2928,7 +2928,7 @@ export const fengShuiHybridAPI = {
     if (roomData) {
       data.room_data = roomData;
     }
-    const response = await apiClient.post('/numerology/feng-shui/room-numbers/', data);
+    const response = await apiClient.post('/api/v1/numerology/feng-shui/room-numbers/', data);
     return response.data;
   },
 
@@ -2936,7 +2936,7 @@ export const fengShuiHybridAPI = {
    * Check direction compatibility
    */
   checkDirectionCompatibility: async (direction: string) => {
-    const response = await apiClient.post('/numerology/feng-shui/directions/', { direction });
+    const response = await apiClient.post('/api/v1/numerology/feng-shui/directions/', { direction });
     return response.data;
   },
 
@@ -2947,7 +2947,7 @@ export const fengShuiHybridAPI = {
     analysis_id: string;
     optimization_goals?: string[];
   }) => {
-    const response = await apiClient.post('/numerology/feng-shui/optimize-space/', data);
+    const response = await apiClient.post('/api/v1/numerology/feng-shui/optimize-space/', data);
     return response.data;
   },
 };
@@ -2963,7 +2963,7 @@ export const mentalStateAIAPI = {
     mood_score?: number;
     notes?: string;
   }) => {
-    const response = await apiClient.post('/numerology/mental-state/track/', data);
+    const response = await apiClient.post('/api/v1/numerology/mental-state/track/', data);
     return response.data;
   },
 
@@ -2971,7 +2971,7 @@ export const mentalStateAIAPI = {
    * Get mental state history
    */
   getMentalStateHistory: async (params?: { start_date?: string; end_date?: string; limit?: number }) => {
-    const response = await apiClient.get('/numerology/mental-state/history/', { params });
+    const response = await apiClient.get('/api/v1/numerology/mental-state/history/', { params });
     return response.data;
   },
 
@@ -2982,7 +2982,7 @@ export const mentalStateAIAPI = {
     period_start?: string;
     period_end?: string;
   }) => {
-    const response = await apiClient.post('/numerology/mental-state/analyze/', data);
+    const response = await apiClient.post('/api/v1/numerology/mental-state/analyze/', data);
     return response.data;
   },
 
@@ -2990,7 +2990,7 @@ export const mentalStateAIAPI = {
    * Get stress patterns
    */
   getStressPatterns: async () => {
-    const response = await apiClient.get('/numerology/mental-state/stress-patterns/');
+    const response = await apiClient.get('/api/v1/numerology/mental-state/stress-patterns/');
     return response.data;
   },
 
@@ -2998,7 +2998,7 @@ export const mentalStateAIAPI = {
    * Get wellbeing recommendations
    */
   getWellbeingRecommendations: async () => {
-    const response = await apiClient.get('/numerology/mental-state/wellbeing-recommendations/');
+    const response = await apiClient.get('/api/v1/numerology/mental-state/wellbeing-recommendations/');
     return response.data;
   },
 
@@ -3006,7 +3006,7 @@ export const mentalStateAIAPI = {
    * Get mood predictions
    */
   getMoodPredictions: async () => {
-    const response = await apiClient.get('/numerology/mental-state/mood-predictions/');
+    const response = await apiClient.get('/api/v1/numerology/mental-state/mood-predictions/');
     return response.data;
   },
 
@@ -3014,7 +3014,7 @@ export const mentalStateAIAPI = {
    * Get emotional compatibility
    */
   getEmotionalCompatibility: async (person2Id: string) => {
-    const response = await apiClient.post('/numerology/mental-state/emotional-compatibility/', {
+    const response = await apiClient.post('/api/v1/numerology/mental-state/emotional-compatibility/', {
       person2_id: person2Id
     });
     return response.data;
@@ -3024,7 +3024,7 @@ export const mentalStateAIAPI = {
    * Analyze mental state patterns
    */
   analyzeMentalState: async (params?: { period?: string }) => {
-    const response = await apiClient.get('/numerology/mental-state/analyze/', { params });
+    const response = await apiClient.get('/api/v1/numerology/mental-state/analyze/', { params });
     return response.data;
   },
 
@@ -3032,7 +3032,7 @@ export const mentalStateAIAPI = {
    * Get stress patterns
    */
   getStressPatterns: async (params?: { period?: string }) => {
-    const response = await apiClient.get('/numerology/mental-state/stress-patterns/', { params });
+    const response = await apiClient.get('/api/v1/numerology/mental-state/stress-patterns/', { params });
     return response.data;
   },
 
@@ -3040,7 +3040,7 @@ export const mentalStateAIAPI = {
    * Get wellbeing recommendations
    */
   getWellbeingRecommendations: async () => {
-    const response = await apiClient.get('/numerology/mental-state/wellbeing-recommendations/');
+    const response = await apiClient.get('/api/v1/numerology/mental-state/wellbeing-recommendations/');
     return response.data;
   },
 
@@ -3048,7 +3048,7 @@ export const mentalStateAIAPI = {
    * Get mood predictions
    */
   getMoodPredictions: async (params?: { days_ahead?: number }) => {
-    const response = await apiClient.get('/numerology/mental-state/mood-predictions/', { params });
+    const response = await apiClient.get('/api/v1/numerology/mental-state/mood-predictions/', { params });
     return response.data;
   },
 };
@@ -3058,7 +3058,7 @@ export const enhancedCyclesAPI = {
    * Get essence cycles
    */
   getEssenceCycles: async () => {
-    const response = await apiClient.get('/numerology/essence-cycles/');
+    const response = await apiClient.get('/api/v1/numerology/essence-cycles/');
     return response.data;
   },
 
@@ -3066,7 +3066,7 @@ export const enhancedCyclesAPI = {
    * Get cycle timeline
    */
   getCycleTimeline: async (params?: { start_year?: number; end_year?: number }) => {
-    const response = await apiClient.get('/numerology/cycle-timeline/', { params });
+    const response = await apiClient.get('/api/v1/numerology/cycle-timeline/', { params });
     return response.data;
   },
 
@@ -3074,7 +3074,7 @@ export const enhancedCyclesAPI = {
    * Get universal cycles
    */
   getUniversalCycles: async (params?: { year?: number; month?: number; day?: number }) => {
-    const response = await apiClient.get('/numerology/universal-cycles/', { params });
+    const response = await apiClient.get('/api/v1/numerology/universal-cycles/', { params });
     return response.data;
   },
 
@@ -3088,39 +3088,39 @@ export const enhancedCyclesAPI = {
     profile_2_dob: string;
     target_year: number;
   }) => {
-    const response = await apiClient.post('/numerology/cycle-compatibility/', data);
+    const response = await apiClient.post('/api/v1/numerology/cycle-compatibility/', data);
     return response.data;
   },
 
   // Visualization endpoints
   getNumerologyWheel: async () => {
-    const response = await apiClient.get('/numerology/visualizations/wheel/');
+    const response = await apiClient.get('/api/v1/numerology/visualizations/wheel/');
     return response.data;
   },
 
   getNumerologyTimeline: async (params?: { years_ahead?: number }) => {
-    const response = await apiClient.get('/numerology/visualizations/timeline/', { params });
+    const response = await apiClient.get('/api/v1/numerology/visualizations/timeline/', { params });
     return response.data;
   },
 
   getNumerologyComparisonCharts: async (data: { person_ids: string[] }) => {
-    const response = await apiClient.post('/numerology/visualizations/comparison/', data);
+    const response = await apiClient.post('/api/v1/numerology/visualizations/comparison/', data);
     return response.data;
   },
 
   getNumerologyHeatmap: async () => {
-    const response = await apiClient.get('/numerology/visualizations/heatmap/');
+    const response = await apiClient.get('/api/v1/numerology/visualizations/heatmap/');
     return response.data;
   },
 
   get3DNumerologyVisualization: async () => {
-    const response = await apiClient.get('/numerology/visualizations/3d/');
+    const response = await apiClient.get('/api/v1/numerology/visualizations/3d/');
     return response.data;
   },
 
   // Enhanced Remedies endpoints
   getRemedyTrackingData: async (remedyId: string, params?: { start_date?: string; end_date?: string }) => {
-    const response = await apiClient.get(`/numerology/remedies/track/${remedyId}/`, { params });
+    const response = await apiClient.get(`/api/v1/numerology/remedies/track/${remedyId}/`, { params });
     return response.data;
   },
 
@@ -3130,17 +3130,17 @@ export const enhancedCyclesAPI = {
     mood_after?: string;
     date?: string;
   }) => {
-    const response = await apiClient.post(`/numerology/remedies/track/${remedyId}/effectiveness/`, data);
+    const response = await apiClient.post(`/api/v1/numerology/remedies/track/${remedyId}/effectiveness/`, data);
     return response.data;
   },
 
   getRemedyEffectiveness: async (params?: { remedy_id?: string; period_days?: number }) => {
-    const response = await apiClient.get('/numerology/remedies/effectiveness/', { params });
+    const response = await apiClient.get('/api/v1/numerology/remedies/effectiveness/', { params });
     return response.data;
   },
 
   getRemedyCombinations: async (params: { remedy_id: string }) => {
-    const response = await apiClient.get('/numerology/remedies/combinations/', { params });
+    const response = await apiClient.get('/api/v1/numerology/remedies/combinations/', { params });
     return response.data;
   },
 
@@ -3149,38 +3149,38 @@ export const enhancedCyclesAPI = {
     frequency: string;
     reminder_time: string;
   }) => {
-    const response = await apiClient.post('/numerology/remedies/reminders/', data);
+    const response = await apiClient.post('/api/v1/numerology/remedies/reminders/', data);
     return response.data;
   },
 
   getRemedyReminders: async () => {
-    const response = await apiClient.get('/numerology/remedies/reminders/list/');
+    const response = await apiClient.get('/api/v1/numerology/remedies/reminders/list/');
     return response.data;
   },
 
   deleteRemedyReminder: async (reminderId: string) => {
-    const response = await apiClient.delete(`/numerology/remedies/reminders/${reminderId}/`);
+    const response = await apiClient.delete(`/api/v1/numerology/remedies/reminders/${reminderId}/`);
     return response.data;
   },
 
   // Dashboard endpoints
   getDashboardInsights: async () => {
-    const response = await apiClient.get('/numerology/dashboard/insights/');
+    const response = await apiClient.get('/api/v1/numerology/dashboard/insights/');
     return response.data;
   },
 
   getDashboardQuickActions: async (params?: { context?: string }) => {
-    const response = await apiClient.get('/numerology/dashboard/quick-actions/', { params });
+    const response = await apiClient.get('/api/v1/numerology/dashboard/quick-actions/', { params });
     return response.data;
   },
 
   getDashboardActivity: async (params?: { limit?: number; types?: string[] }) => {
-    const response = await apiClient.get('/numerology/dashboard/activity/', { params });
+    const response = await apiClient.get('/api/v1/numerology/dashboard/activity/', { params });
     return response.data;
   },
 
   getDashboardRecommendations: async () => {
-    const response = await apiClient.get('/numerology/dashboard/recommendations/');
+    const response = await apiClient.get('/api/v1/numerology/dashboard/recommendations/');
     return response.data;
   },
 };
@@ -3190,7 +3190,7 @@ export const featureFlagsAPI = {
    * Get all feature flags with user access status
    */
   getAllFlags: async () => {
-    const response = await apiClient.get('/feature-flags/');
+    const response = await apiClient.get('/api/v1/feature-flags/');
     return response.data;
   },
 
@@ -3206,7 +3206,7 @@ export const featureFlagsAPI = {
    * Check if user can access a specific feature
    */
   checkAccess: async (featureName: string) => {
-    const response = await apiClient.post('/feature-flags/check/', {
+    const response = await apiClient.post('/api/v1/feature-flags/check/', {
       feature_name: featureName,
     });
     return response.data;
@@ -3216,7 +3216,7 @@ export const featureFlagsAPI = {
    * Get all features available to current user
    */
   getUserFeatures: async () => {
-    const response = await apiClient.get('/users/features/');
+    const response = await apiClient.get('/api/v1/users/features/');
     return response.data;
   },
 };
@@ -3226,7 +3226,7 @@ export const meusAPI = {
    * Get all entities
    */
   getEntities: async (params?: { entity_type?: string; relationship_type?: string }) => {
-    const response = await apiClient.get('/entity/', { params });
+    const response = await apiClient.get('/api/v1/entity/', { params });
     return response.data;
   },
 
@@ -3240,7 +3240,7 @@ export const meusAPI = {
     relationship_type?: string;
     metadata?: Record<string, any>;
   }) => {
-    const response = await apiClient.post('/entity/', data);
+    const response = await apiClient.post('/api/v1/entity/', data);
     return response.data;
   },
 
@@ -3277,7 +3277,7 @@ export const meusAPI = {
    * Get universe dashboard
    */
   getDashboard: async () => {
-    const response = await apiClient.get('/universe/dashboard/');
+    const response = await apiClient.get('/api/v1/universe/dashboard/');
     return response.data;
   },
 
@@ -3285,7 +3285,7 @@ export const meusAPI = {
    * Get influence map
    */
   getInfluenceMap: async (params?: { period?: string; period_value?: string }) => {
-    const response = await apiClient.get('/universe/influence-map/', { params });
+    const response = await apiClient.get('/api/v1/universe/influence-map/', { params });
     return response.data;
   },
 
@@ -3296,7 +3296,7 @@ export const meusAPI = {
     entity_ids: string[];
     analysis_type?: 'compatibility' | 'influence' | 'full';
   }) => {
-    const response = await apiClient.post('/analysis/cross-entity/', data);
+    const response = await apiClient.post('/api/v1/analysis/cross-entity/', data);
     return response.data;
   },
 
@@ -3304,7 +3304,7 @@ export const meusAPI = {
    * Get next action recommendations
    */
   getNextActions: async (params?: { limit?: number; priority?: string }) => {
-    const response = await apiClient.get('/recommendations/next-actions/', { params });
+    const response = await apiClient.get('/api/v1/recommendations/next-actions/', { params });
     return response.data;
   },
 
@@ -3312,7 +3312,7 @@ export const meusAPI = {
    * Get universe events
    */
   getEvents: async () => {
-    const response = await apiClient.get('/universe/events/');
+    const response = await apiClient.get('/api/v1/universe/events/');
     return response.data;
   },
 
@@ -3326,7 +3326,7 @@ export const meusAPI = {
     description?: string;
     related_entities?: string[];
   }) => {
-    const response = await apiClient.post('/universe/events/', data);
+    const response = await apiClient.post('/api/v1/universe/events/', data);
     return response.data;
   },
 };
@@ -3336,7 +3336,7 @@ export const knowledgeGraphAPI = {
    * Discover patterns.
    */
   async discoverPatterns(): Promise<any[]> {
-    const response = await apiClient.get('/knowledge-graph/patterns/');
+    const response = await apiClient.get('/api/v1/knowledge-graph/patterns/');
     return response.data;
   },
 
@@ -3344,7 +3344,7 @@ export const knowledgeGraphAPI = {
    * Find number connections.
    */
   async findConnections(number: number): Promise<any[]> {
-    const response = await apiClient.get('/knowledge-graph/connections/', {
+    const response = await apiClient.get('/api/v1/knowledge-graph/connections/', {
       params: { number }
     });
     return response.data;
@@ -3354,7 +3354,7 @@ export const knowledgeGraphAPI = {
    * Generate insights.
    */
   async generateInsights(): Promise<any[]> {
-    const response = await apiClient.get('/knowledge-graph/insights/');
+    const response = await apiClient.get('/api/v1/knowledge-graph/insights/');
     return response.data;
   },
 
@@ -3362,7 +3362,7 @@ export const knowledgeGraphAPI = {
    * Query graph.
    */
   async queryGraph(queryType: string, params: Record<string, any>): Promise<any> {
-    const response = await apiClient.post('/knowledge-graph/query/', {
+    const response = await apiClient.post('/api/v1/knowledge-graph/query/', {
       query_type: queryType,
       params
     });
@@ -3377,7 +3377,7 @@ export const knowledgeGraphAPI = {
    * Analyze family generational numerology.
    */
   async analyzeFamilyGenerational(personIds: string[]): Promise<any> {
-    const response = await apiClient.post('/numerology/generational/family-analysis/', {
+    const response = await apiClient.post('/api/v1/numerology/generational/family-analysis/', {
       person_ids: personIds
     });
     return response.data;
@@ -3387,7 +3387,7 @@ export const knowledgeGraphAPI = {
    * Get generational family analysis.
    */
   async getGenerationalFamilyAnalysis(): Promise<any> {
-    const response = await apiClient.get('/numerology/generational/family-analysis/get/');
+    const response = await apiClient.get('/api/v1/numerology/generational/family-analysis/get/');
     return response.data;
   },
 
@@ -3395,7 +3395,7 @@ export const knowledgeGraphAPI = {
    * Analyze parent-child karmic contract.
    */
   async analyzeKarmicContract(parentId: string, childId: string): Promise<any> {
-    const response = await apiClient.post('/numerology/generational/karmic-contract/', {
+    const response = await apiClient.post('/api/v1/numerology/generational/karmic-contract/', {
       parent_id: parentId,
       child_id: childId
     });
@@ -3406,7 +3406,7 @@ export const knowledgeGraphAPI = {
    * Get all karmic contracts.
    */
   async getKarmicContracts(): Promise<any> {
-    const response = await apiClient.get('/numerology/generational/karmic-contracts/');
+    const response = await apiClient.get('/api/v1/numerology/generational/karmic-contracts/');
     return response.data;
   },
 
@@ -3414,7 +3414,7 @@ export const knowledgeGraphAPI = {
    * Get generational patterns.
    */
   async getGenerationalPatterns(personIds?: string[]): Promise<any> {
-    const response = await apiClient.get('/numerology/generational/patterns/', {
+    const response = await apiClient.get('/api/v1/numerology/generational/patterns/', {
       params: personIds ? { person_ids: personIds } : {}
     });
     return response.data;
@@ -3424,7 +3424,7 @@ export const knowledgeGraphAPI = {
    * Get family compatibility matrix.
    */
   async getFamilyCompatibilityMatrix(personIds?: string[]): Promise<any> {
-    const response = await apiClient.get('/numerology/generational/compatibility-matrix/', {
+    const response = await apiClient.get('/api/v1/numerology/generational/compatibility-matrix/', {
       params: personIds ? { person_ids: personIds } : {}
     });
     return response.data;
@@ -3435,10 +3435,10 @@ export const knowledgeGraphAPI = {
    */
   async getFamilyUnitNumerology(personIds?: string[]): Promise<any> {
     if (personIds && personIds.length > 0) {
-      const response = await apiClient.post('/numerology/generational/family-unit/', { person_ids: personIds });
+      const response = await apiClient.post('/api/v1/numerology/generational/family-unit/', { person_ids: personIds });
       return response.data;
     } else {
-      const response = await apiClient.get('/numerology/generational/family-unit/');
+      const response = await apiClient.get('/api/v1/numerology/generational/family-unit/');
       return response.data;
     }
   },
@@ -3448,10 +3448,10 @@ export const knowledgeGraphAPI = {
    */
   async trackGenerationalCycles(personIds?: string[]): Promise<any> {
     if (personIds && personIds.length > 0) {
-      const response = await apiClient.post('/numerology/generational/cycles/', { person_ids: personIds });
+      const response = await apiClient.post('/api/v1/numerology/generational/cycles/', { person_ids: personIds });
       return response.data;
     } else {
-      const response = await apiClient.get('/numerology/generational/cycles/');
+      const response = await apiClient.get('/api/v1/numerology/generational/cycles/');
       return response.data;
     }
   }

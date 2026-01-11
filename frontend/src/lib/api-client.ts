@@ -65,7 +65,7 @@ apiClient.interceptors.response.use(
           throw new Error('No refresh token');
         }
 
-        const response = await axios.post(`${API_URL}/auth/refresh-token/`, {
+        const response = await axios.post(`${API_URL}/api/v1/auth/refresh-token/`, {
           refresh: refreshToken,
         });
 
@@ -149,7 +149,7 @@ export default apiClient;
 // API endpoints
 export const authAPI = {
   appleSignIn: (data: { identity_token: string; authorization_code?: string }) =>
-    apiClient.post('/auth/social/apple/', data),
+    apiClient.post('/api/v1/auth/social/apple/', data),
   register: (data: {
     email?: string;
     phone?: string;
@@ -160,43 +160,43 @@ export const authAPI = {
     gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
     timezone?: string;
     location?: string;
-  }) => apiClient.post('/auth/register/', data),
+  }) => apiClient.post('/api/v1/auth/register/', data),
 
   verifyOTP: (data: { email?: string; phone?: string; otp: string }) =>
-    apiClient.post('/auth/verify-otp/', data),
+    apiClient.post('/api/v1/auth/verify-otp/', data),
 
   resendOTP: (data: { email?: string; phone?: string }) =>
-    apiClient.post('/auth/resend-otp/', data),
+    apiClient.post('/api/v1/auth/resend-otp/', data),
 
   login: (data: { email?: string; phone?: string; password: string }) =>
-    apiClient.post('/auth/login/', data),
+    apiClient.post('/api/v1/auth/login/', data),
 
   logout: (refreshToken: string) =>
-    apiClient.post('/auth/logout/', { refresh_token: refreshToken }),
+    apiClient.post('/api/v1/auth/logout/', { refresh_token: refreshToken }),
 
   refreshToken: (refreshToken: string) =>
-    apiClient.post('/auth/refresh-token/', { refresh: refreshToken }),
+    apiClient.post('/api/v1/auth/refresh-token/', { refresh: refreshToken }),
 
   // OTP-based password reset (legacy, kept for compatibility)
   requestPasswordReset: (email: string) =>
-    apiClient.post('/auth/password-reset/', { email }),
+    apiClient.post('/api/v1/auth/password-reset/', { email }),
 
   confirmPasswordReset: (data: { email: string; otp: string; new_password: string }) =>
-    apiClient.post('/auth/password-reset/confirm/', data),
+    apiClient.post('/api/v1/auth/password-reset/confirm/', data),
 
   // Token-based password reset (recommended)
   requestPasswordResetToken: (email: string) =>
-    apiClient.post('/auth/reset-password/token/', { email }),
+    apiClient.post('/api/v1/auth/reset-password/token/', { email }),
 
   confirmPasswordResetToken: (data: { token: string; new_password: string; confirm_password: string }) =>
-    apiClient.post('/auth/reset-password/token/confirm/', data),
+    apiClient.post('/api/v1/auth/reset-password/token/confirm/', data),
 
   googleOAuth: (accessToken: string) =>
-    apiClient.post('/auth/social/google/', { access_token: accessToken }),
+    apiClient.post('/api/v1/auth/social/google/', { access_token: accessToken }),
 };
 
 export const userAPI = {
-  getProfile: () => apiClient.get('/users/profile/'),
+  getProfile: () => apiClient.get('/api/v1/users/profile/'),
   updateProfile: (data: {
     full_name?: string;
     date_of_birth?: string;
@@ -204,23 +204,23 @@ export const userAPI = {
     timezone?: string;
     location?: string;
     bio?: string;
-  }) => apiClient.patch('/users/profile/', data),
+  }) => apiClient.patch('/api/v1/users/profile/', data),
 };
 
 export const paymentsAPI = {
   createSubscription: (data: { plan: string; payment_method_id?: string }) =>
-    apiClient.post('/payments/create-subscription/', data),
+    apiClient.post('/api/v1/payments/create-subscription/', data),
   updateSubscription: (data: { plan?: string; cancel_at_period_end?: boolean }) =>
-    apiClient.post('/payments/update-subscription/', data),
+    apiClient.post('/api/v1/payments/update-subscription/', data),
   cancelSubscription: () =>
-    apiClient.post('/payments/cancel-subscription/'),
-  getSubscriptionStatus: () => apiClient.get('/payments/subscription-status/'),
-  getBillingHistory: () => apiClient.get('/payments/billing-history/'),
+    apiClient.post('/api/v1/payments/cancel-subscription/'),
+  getSubscriptionStatus: () => apiClient.get('/api/v1/payments/subscription-status/'),
+  getBillingHistory: () => apiClient.get('/api/v1/payments/billing-history/'),
 };
 
 export const accountAPI = {
-  deleteAccount: () => apiClient.post('/users/delete-account/'),
-  exportData: () => apiClient.post('/users/export-data/', {}, { responseType: 'blob' }),
+  deleteAccount: () => apiClient.post('/api/v1/users/delete-account/'),
+  exportData: () => apiClient.post('/api/v1/users/export-data/', {}, { responseType: 'blob' }),
 };
 
 export const notificationAPI = {
@@ -228,44 +228,44 @@ export const notificationAPI = {
     fcm_token: string;
     device_type: 'ios' | 'android' | 'web';
     device_name?: string;
-  }) => apiClient.post('/notifications/devices/', data),
+  }) => apiClient.post('/api/v1/notifications/devices/', data),
   list: (params?: { page?: number }) => 
-    apiClient.get('/notifications/', { params }),
+    apiClient.get('/api/v1/notifications/', { params }),
   markRead: (notificationId: string) =>
-    apiClient.post(`/notifications/${notificationId}/read/`),
+    apiClient.post(`/api/v1/notifications/${notificationId}/read/`),
   markAllRead: () =>
-    apiClient.post('/notifications/read-all/'),
+    apiClient.post('/api/v1/notifications/read-all/'),
   delete: (notificationId: string) =>
-    apiClient.delete(`/notifications/${notificationId}/`),
+    apiClient.delete(`/api/v1/notifications/${notificationId}/`),
   getUnreadCount: () =>
-    apiClient.get('/notifications/unread-count/'),
+    apiClient.get('/api/v1/notifications/unread-count/'),
   getPreferences: () =>
-    apiClient.get('/notifications/preferences/'),
+    apiClient.get('/api/v1/notifications/preferences/'),
   updatePreference: (data: {
     notification_type: string;
     channel: string;
     enabled: boolean;
-  }) => apiClient.put('/notifications/preferences/', data),
+  }) => apiClient.put('/api/v1/notifications/preferences/', data),
   bulkUpdatePreferences: (data: { preferences: Array<{ notification_type: string; channel: string; enabled: boolean }> }) =>
-    apiClient.post('/notifications/preferences/bulk-update/', data),
+    apiClient.post('/api/v1/notifications/preferences/bulk-update/', data),
 };
 
 export const apiKeyAPI = {
-  list: () => apiClient.get('/users/api-keys/'),
-  create: (data: { name: string }) => apiClient.post('/users/api-keys/', data),
-  revoke: (keyId: string) => apiClient.delete(`/users/api-keys/${keyId}/`),
-  deactivate: (keyId: string) => apiClient.post(`/users/api-keys/${keyId}/deactivate/`),
+  list: () => apiClient.get('/api/v1/users/api-keys/'),
+  create: (data: { name: string }) => apiClient.post('/api/v1/users/api-keys/', data),
+  revoke: (keyId: string) => apiClient.delete(`/api/v1/users/api-keys/${keyId}/`),
+  deactivate: (keyId: string) => apiClient.post(`/api/v1/users/api-keys/${keyId}/deactivate/`),
 };
 
 export const developerAPI = {
   register: (data: { name: string; description?: string }) =>
-    apiClient.post('/developer/register/', data),
-  listKeys: () => apiClient.get('/developer/keys/'),
-  getUsageStats: (keyId: string) => apiClient.get(`/developer/keys/${keyId}/usage/`),
+    apiClient.post('/api/v1/developer/register/', data),
+  listKeys: () => apiClient.get('/api/v1/developer/keys/'),
+  getUsageStats: (keyId: string) => apiClient.get(`/api/v1/developer/keys/${keyId}/usage/`),
 };
 
 export const rewardsAPI = {
-  getUserPoints: () => apiClient.get('/rewards/points/'),
-  getUserAchievements: () => apiClient.get('/rewards/achievements/'),
-  getRewardCatalog: () => apiClient.get('/rewards/catalog/'),
+  getUserPoints: () => apiClient.get('/api/v1/rewards/points/'),
+  getUserAchievements: () => apiClient.get('/api/v1/rewards/achievements/'),
+  getRewardCatalog: () => apiClient.get('/api/v1/rewards/catalog/'),
 };

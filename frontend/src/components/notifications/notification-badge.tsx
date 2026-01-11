@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { notificationAPI } from '@/lib/api-client';
 import { useAuth } from '@/contexts/auth-context';
+import { API_URL } from '@/lib/api-config';
 
 interface NotificationBadgeProps {
   onClick?: () => void;
@@ -84,7 +85,7 @@ export function NotificationBadge({ onClick }: NotificationBadgeProps) {
     if (accessToken && typeof window !== 'undefined' && 'EventSource' in window) {
       try {
         // Use SSE for real-time updates
-        eventSource = new EventSource(`${API_URL}/notifications/stream/`, {
+        eventSource = new EventSource(`${API_URL}/api/v1/notifications/stream/`, {
           withCredentials: true,
         });
         

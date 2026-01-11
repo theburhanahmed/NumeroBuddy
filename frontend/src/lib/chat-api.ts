@@ -30,7 +30,7 @@ export const chatAPI = {
     const data: any = { expert_id: expertId };
     if (consultationId) data.consultation_id = consultationId;
     
-    const response = await apiClient.post('/consultations/chat/', data);
+    const response = await apiClient.post('/api/v1/chat/', data);
     return response.data;
   },
 
@@ -47,7 +47,7 @@ export const chatAPI = {
     if (filters?.page_size) params.append('page_size', filters.page_size.toString());
     if (filters?.status) params.append('status', filters.status);
     
-    const response = await apiClient.get(`/consultations/chat/list/?${params.toString()}`);
+    const response = await apiClient.get(`/api/v1/chat/list/?${params.toString()}`);
     return response.data;
   },
 
@@ -67,7 +67,7 @@ export const chatAPI = {
     if (options?.page_size) params.append('page_size', options.page_size.toString());
     if (options?.since) params.append('since', options.since);
     
-    const response = await apiClient.get(`/consultations/chat/${conversationId}/messages/?${params.toString()}`);
+    const response = await apiClient.get(`/api/v1/chat/${conversationId}/messages/?${params.toString()}`);
     return response.data;
   },
 
@@ -85,7 +85,7 @@ export const chatAPI = {
     if (data.reply_to) formData.append('reply_to', data.reply_to);
     if (file) formData.append('file', file);
     
-    const response = await apiClient.post(`/consultations/chat/${conversationId}/send/`, formData, {
+    const response = await apiClient.post(`/api/v1/chat/${conversationId}/send/`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -97,7 +97,7 @@ export const chatAPI = {
    * Mark messages as read.
    */
   async markAsRead(conversationId: string): Promise<{ message: string }> {
-    const response = await apiClient.post(`/consultations/chat/${conversationId}/read/`);
+    const response = await apiClient.post(`/api/v1/chat/${conversationId}/read/`);
     return response.data;
   },
 
@@ -110,7 +110,7 @@ export const chatAPI = {
     formData.append('message_content', file.name);
     formData.append('message_type', 'file');
     
-    const response = await apiClient.post(`/consultations/chat/${conversationId}/send/`, formData, {
+    const response = await apiClient.post(`/api/v1/chat/${conversationId}/send/`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -122,14 +122,14 @@ export const chatAPI = {
    * Delete a message.
    */
   async deleteMessage(messageId: string): Promise<void> {
-    await apiClient.delete(`/consultations/chat/messages/${messageId}/`);
+    await apiClient.delete(`/api/v1/chat/messages/${messageId}/`);
   },
 
   /**
    * Archive a conversation.
    */
   async archiveConversation(conversationId: string): Promise<{ message: string }> {
-    const response = await apiClient.post(`/consultations/chat/${conversationId}/archive/`);
+    const response = await apiClient.post(`/api/v1/chat/${conversationId}/archive/`);
     return response.data;
   },
 
@@ -137,7 +137,7 @@ export const chatAPI = {
    * Block a conversation.
    */
   async blockConversation(conversationId: string): Promise<{ message: string }> {
-    const response = await apiClient.post(`/consultations/chat/${conversationId}/block/`);
+    const response = await apiClient.post(`/api/v1/chat/${conversationId}/block/`);
     return response.data;
   },
 
@@ -145,7 +145,7 @@ export const chatAPI = {
    * Get total unread count.
    */
   async getUnreadCount(): Promise<{ unread_count: number }> {
-    const response = await apiClient.get('/consultations/chat/unread-count/');
+    const response = await apiClient.get('/api/v1/chat/unread-count/');
     return response.data;
   },
 };

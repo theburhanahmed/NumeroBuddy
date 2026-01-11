@@ -29,7 +29,7 @@ export const expertAPI = {
     bio: string;
     application_notes?: string;
   }): Promise<ExpertApplication> {
-    const response = await apiClient.post('/consultations/experts/apply/', data);
+    const response = await apiClient.post('/api/v1/experts/apply/', data);
     return response.data;
   },
 
@@ -56,7 +56,7 @@ export const expertAPI = {
     formData.append('document_name', documentName);
     if (description) formData.append('description', description);
     
-    const response = await apiClient.post('/consultations/experts/upload-document/', formData, {
+    const response = await apiClient.post('/api/v1/experts/upload-document/', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -68,7 +68,7 @@ export const expertAPI = {
    * Get verification status.
    */
   async getVerificationStatus(): Promise<VerificationStatus> {
-    const response = await apiClient.get('/consultations/experts/verification-status/');
+    const response = await apiClient.get('/api/v1/experts/verification-status/');
     return response.data;
   },
 
@@ -76,7 +76,7 @@ export const expertAPI = {
    * Update application (before review).
    */
   async updateApplication(data: Partial<ExpertApplication>): Promise<ExpertApplication> {
-    const response = await apiClient.patch('/consultations/experts/my-application/', data);
+    const response = await apiClient.patch('/api/v1/experts/my-application/', data);
     return response.data;
   },
 };
