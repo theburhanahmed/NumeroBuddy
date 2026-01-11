@@ -71,7 +71,20 @@ class Command(BaseCommand):
                 call_command('migrate', verbosity=0, interactive=False)
                 self.stdout.write(self.style.SUCCESS('✓ Migrations completed'))
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f'✗ Migration error: {e}'))
+                error_msg = str(e)
+                if 'InconsistentMigrationHistory' in error_msg:
+                    self.stdout.write(self.style.ERROR(
+                        f'✗ Migration dependency error: {error_msg}\n'
+                        f'This indicates inconsistent migration history in the database.\n'
+                        f'Please run: python manage.py migrate --run-syncdb\n'
+                        f'Or use --skip-migrations to skip migrations and seed data anyway.'
+                    ))
+                else:
+                    self.stdout.write(self.style.ERROR(f'✗ Migration error: {e}'))
+                
+                self.stdout.write(self.style.WARNING(
+                    '\nYou can skip migrations and seed data anyway using: --skip-migrations'
+                ))
                 return
         else:
             self.stdout.write(self.style.WARNING('\n[Step 1/6] Skipping migrations'))
