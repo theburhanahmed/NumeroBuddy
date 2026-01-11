@@ -86,6 +86,9 @@ export default function RootLayout({
                     <SkipToContent />
                     <FocusVisibleStyles />
 
+                    {/* Global Navigation */}
+                    <Navigation />
+
                     {children}
 
                     {/* Global UI Elements */}

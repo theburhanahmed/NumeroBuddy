@@ -26,6 +26,7 @@ import { PageDescription } from '@/components/ui/page-description';
 import { useAuth } from '@/contexts/auth-context';
 import { reportAPI, peopleAPI } from '@/lib/numerology-api';
 import { GeneratedReport, Person, ReportTemplate } from '@/types';
+import { API_URL } from '@/lib/api-config';
 import { ReportBuilder } from '@/components/reports/report-builder';
 import { ReportTemplates } from '@/components/reports/report-templates';
 import { ReportComparison } from '@/components/reports/report-comparison';
@@ -98,7 +99,7 @@ export default function ReportsPage() {
     try {
       // Create a link to the PDF endpoint
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/reports/${reportId}/pdf/`, {
+      const response = await fetch(`${API_URL}/api/v1/reports/${reportId}/pdf/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

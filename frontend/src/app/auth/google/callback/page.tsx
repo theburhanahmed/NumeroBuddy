@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { authAPI } from '@/lib/api-client';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
+import { API_URL } from '@/lib/api-config';
 
 function GoogleCallbackContent() {
   const router = useRouter();
@@ -42,7 +43,7 @@ function GoogleCallbackContent() {
 
       try {
         // Send code to backend to exchange for access token and authenticate
-        const response = await fetch(`${API_URL}/auth/social/google/`, {
+        const response = await fetch(`${API_URL}/api/v1/auth/social/google/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
