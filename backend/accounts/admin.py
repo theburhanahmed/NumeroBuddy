@@ -8,7 +8,10 @@ from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken, EmailTemplate
+from .models import User, UserProfile, OTPCode, RefreshToken, DeviceToken, EmailTemplate, PasswordResetToken, Notification, AuditLog
+from .models_api_key import APIKey
+from .models_notification_prefs import NotificationPreference
+from .models_privacy import PrivacySettings
 from .email_service import render_email_template
 
 
@@ -339,3 +342,119 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         except Exception as e:
             messages.error(request, f'Error testing template: {str(e)}')
             return redirect('admin:accounts_emailtemplate_changelist')
+
+
+@admin.register(PasswordResetToken)
+class PasswordResetTokenAdmin(admin.ModelAdmin):
+    """Admin interface for PasswordResetToken model."""
+    
+    list_display = ['user', 'token', 'is_used', 'created_at', 'expires_at']
+    list_filter = ['is_used', 'created_at', 'expires_at']
+    search_fields = ['user__email', 'user__full_name', 'token']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('User', {'fields': ('user',)}),
+        ('Token', {'fields': ('token', 'is_used')}),
+        ('Expiration', {'fields': ('expires_at',)}),
+        ('Timestamps', {'fields': ('created_at',)}),
+    )
+    
+    readonly_fields = ['created_at']
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    """Admin interface for Notification model."""
+    
+    list_display = ['user', 'title', 'notification_type', 'is_read', 'is_sent', 'created_at']
+    list_filter = ['notification_type', 'is_read', 'is_sent', 'created_at']
+    search_fields = ['user__email', 'user__full_name', 'title', 'message']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('User', {'fields': ('user',)}),
+        ('Notification', {'fields': ('title', 'message', 'notification_type')}),
+        ('Status', {'fields': ('is_read', 'is_sent', 'read_at')}),
+        ('Data', {'fields': ('data',)}),
+        ('Timestamps', {'fields': ('created_at',)}),
+    )
+    
+    readonly_fields = ['created_at', 'read_at']
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    """Admin interface for AuditLog model."""
+    
+    list_display = ['user', 'action', 'resource_type', 'resource_id', 'ip_address', 'timestamp']
+    list_filter = ['action', 'resource_type', 'timestamp']
+    search_fields = ['user__email', 'user__full_name', 'resource_id', 'ip_address']
+    ordering = ['-timestamp']
+    
+    fieldsets = (
+        ('User', {'fields': ('user',)}),
+        ('Action', {'fields': ('action', 'resource_type', 'resource_id', 'details')}),
+        ('Request Info', {'fields': ('ip_address', 'user_agent')}),
+        ('Timestamps', {'fields': ('timestamp',)}),
+    )
+    
+    readonly_fields = ['timestamp']
+
+
+@admin.register(APIKey)
+class APIKeyAdmin(admin.ModelAdmin):
+    """Admin interface for APIKey model."""
+    
+    list_display = ['user', 'name', 'key_prefix', 'is_active', 'last_used', 'expires_at', 'created_at']
+    list_filter = ['is_active', 'created_at', 'expires_at']
+    search_fields = ['user__email', 'user__full_name', 'name', 'key', 'key_prefix']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('User', {'fields': ('user',)}),
+        ('Key Details', {'fields': ('name', 'key', 'key_prefix', 'is_active')}),
+        ('Usage', {'fields': ('last_used', 'expires_at')}),
+        ('Timestamps', {'fields': ('created_at',)}),
+    )
+    
+    readonly_fields = ['key', 'key_prefix', 'created_at']
+
+
+@admin.register(NotificationPreference)
+class NotificationPreferenceAdmin(admin.ModelAdmin):
+    """Admin interface for NotificationPreference model."""
+    
+    list_display = ['user', 'notification_type', 'channel', 'enabled', 'updated_at']
+    list_filter = ['notification_type', 'channel', 'enabled', 'updated_at']
+    search_fields = ['user__email', 'user__full_name']
+    ordering = ['-updated_at']
+    
+    fieldsets = (
+        ('User', {'fields': ('user',)}),
+        ('Preference', {'fields': ('notification_type', 'channel', 'enabled')}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at')}),
+    )
+    
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(PrivacySettings)
+class PrivacySettingsAdmin(admin.ModelAdmin):
+    """Admin interface for PrivacySettings model."""
+    
+    list_display = ['user', 'profile_visibility', 'gdpr_consent', 'privacy_policy_accepted', 'updated_at']
+    list_filter = ['profile_visibility', 'gdpr_consent', 'privacy_policy_accepted', 'updated_at']
+    search_fields = ['user__email', 'user__full_name']
+    ordering = ['-updated_at']
+    
+    fieldsets = (
+        ('User', {'fields': ('user',)}),
+        ('Data Sharing', {'fields': ('share_analytics', 'share_marketing', 'share_third_party')}),
+        ('Visibility', {'fields': ('profile_visibility',)}),
+        ('Data Retention', {'fields': ('data_retention_consent', 'data_retention_period_days')}),
+        ('GDPR', {'fields': ('gdpr_consent', 'gdpr_consent_date', 'privacy_policy_accepted', 'privacy_policy_version', 'privacy_policy_accepted_date')}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at')}),
+    )
+    
+    readonly_fields = ['created_at', 'updated_at']
