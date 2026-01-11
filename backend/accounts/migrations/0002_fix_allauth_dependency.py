@@ -12,5 +12,6 @@ class Migration(migrations.Migration):
         # This migration serves as a dependency fixer to resolve the inconsistent migration history
         # between the custom 'accounts' app and django-allauth 'account' app.
         # It ensures that both initial migrations are properly recognized as applied.
-        migrations.RunSQL("", ""),  # Empty operation, just to establish dependency
+        # Using RunPython with a no-op function instead of empty RunSQL for better compatibility
+        migrations.RunPython(lambda apps, schema_editor: None, lambda apps, schema_editor: None),
     ]

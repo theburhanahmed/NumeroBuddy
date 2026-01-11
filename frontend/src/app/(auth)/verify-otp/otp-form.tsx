@@ -56,7 +56,8 @@ export default function OTPForm({ email, phone }: OTPFormProps) {
         title: 'Success',
         description: 'Account verified successfully!',
       });
-      router.push('/dashboard');
+      // Redirect to dashboard with onboarding flag for new users
+      router.push('/dashboard?onboarding=true');
     } catch (error: any) {
       toast({
         title: 'Error',

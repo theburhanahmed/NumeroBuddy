@@ -78,7 +78,24 @@ const nextConfig = {
       ];
     }
     
+    // Configure Three.js shader support
+    config.module = config.module || {};
+    config.module.rules = config.module.rules || [];
+    
+    // Add rule for Three.js shader files
+    config.module.rules.push({
+      test: /\.(glsl|vs|fs|vert|frag)$/,
+      type: 'asset/source',
+      exclude: /node_modules/,
+    });
+
+    // Ensure Three.js and React Three Fiber work in browser
     if (!isServer) {
+      // Fix for Three.js in Next.js
+      config.resolve = config.resolve || {};
+      config.resolve.alias = config.resolve.alias || {};
+      config.resolve.alias.canvas = false;
+      
       // Optimize bundle splitting
       config.optimization = {
         ...config.optimization,
@@ -122,6 +139,13 @@ const nextConfig = {
               },
               priority: 10,
               minChunks: 2,
+              reuseExistingChunk: true,
+            },
+            // Separate chunk for Three.js and R3F
+            threejs: {
+              test: /[\\/]node_modules[\\/](three|@react-three)[\\/]/,
+              name: 'threejs',
+              priority: 25,
               reuseExistingChunk: true,
             },
           },

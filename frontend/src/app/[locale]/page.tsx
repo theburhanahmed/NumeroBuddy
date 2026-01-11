@@ -27,6 +27,7 @@ import { MobileFloatingParticles } from '@/components/cosmic/mobile-optimized-co
 import { useIsMobile } from '@/hooks/use-media-query';
 import { MagneticCard } from '@/components/magnetic/magnetic-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
+import { PerformanceMonitor } from '@/components/3d/performance-monitor';
 
 // #region agent log
 const logDebug = (message: string, data: any) => {
@@ -142,13 +143,17 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen">
+      {/* Performance Monitor (Dev Only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <PerformanceMonitor position="top-right" enabled={true} />
+      )}
       <AccessibleSpaceBackground />
       <LandingNav />
 
       {/* Mobile-optimized particles */}
       <MobileFloatingParticles count={isMobile ? 15 : 30} />
 
-      {/* ENHANCED COSMIC HERO SECTION */}
+      {/* ENHANCED COSMIC HERO SECTION - CSS base with optional WebGL enhancements */}
       <CosmicHero
         badge="✨ AI-Powered Cosmic Wisdom"
         heading="Unlock Your"
@@ -176,6 +181,8 @@ export default function Home() {
             label: 'Rating',
           },
         ]}
+        enableWebGL={true}
+        lifePathNumber={7}
       />
 
       {/* FEATURE CARDS */}
