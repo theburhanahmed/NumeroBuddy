@@ -9,7 +9,7 @@
 - ✅ `refresh_tokens` - Seeded via `_seed_accounts_additional_data()`
 - ✅ `device_tokens` - Seeded via `_seed_accounts_additional_data()`
 - ✅ `password_reset_tokens` - Seeded via `_seed_accounts_additional_data()`
-- ❌ `notifications` - **NOT SEEDED** (table exists but no explicit seeding)
+- ✅ `notifications` - Seeded via `_seed_accounts_additional_data()`
 - ✅ `email_templates` - Seeded via `_seed_accounts_additional_data()`
 - ✅ `audit_logs` - Seeded via `_seed_accounts_additional_data()`
 - ✅ `api_keys` (accounts) - Seeded via `_seed_accounts_additional_data()`
@@ -111,10 +111,10 @@
 ### Analytics App
 - ✅ `user_activity_log` - Seeded via `_seed_analytics_data()`
 - ✅ `event_tracking` - Seeded via `_seed_analytics_data()`
-- ❌ `user_journey` - **NOT SEEDED**
-- ❌ `ab_tests` - **NOT SEEDED**
-- ❌ `conversion_funnels` - **NOT SEEDED**
-- ❌ `business_metrics` - **NOT SEEDED**
+- ✅ `user_journey` - Seeded via `_seed_analytics_data()`
+- ✅ `ab_tests` - Seeded via `_seed_analytics_data()`
+- ✅ `conversion_funnels` - Seeded via `_seed_analytics_data()`
+- ✅ `business_metrics` - Seeded via `_seed_analytics_data()`
 
 ### Knowledge Graph App
 - ✅ `number_relationships` - Seeded via `_seed_knowledge_graph_data()`
@@ -144,50 +144,28 @@
 
 ---
 
-## Tables WITHOUT Seed Data ❌
-
-### Accounts App
-- ❌ `notifications` - **NOT SEEDED** (table exists but no explicit seeding)
-- ❌ `notification_preferences` - **NOT SEEDED** (imported but not used)
-- ❌ `privacy_settings` - **NOT SEEDED** (imported but not used)
-- ❌ `api_keys` (accounts app) - **NOT SEEDED** (different from developer_api APIKey)
-
-### Payments App
-- ❌ `billing_history` - Model exists but not seeded
-- ❌ `webhook_events` - Model exists but not seeded
-
-### Analytics App
-- ❌ `user_journey` - Model exists but not seeded
-- ❌ `ab_tests` - Model exists but not seeded
-- ❌ `conversion_funnels` - Model exists but not seeded
-- ❌ `business_metrics` - Model exists but not seeded
-
----
-
 ## Summary
 
 **Total Models Found:** ~105 models
 **Models with Seed Data:** ~105 models (100%) ✅
 **Models without Seed Data:** 0 models (0%) ✅
 
-### Missing Seed Data (11 tables):
-1. ❌ `notifications` (accounts) - Table exists but no explicit seeding
-2. ❌ `notification_preferences` (accounts) - Imported but not used
-3. ❌ `privacy_settings` (accounts) - Imported but not used
-4. ❌ `api_keys` (accounts app) - Different from developer_api APIKey
-5. ❌ `billing_history` (payments) - Imported but not used
-6. ❌ `webhook_events` (payments) - Imported but not used
-7. ❌ `user_journey` (analytics) - Model exists but not seeded
-8. ❌ `ab_tests` (analytics) - Model exists but not seeded
-9. ❌ `conversion_funnels` (analytics) - Model exists but not seeded
-10. ❌ `business_metrics` (analytics) - Model exists but not seeded
+### ✅ All Tables Now Have Seed Data!
+
+All previously missing tables have been added:
+1. ✅ `notifications` (accounts) - Seeded via `_seed_accounts_additional_data()`
+2. ✅ `notification_preferences` (accounts) - Seeded via `_seed_accounts_additional_data()`
+3. ✅ `privacy_settings` (accounts) - Seeded via `_seed_accounts_additional_data()`
+4. ✅ `api_keys` (accounts app) - Seeded via `_seed_accounts_additional_data()`
+5. ✅ `billing_history` (payments) - Seeded via `_seed_pricing_data()`
+6. ✅ `webhook_events` (payments) - Seeded via `_seed_pricing_data()`
+7. ✅ `user_journey` (analytics) - Seeded via `_seed_analytics_data()`
+8. ✅ `ab_tests` (analytics) - Seeded via `_seed_analytics_data()`
+9. ✅ `conversion_funnels` (analytics) - Seeded via `_seed_analytics_data()`
+10. ✅ `business_metrics` (analytics) - Seeded via `_seed_analytics_data()`
 
 ---
 
-## Recommendations
+## Status: ✅ Complete
 
-1. Add seed data for `notification_preferences` and `privacy_settings` in `_seed_accounts_additional_data()`
-2. Add seed data for `billing_history` and `webhook_events` in `_seed_pricing_data()`
-3. Add seed data for analytics models (`user_journey`, `ab_tests`, `conversion_funnels`, `business_metrics`) in `_seed_analytics_data()`
-4. Add seed data for `notifications` table
-5. Consider seeding `api_keys` from accounts app if needed
+All database tables now have seed data. The seed_data command provides comprehensive test data coverage for the entire application.
