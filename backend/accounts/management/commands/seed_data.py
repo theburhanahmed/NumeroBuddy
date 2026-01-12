@@ -3,6 +3,7 @@ Management command to seed all database tables with test data.
 Also ensures all migrations are run first.
 """
 import random
+import hashlib
 from datetime import datetime, timedelta, date
 from decimal import Decimal
 from django.core.management.base import BaseCommand
@@ -25,17 +26,25 @@ from numerology.models import (
     NumerologyProfile, DailyReading, CompatibilityCheck, Remedy,
     RemedyTracking, Person, PersonNumerologyProfile
 )
-from consultations.models import Expert, Consultation, ExpertAvailability
-from reports.models import ReportTemplate, GeneratedReport
-from rewards.models import Reward, Achievement, PointsTransaction
-from smart_calendar.models import NumerologyEvent, PersonalCycle, AuspiciousDate
+from consultations.models import (
+    Expert, Consultation, ExpertAvailability, ConsultationReview,
+    ExpertApplication, ExpertChatConversation, ExpertChatMessage
+)
+from reports.models import ReportTemplate, GeneratedReport, ScheduledReport, ReportComparison
+from rewards.models import Reward, Achievement, PointsTransaction, UserReward, UserAchievement
+from smart_calendar.models import NumerologyEvent, PersonalCycle, AuspiciousDate, CalendarReminder
 from dashboard.models import DashboardWidget, UserActivity, QuickInsight
 from ai_chat.models import AIConversation, AIMessage
-from social.models import Connection, SocialGroup
+from social.models import Connection, SocialGroup, Interaction
 from matchmaking.models import Match, MatchPreference
-from knowledge_graph.models import NumberRelationship, NumerologyPattern
+from knowledge_graph.models import NumberRelationship, NumerologyPattern, NumerologyRule
 from analytics.models import UserActivityLog, EventTracking
-from decisions.models import Decision, DecisionOutcome
+from decisions.models import Decision, DecisionOutcome, DecisionPattern
+from developer_api.models import APIKey as DeveloperAPIKey, APIUsage
+from meus.models import (
+    EntityProfile, EntityRelationship, EntityInfluence, UniverseEvent,
+    AssetProfile, CrossProfileAnalysisCache
+)
 
 
 User = get_user_model()
@@ -131,7 +140,7 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.WARNING('\n[Step 5/6] Seeding feature data (Numerology, Reports, etc.)...'))
             self._seed_numerology_data(users)
-            self._seed_consultations_data(users)
+            experts = self._seed_consultations_data(users)
             self._seed_reports_data(users)
             self.stdout.write(self.style.SUCCESS('✓ Feature data seeded'))
 
@@ -143,6 +152,13 @@ class Command(BaseCommand):
             self._seed_social_data(users)
             self._seed_analytics_data(users)
             self._seed_knowledge_graph_data()
+            self._seed_decisions_data(users)
+            self._seed_matchmaking_data(users)
+            self._seed_developer_api_data(users)
+            self._seed_meus_data(users)
+            self._seed_additional_consultations_data(users, experts)
+            self._seed_additional_reports_data(users)
+            self._seed_additional_rewards_data(users)
             self.stdout.write(self.style.SUCCESS('✓ Additional data seeded'))
 
         self.stdout.write(self.style.SUCCESS('\n' + '=' * 60))
@@ -398,35 +414,44 @@ class Command(BaseCommand):
 
     def _seed_consultations_data(self, users):
         """Seed consultation data."""
-        # Create experts
+        # Create experts (use get_or_create to handle existing experts)
         specialties = ['relationship', 'career', 'spiritual', 'health', 'general']
         experts = []
         for i, specialty in enumerate(specialties):
-            expert = Expert.objects.create(
-                name=f'Expert {specialty.title()}',
-                email=f'expert_{specialty}@test.com',
-                specialty=specialty,
-                experience_years=random.randint(5, 20),
-                rating=Decimal(str(round(random.uniform(4.0, 5.0), 2))),
-                bio=f'Experienced {specialty} numerology expert with {random.randint(5, 20)} years of practice.',
-                is_active=True,
-                verification_status='approved',
+            email = f'expert_{specialty}@test.com'
+            expert, created = Expert.objects.get_or_create(
+                email=email,
+                defaults={
+                    'name': f'Expert {specialty.title()}',
+                    'specialty': specialty,
+                    'experience_years': random.randint(5, 20),
+                    'rating': Decimal(str(round(random.uniform(4.0, 5.0), 2))),
+                    'bio': f'Experienced {specialty} numerology expert with {random.randint(5, 20)} years of practice.',
+                    'is_active': True,
+                    'verification_status': 'approved',
+                }
             )
             experts.append(expert)
 
         # Create consultations
+        consultations = []
         for user in users[:3]:
             expert = random.choice(experts)
-            Consultation.objects.create(
+            consultation, created = Consultation.objects.get_or_create(
                 user=user,
                 expert=expert,
-                consultation_type=random.choice(['video', 'chat', 'phone']),
-                scheduled_at=timezone.now() + timedelta(days=random.randint(1, 30)),
-                duration_minutes=30,
-                status=random.choice(['pending', 'confirmed', 'completed']),
-                price=Decimal(str(random.uniform(50.0, 200.0))),
-                payment_status='paid',
+                defaults={
+                    'consultation_type': random.choice(['video', 'chat', 'phone']),
+                    'scheduled_at': timezone.now() + timedelta(days=random.randint(1, 30)),
+                    'duration_minutes': 30,
+                    'status': random.choice(['pending', 'confirmed', 'completed']),
+                    'price': Decimal(str(random.uniform(50.0, 200.0))),
+                    'payment_status': 'paid',
+                }
             )
+            consultations.append(consultation)
+        
+        return experts
 
     def _seed_reports_data(self, users):
         """Seed report templates and generated reports."""
@@ -541,6 +566,27 @@ class Command(BaseCommand):
                 end_date=date.today().replace(month=12, day=31),
                 description='Current personal year cycle',
             )
+            
+            # Create auspicious dates
+            AuspiciousDate.objects.create(
+                user=user,
+                activity_type=random.choice(['wedding', 'business_start', 'travel']),
+                activity_description='Important activity',
+                auspicious_date=date.today() + timedelta(days=random.randint(30, 90)),
+                numerology_score=random.randint(7, 10),
+                reasoning='Favorable numerology alignment for this activity',
+            )
+            
+            # Create calendar reminders
+            CalendarReminder.objects.create(
+                user=user,
+                reminder_type=random.choice(['remedy', 'meditation', 'affirmation']),
+                title='Daily Reminder',
+                description='Important reminder',
+                reminder_date=date.today() + timedelta(days=1),
+                reminder_time='09:00:00',
+                numerology_context='Favorable day for practice',
+            )
 
     def _seed_dashboard_data(self, users):
         """Seed dashboard widgets and activities."""
@@ -608,6 +654,27 @@ class Command(BaseCommand):
                     user2=users[i+1],
                     defaults={'connection_type': 'friend', 'is_mutual': True}
                 )
+            
+            # Create interactions
+            for i in range(min(3, len(users) - 1)):
+                Interaction.objects.create(
+                    from_user=users[i],
+                    to_user=users[i+1],
+                    interaction_type=random.choice(['compatibility_shared', 'insight_shared']),
+                    metadata={},
+                )
+            
+            # Create social groups
+            if len(users) >= 3:
+                group, _ = SocialGroup.objects.get_or_create(
+                    name='Life Path 7 Community',
+                    group_type='life_path_7',
+                    defaults={
+                        'description': 'Group for people with Life Path 7',
+                        'created_by': users[0],
+                    }
+                )
+                group.members.add(*users[:3])
 
     def _seed_analytics_data(self, users):
         """Seed analytics data."""
@@ -638,14 +705,322 @@ class Command(BaseCommand):
                         number2=j,
                         defaults={
                             'relationship_type': random.choice(['compatible', 'challenging', 'neutral']),
+                            'strength': random.randint(5, 10),
                             'description': f'Relationship between {i} and {j}',
                         }
                     )
 
         # Create numerology patterns
-        NumerologyPattern.objects.create(
+        NumerologyPattern.objects.get_or_create(
             pattern_type='sequence',
-            pattern_data={'numbers': [11, 22, 33]},
-            description='Pattern involving master numbers 11, 22, 33',
-            significance='Master numbers represent heightened spiritual energy and potential.',
+            defaults={
+                'pattern_data': {'numbers': [11, 22, 33]},
+                'description': 'Pattern involving master numbers 11, 22, 33',
+                'significance': 'Master numbers represent heightened spiritual energy and potential.',
+            }
         )
+        
+        # Create numerology rules
+        NumerologyRule.objects.get_or_create(
+            rule_type='compatibility_rule',
+            rule_name='Life Path Compatibility',
+            defaults={
+                'rule_condition': {'life_path_numbers': [1, 5, 8]},
+                'rule_result': 'These life path numbers are highly compatible',
+                'examples': [{'number1': 1, 'number2': 5, 'compatibility': 'high'}],
+                'is_active': True,
+            }
+        )
+    
+    def _seed_additional_consultations_data(self, users, experts):
+        """Seed additional consultation-related data."""
+        # Get existing consultations
+        consultations = Consultation.objects.filter(user__in=users[:3])
+        
+        # Create consultation reviews for completed consultations
+        for consultation in consultations.filter(status='completed')[:2]:
+            ConsultationReview.objects.get_or_create(
+                consultation=consultation,
+                defaults={
+                    'rating': random.randint(4, 5),
+                    'review_text': 'Great consultation, very helpful insights!',
+                    'is_anonymous': False,
+                }
+            )
+        
+        # Create expert availability
+        for expert in experts:
+            for day in range(5):  # Monday to Friday
+                ExpertAvailability.objects.get_or_create(
+                    expert=expert,
+                    day_of_week=day,
+                    start_time='09:00:00',
+                    defaults={
+                        'end_time': '17:00:00',
+                        'timezone': 'UTC',
+                        'is_available': True,
+                    }
+                )
+        
+        # Create expert chat conversations
+        for user in users[:2]:
+            expert = random.choice(experts)
+            conversation, created = ExpertChatConversation.objects.get_or_create(
+                user=user,
+                expert=expert,
+                defaults={'status': 'active'}
+            )
+            if created:
+                # Create messages
+                ExpertChatMessage.objects.create(
+                    conversation=conversation,
+                    sender_type='user',
+                    sender_user=user,
+                    message_content='Hello, I have a question about my numerology reading.',
+                    message_type='text',
+                )
+                ExpertChatMessage.objects.create(
+                    conversation=conversation,
+                    sender_type='expert',
+                    message_content='Hello! I would be happy to help. What would you like to know?',
+                    message_type='text',
+                )
+
+    def _seed_additional_reports_data(self, users):
+        """Seed additional report data."""
+        # Get existing reports and persons
+        persons = Person.objects.filter(user__in=users[:3])
+        templates = ReportTemplate.objects.all()[:3]
+        
+        if persons.exists() and templates.exists():
+            # Create scheduled reports
+            for user in users[:2]:
+                person = persons.filter(user=user).first()
+                template = templates.first()
+                if person and template:
+                    ScheduledReport.objects.get_or_create(
+                        user=user,
+                        template=template,
+                        person=person,
+                        defaults={
+                            'schedule_frequency': 'monthly',
+                            'next_run_date': timezone.now() + timedelta(days=30),
+                            'is_active': True,
+                        }
+                    )
+            
+            # Create report comparisons
+            reports = GeneratedReport.objects.filter(user__in=users[:2])[:2]
+            if reports.count() >= 2:
+                report1, report2 = reports[0], reports[1]
+                ReportComparison.objects.get_or_create(
+                    user=report1.user,
+                    report1=report1,
+                    report2=report2,
+                    defaults={
+                        'comparison_data': {
+                            'similarities': ['Both have strong leadership qualities'],
+                            'differences': ['Different life path numbers'],
+                            'overall_score': 75,
+                        }
+                    }
+                )
+
+    def _seed_additional_rewards_data(self, users):
+        """Seed additional rewards data."""
+        rewards = Reward.objects.all()[:3]
+        achievements = Achievement.objects.all()[:3]
+        
+        # Create user rewards
+        for user in users[:3]:
+            if rewards.exists():
+                reward = random.choice(rewards)
+                UserReward.objects.get_or_create(
+                    user=user,
+                    reward=reward,
+                )
+        
+        # Create user achievements
+        for user in users[:3]:
+            if achievements.exists():
+                achievement = random.choice(achievements)
+                UserAchievement.objects.get_or_create(
+                    user=user,
+                    achievement=achievement,
+                )
+
+    def _seed_decisions_data(self, users):
+        """Seed decision engine data."""
+        for user in users[:3]:
+            # Create decisions
+            decision = Decision.objects.create(
+                user=user,
+                decision_text='Should I pursue a new career opportunity?',
+                decision_category=random.choice(['career', 'personal', 'financial']),
+                decision_date=date.today() + timedelta(days=random.randint(1, 30)),
+                personal_day_number=random.randint(1, 9),
+                personal_year_number=random.randint(1, 9),
+                personal_month_number=random.randint(1, 9),
+                timing_score=random.randint(6, 10),
+                timing_reasoning=['Favorable personal day', 'Good cycle alignment'],
+                recommendation='This is a favorable time for career decisions.',
+                suggested_actions=['Research the opportunity', 'Consult with mentors'],
+                is_made=random.choice([True, False]),
+            )
+            
+            # Create outcome for made decisions
+            if decision.is_made:
+                DecisionOutcome.objects.get_or_create(
+                    decision=decision,
+                    defaults={
+                        'outcome_type': random.choice(['positive', 'neutral', 'pending']),
+                        'outcome_description': 'Decision was made and is progressing well.',
+                        'satisfaction_score': random.randint(7, 10),
+                        'actual_date': date.today() - timedelta(days=random.randint(1, 10)),
+                    }
+                )
+            
+            # Create decision patterns
+            DecisionPattern.objects.create(
+                user=user,
+                pattern_type='best_timing_for_career',
+                pattern_data={'favorable_days': [1, 5, 8], 'cycles': [3, 6, 9]},
+                confidence_score=0.75,
+            )
+
+    def _seed_matchmaking_data(self, users):
+        """Seed matchmaking data."""
+        if len(users) >= 2:
+            # Create matches
+            for i in range(min(5, len(users) - 1)):
+                user1, user2 = users[i], users[i+1]
+                Match.objects.get_or_create(
+                    user1=user1,
+                    user2=user2,
+                    defaults={
+                        'match_score': random.randint(70, 95),
+                        'match_details': {
+                            'life_path_compatibility': random.randint(70, 100),
+                            'destiny_compatibility': random.randint(70, 100),
+                        },
+                        'is_mutual': random.choice([True, False]),
+                    }
+                )
+            
+            # Create match preferences
+            for user in users[:3]:
+                MatchPreference.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        'preferred_life_paths': [random.randint(1, 9) for _ in range(3)],
+                        'min_compatibility_score': 70,
+                        'age_range_min': 25,
+                        'age_range_max': 45,
+                    }
+                )
+
+    def _seed_developer_api_data(self, users):
+        """Seed developer API data."""
+        for user in users[:2]:
+            # Create API keys
+            api_key, created = DeveloperAPIKey.objects.get_or_create(
+                user=user,
+                key_name=f'{user.full_name} API Key',
+                defaults={'is_active': True, 'rate_limit': 100}
+            )
+            
+            # Create API usage records
+            if created:
+                for i in range(5):
+                    APIUsage.objects.create(
+                        api_key=api_key,
+                        endpoint='/api/v1/numerology/profile/',
+                        method='POST',
+                        response_status=200,
+                        response_time_ms=random.randint(100, 500),
+                    )
+
+    def _seed_meus_data(self, users):
+        """Seed MEUS (Multi-Entity Universe System) data."""
+        for user in users[:3]:
+            # Get user's numerology profile
+            try:
+                numerology_profile = user.numerology_profile
+            except:
+                continue
+            
+            # Create entity profiles
+            entity = EntityProfile.objects.create(
+                user=user,
+                entity_type='person',
+                name=f'Entity for {user.full_name}',
+                date_of_birth=date(1990, 5, 15),
+                relationship_type='family',
+                numerology_profile=numerology_profile,
+            )
+            
+            # Create entity relationships if we have multiple entities
+            entities = EntityProfile.objects.filter(user=user)
+            if entities.count() >= 2:
+                entity1, entity2 = entities[0], entities[1]
+                EntityRelationship.objects.get_or_create(
+                    entity_1=entity1,
+                    entity_2=entity2,
+                    defaults={
+                        'relationship_type': 'compatible',
+                        'compatibility_score': random.randint(70, 95),
+                    }
+                )
+            
+            # Create entity influence
+            if entities.exists():
+                EntityInfluence.objects.create(
+                    user=user,
+                    entity=entities.first(),
+                    influence_strength=random.randint(70, 100),
+                    impact_type='positive',
+                    impact_areas={'health': 80, 'career': 75},
+                    cycle_period='year',
+                    cycle_value=str(date.today().year),
+                )
+            
+            # Create universe events
+            UniverseEvent.objects.create(
+                user=user,
+                event_type=random.choice(['wedding', 'business_launch', 'travel']),
+                event_date=date.today() + timedelta(days=random.randint(30, 90)),
+                title='Important Life Event',
+                description='A significant event based on numerology cycles',
+                numerology_insight={'score': random.randint(7, 10)},
+                is_completed=False,
+            )
+            
+            # Create asset entity and profile
+            asset_entity = EntityProfile.objects.create(
+                user=user,
+                entity_type='asset',
+                name=f'Vehicle for {user.full_name}',
+                relationship_type='other',
+            )
+            
+            AssetProfile.objects.create(
+                entity=asset_entity,
+                asset_type='vehicle',
+                asset_number=str(random.randint(1000, 9999)),
+                numerology_vibration=random.randint(1, 9),
+                safety_score=random.randint(70, 100),
+                compatibility_with_owner=random.randint(70, 100),
+            )
+            
+            # Create cross-profile analysis cache
+            if entities.count() >= 2:
+                entity_ids_str = ''.join(sorted([str(e.id) for e in entities[:2]]))
+                entity_hash = hashlib.sha256(entity_ids_str.encode()).hexdigest()
+                CrossProfileAnalysisCache.objects.get_or_create(
+                    user=user,
+                    entity_combination_hash=entity_hash,
+                    defaults={
+                        'analysis_result': {'score': random.randint(70, 95)},
+                        'expires_at': timezone.now() + timedelta(days=30),
+                    }
+                )
