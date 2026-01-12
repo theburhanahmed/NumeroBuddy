@@ -1264,23 +1264,25 @@ class Command(BaseCommand):
         for user in users[:3]:
             person = persons.filter(user=user).first() if persons.exists() else None
             week_start = date.today() - timedelta(days=7)
-            WeeklyReport.objects.create(
+            WeeklyReport.objects.get_or_create(
                 user=user,
                 person=person,
                 week_start_date=week_start,
-                week_end_date=week_start + timedelta(days=6),
-                week_number=random.randint(1, 52),
-                year=date.today().year,
-                weekly_number=random.randint(1, 9),
-                personal_year_number=random.randint(1, 9),
-                personal_month_number=random.randint(1, 9),
-                main_theme='A week of growth and opportunities',
-                weekly_summary='Focus on communication and make important decisions',
-                daily_insights=[{'day': i, 'insight': f'Day {i} insight'} for i in range(7)],
-                weekly_trends={'trend': 'positive', 'energy': 'high'},
-                recommendations=['Focus on communication', 'Good time for decisions'],
-                challenges=['Time management', 'Balancing priorities'],
-                opportunities=['New connections', 'Career growth'],
+                defaults={
+                    'week_end_date': week_start + timedelta(days=6),
+                    'week_number': random.randint(1, 52),
+                    'year': date.today().year,
+                    'weekly_number': random.randint(1, 9),
+                    'personal_year_number': random.randint(1, 9),
+                    'personal_month_number': random.randint(1, 9),
+                    'main_theme': 'A week of growth and opportunities',
+                    'weekly_summary': 'Focus on communication and make important decisions',
+                    'daily_insights': [{'day': i, 'insight': f'Day {i} insight'} for i in range(7)],
+                    'weekly_trends': {'trend': 'positive', 'energy': 'high'},
+                    'recommendations': ['Focus on communication', 'Good time for decisions'],
+                    'challenges': ['Time management', 'Balancing priorities'],
+                    'opportunities': ['New connections', 'Career growth'],
+                }
             )
         
         # Yearly Reports
