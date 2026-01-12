@@ -19,7 +19,7 @@ from .email_service import render_email_template
 class UserAdmin(BaseUserAdmin):
     """Admin interface for User model."""
     
-    list_display = ['email', 'phone', 'full_name', 'is_verified', 'is_premium', 'is_active', 'created_at']
+    list_display = ['email', 'phone', 'full_name', 'is_verified', 'is_premium', 'subscription_plan', 'is_active', 'created_at']
     list_filter = ['is_verified', 'is_premium', 'is_active', 'subscription_plan', 'created_at']
     search_fields = ['email', 'phone', 'full_name']
     ordering = ['-created_at']
@@ -27,13 +27,96 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'phone', 'password')}),
         ('Personal Info', {'fields': ('full_name',)}),
-        ('Status', {'fields': ('is_active', 'is_verified', 'is_premium', 'subscription_plan', 'premium_expiry')}),
+        ('Subscription & Status', {
+            'fields': ('is_active', 'is_verified', 'is_premium', 'subscription_plan', 'premium_expiry'),
+            'description': 'Change subscription_plan here to test feature availability. This will sync with the user\'s Subscription model if it exists.'
+        }),
         ('Security', {'fields': ('failed_login_attempts', 'locked_until', 'last_login')}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('created_at', 'updated_at')}),
     )
     
     readonly_fields = ['created_at', 'updated_at', 'last_login']
+    
+    actions = ['set_plan_free', 'set_plan_basic', 'set_plan_premium', 'set_plan_elite']
+    
+    def set_plan_free(self, request, queryset):
+        """Set selected users to Free plan."""
+        count = queryset.update(subscription_plan='free', is_premium=False, premium_expiry=None)
+        # Also update related subscriptions if they exist
+        from payments.models import Subscription
+        for user in queryset:
+            if hasattr(user, 'subscription'):
+                user.subscription.status = 'canceled'
+                user.subscription.save(update_fields=['status'])
+        self.message_user(request, f'{count} user(s) set to Free plan.', messages.SUCCESS)
+    set_plan_free.short_description = "Set selected users to Free plan"
+    
+    def set_plan_basic(self, request, queryset):
+        """Set selected users to Basic plan."""
+        count = 0
+        for user in queryset:
+            user.subscription_plan = 'basic'
+            user.is_premium = True
+            user.save(update_fields=['subscription_plan', 'is_premium'])
+            # Sync with subscription if it exists
+            if hasattr(user, 'subscription'):
+                user.subscription.plan = 'basic'
+                user.subscription.status = 'active'
+                user.subscription.save(update_fields=['plan', 'status'])
+            count += 1
+        self.message_user(request, f'{count} user(s) set to Basic plan.', messages.SUCCESS)
+    set_plan_basic.short_description = "Set selected users to Basic plan"
+    
+    def set_plan_premium(self, request, queryset):
+        """Set selected users to Premium plan."""
+        count = 0
+        for user in queryset:
+            user.subscription_plan = 'premium'
+            user.is_premium = True
+            user.save(update_fields=['subscription_plan', 'is_premium'])
+            # Sync with subscription if it exists
+            if hasattr(user, 'subscription'):
+                user.subscription.plan = 'premium'
+                user.subscription.status = 'active'
+                user.subscription.save(update_fields=['plan', 'status'])
+            count += 1
+        self.message_user(request, f'{count} user(s) set to Premium plan.', messages.SUCCESS)
+    set_plan_premium.short_description = "Set selected users to Premium plan"
+    
+    def set_plan_elite(self, request, queryset):
+        """Set selected users to Elite plan."""
+        count = 0
+        for user in queryset:
+            user.subscription_plan = 'elite'
+            user.is_premium = True
+            user.save(update_fields=['subscription_plan', 'is_premium'])
+            # Sync with subscription if it exists
+            if hasattr(user, 'subscription'):
+                user.subscription.plan = 'elite'
+                user.subscription.status = 'active'
+                user.subscription.save(update_fields=['plan', 'status'])
+            count += 1
+        self.message_user(request, f'{count} user(s) set to Elite plan.', messages.SUCCESS)
+    set_plan_elite.short_description = "Set selected users to Elite plan"
+    
+    def save_model(self, request, obj, form, change):
+        """Override save to sync with subscription model."""
+        super().save_model(request, obj, form, change)
+        # Sync user subscription_plan with Subscription model if it exists
+        if hasattr(obj, 'subscription'):
+            subscription = obj.subscription
+            # Map user subscription_plan to subscription plan
+            # Only sync if it's a paid plan (basic, premium, elite)
+            if obj.subscription_plan in ['basic', 'premium', 'elite']:
+                subscription.plan = obj.subscription_plan
+                if obj.is_premium and subscription.status != 'active':
+                    subscription.status = 'active'
+                subscription.save(update_fields=['plan', 'status'])
+            elif obj.subscription_plan == 'free':
+                # If set to free, cancel the subscription
+                subscription.status = 'canceled'
+                subscription.save(update_fields=['status'])
     
     add_fieldsets = (
         (None, {
