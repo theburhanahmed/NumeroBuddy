@@ -796,27 +796,34 @@ class Command(BaseCommand):
                     message_type='text',
                 )
         
-        # Create expert applications
-        for i, expert in enumerate(experts[:2]):
+        # Create expert applications (ExpertApplication uses user, not expert)
+        # Note: We'll create applications for users who want to become experts
+        for user in users[:2]:
             ExpertApplication.objects.get_or_create(
-                expert=expert,
+                user=user,
                 defaults={
-                    'application_text': f'Application from {expert.name}',
+                    'name': user.full_name,
+                    'email': user.email or f'{user.full_name.lower().replace(" ", ".")}@example.com',
+                    'phone': f'+1{random.randint(1000000000, 9999999999)}',
+                    'specialty': random.choice(['relationship', 'career', 'spiritual', 'health', 'general']),
+                    'experience_years': random.randint(5, 20),
+                    'bio': f'Experienced numerology practitioner with {random.randint(5, 20)} years of practice.',
+                    'application_notes': f'Application from {user.full_name} to become an expert',
                     'status': random.choice(['pending', 'under_review', 'approved']),
-                    'submitted_at': timezone.now() - timedelta(days=random.randint(1, 30)),
                 }
             )
         
         # Create expert verification documents
-        applications = ExpertApplication.objects.filter(expert__in=experts[:2])
+        applications = ExpertApplication.objects.filter(user__in=users[:2])
         for application in applications:
-            ExpertVerificationDocument.objects.create(
-                expert=application.expert,
+            ExpertVerificationDocument.objects.get_or_create(
                 application=application,
-                document_type=random.choice(['certificate', 'license', 'education']),
-                document_name=f'{application.expert.name} Certificate',
-                description='Professional certification document',
-                is_verified=random.choice([True, False]),
+                document_type='certificate',
+                defaults={
+                    'document_name': f'{application.name} Certificate',
+                    'description': 'Professional certification document',
+                    'is_verified': random.choice([True, False]),
+                }
             )
         
         # Create expert unavailability
