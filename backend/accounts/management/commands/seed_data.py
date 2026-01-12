@@ -1282,76 +1282,118 @@ class Command(BaseCommand):
         
         # Soul Contract
         for profile in profiles[:3]:
-            SoulContract.objects.create(
+            contract_number = random.randint(1, 9)
+            contract_type = random.choice(['primary', 'secondary', 'karmic', 'soul_evolution'])
+            SoulContract.objects.get_or_create(
                 user=profile.user,
-                contract_number=random.randint(1, 9),
-                contract_type=random.choice(['primary', 'secondary', 'karmic', 'soul_evolution']),
-                description='Your soul contract involves helping others through numerology insights.',
-                lessons=['Patience', 'Compassion', 'Service'],
-                fulfillment_status=random.choice(['pending', 'in_progress', 'fulfilled']),
+                contract_number=contract_number,
+                contract_type=contract_type,
+                defaults={
+                    'description': 'Your soul contract involves helping others through numerology insights.',
+                    'lessons': ['Patience', 'Compassion', 'Service'],
+                    'fulfillment_status': random.choice(['pending', 'in_progress', 'fulfilled']),
+                }
             )
         
         # Karmic Timeline
         for profile in profiles[:3]:
-            KarmicTimeline.objects.create(
+            current_year = date.today().year
+            KarmicTimeline.objects.get_or_create(
                 user=profile.user,
-                timeline_data={
-                    'past_lives': [{'era': 'ancient', 'role': 'teacher'}],
-                    'current_life': {'purpose': 'service', 'lessons': ['compassion']},
-                    'future_potential': {'growth': 'spiritual', 'impact': 'high'},
-                },
-                karmic_cycles=[{'cycle': 1, 'theme': 'learning'}, {'cycle': 2, 'theme': 'teaching'}],
+                start_year=current_year - 5,
+                end_year=current_year + 5,
+                cycle_number=random.randint(1, 9),
+                defaults={
+                    'karmic_theme': random.choice(['Learning', 'Service', 'Transformation', 'Healing', 'Growth']),
+                    'lessons': ['Patience', 'Compassion', 'Service', 'Wisdom'],
+                    'is_current': True,
+                    'timeline_data': {
+                        'past_lives': [{'era': 'ancient', 'role': 'teacher'}],
+                        'current_life': {'purpose': 'service', 'lessons': ['compassion']},
+                        'future_potential': {'growth': 'spiritual', 'impact': 'high'},
+                    },
+                }
             )
         
         # Rebirth Cycle
         for profile in profiles[:3]:
-            RebirthCycle.objects.create(
+            current_year = date.today().year
+            RebirthCycle.objects.get_or_create(
                 user=profile.user,
-                cycle_number=random.randint(1, 9),
-                cycle_phase=random.choice(['beginning', 'middle', 'end']),
-                rebirth_insights='You are in a phase of spiritual renewal.',
-                cycle_duration_years=random.randint(7, 9),
+                rebirth_number=random.randint(1, 9),
+                start_year=current_year,
+                defaults={
+                    'end_year': current_year + 27,
+                    'duration_years': 27,
+                    'transformation_theme': random.choice(['Spiritual Awakening', 'Personal Growth', 'Service to Others', 'Creative Expression']),
+                    'spiritual_growth': 'You are in a phase of spiritual renewal and transformation. This cycle brings opportunities for deep inner work and alignment with your soul purpose.',
+                    'is_current': True,
+                }
             )
         
         # Predictive Cycle
         for user in users[:3]:
-            PredictiveCycle.objects.create(
+            cycle_type = random.choice(['nine_year', 'breakthrough', 'crisis', 'opportunity'])
+            year = date.today().year
+            PredictiveCycle.objects.get_or_create(
                 user=user,
-                cycle_type=random.choice(['nine_year', 'breakthrough', 'crisis', 'opportunity']),
-                year=date.today().year,
-                cycle_data={'number': random.randint(1, 9), 'phase': 'growth'},
+                cycle_type=cycle_type,
+                year=year,
+                defaults={
+                    'cycle_data': {'number': random.randint(1, 9), 'phase': 'growth'},
+                }
             )
         
         # Breakthrough Year
         for user in users[:3]:
-            BreakthroughYear.objects.create(
+            year = date.today().year + random.randint(0, 2)
+            BreakthroughYear.objects.get_or_create(
                 user=user,
-                year=date.today().year + random.randint(0, 2),
-                personal_year=random.randint(1, 9),
-                breakthrough_type=random.choice(['career', 'spiritual', 'personal']),
-                description='A year of major breakthroughs and transformations',
-                preparation='Focus on personal growth and opportunities',
+                year=year,
+                defaults={
+                    'personal_year': random.randint(1, 9),
+                    'breakthrough_type': random.choice(['career', 'spiritual', 'personal']),
+                    'description': 'A year of major breakthroughs and transformations',
+                    'preparation': 'Focus on personal growth and opportunities',
+                }
             )
         
         # Crisis Year
         for user in users[:3]:
-            CrisisYear.objects.create(
+            year = date.today().year + random.randint(1, 3)
+            CrisisYear.objects.get_or_create(
                 user=user,
-                year=date.today().year + random.randint(1, 3),
-                personal_year=random.randint(1, 9),
-                crisis_type=random.choice(['financial', 'relationship', 'health']),
-                severity=random.choice(['low', 'medium', 'high']),
-                guidance='Focus on stability and seek support during challenging times.',
+                year=year,
+                defaults={
+                    'personal_year': random.randint(1, 9),
+                    'crisis_type': random.choice(['financial', 'relationship', 'health']),
+                    'description': 'A challenging period that requires careful navigation and support.',
+                    'severity_level': random.choice(['low', 'medium', 'high']),
+                    'guidance': 'Focus on stability and seek support during challenging times.',
+                    'preparation_steps': ['Build emergency fund', 'Strengthen support network', 'Practice self-care'],
+                }
             )
         
         # Life Milestone
         for user in users[:3]:
-            LifeMilestone.objects.create(
+            milestone_type = random.choice(['career', 'relationship', 'spiritual'])
+            year = date.today().year + random.randint(1, 3)
+            # Calculate age based on user's birth date if available, otherwise use a default
+            try:
+                user_birth_date = user.userprofile.birth_date if hasattr(user, 'userprofile') and user.userprofile.birth_date else date(1990, 1, 1)
+                age = year - user_birth_date.year
+            except:
+                age = random.randint(25, 50)
+            LifeMilestone.objects.get_or_create(
                 user=user,
-                milestone_type=random.choice(['career', 'relationship', 'spiritual']),
-                predicted_date=date.today() + timedelta(days=random.randint(90, 365)),
-                significance='A significant life event that will shape your future',
-                numerology_context={'number': random.randint(1, 9), 'meaning': 'Transformation'},
+                milestone_type=milestone_type,
+                year=year,
+                defaults={
+                    'age': age,
+                    'significance': 'A significant life event that will shape your future',
+                    'life_path_number': random.randint(1, 9),
+                    'destiny_number': random.randint(1, 9),
+                }
             )
         
         # Generational Analysis
