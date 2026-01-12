@@ -1017,14 +1017,16 @@ class Command(BaseCommand):
             
             # Create entity influence
             if entities.exists():
-                EntityInfluence.objects.create(
+                EntityInfluence.objects.get_or_create(
                     user=user,
                     entity=entities.first(),
-                    influence_strength=random.randint(70, 100),
-                    impact_type='positive',
-                    impact_areas={'health': 80, 'career': 75},
                     cycle_period='year',
                     cycle_value=str(date.today().year),
+                    defaults={
+                        'influence_strength': random.randint(70, 100),
+                        'impact_type': 'positive',
+                        'impact_areas': {'health': 80, 'career': 75},
+                    }
                 )
             
             # Create universe events

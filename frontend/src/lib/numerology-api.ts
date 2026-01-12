@@ -707,6 +707,14 @@ export interface YearlyReport {
 // API methods
 export const numerologyAPI = {
   /**
+   * Health check endpoint.
+   */
+  async healthCheck(): Promise<{ status: string; message: string }> {
+    const response = await apiClient.get('/api/v1/health/');
+    return response.data;
+  },
+
+  /**
    * Calculate numerology profile for the current user.
    */
   async calculateProfile(system: 'pythagorean' | 'chaldean' = 'pythagorean'): Promise<{
@@ -751,6 +759,16 @@ export const numerologyAPI = {
       // Re-throw other errors
       throw error;
     }
+  },
+
+  /**
+   * Export birth chart as PDF.
+   */
+  async exportBirthChartPdf(): Promise<Blob> {
+    const response = await apiClient.get('/api/v1/numerology/birth-chart/pdf/', {
+      responseType: 'blob',
+    });
+    return response.data;
   },
 
   /**
@@ -861,6 +879,16 @@ export const numerologyAPI = {
    */
   async getFullNumerologyReport(): Promise<FullNumerologyReport> {
     const response = await apiClient.get('/api/v1/numerology/full-report/');
+    return response.data;
+  },
+
+  /**
+   * Export full numerology report as PDF.
+   */
+  async exportFullReportPdf(): Promise<Blob> {
+    const response = await apiClient.get('/api/v1/numerology/full-report/pdf/', {
+      responseType: 'blob',
+    });
     return response.data;
   },
 
@@ -1134,6 +1162,30 @@ export const numerologyAPI = {
   }> {
     const params = forecastYears ? { forecast_years: forecastYears } : {};
     const response = await apiClient.get('/api/v1/numerology/predictive/', { params });
+    return response.data;
+  },
+
+  /**
+   * Get detailed pinnacles analysis.
+   */
+  async getPinnaclesDetailed(): Promise<any> {
+    const response = await apiClient.get('/api/v1/numerology/pinnacles/detailed/');
+    return response.data;
+  },
+
+  /**
+   * Get pinnacles timeline.
+   */
+  async getPinnaclesTimeline(): Promise<any> {
+    const response = await apiClient.get('/api/v1/numerology/pinnacles/timeline/');
+    return response.data;
+  },
+
+  /**
+   * Get challenge remedies.
+   */
+  async getChallengeRemedies(): Promise<any> {
+    const response = await apiClient.get('/api/v1/numerology/challenges/remedies/');
     return response.data;
   },
 
@@ -2452,6 +2504,69 @@ export const assetNumerologyAPI = {
   },
 
   /**
+   * Optimize business name
+   */
+  optimizeBusinessName: async (data: {
+    current_name: string;
+    target_vibration?: number;
+    industry?: string;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/business/optimize-name/', data);
+    return response.data;
+  },
+
+  /**
+   * Calculate launch dates
+   */
+  calculateLaunchDates: async (data: {
+    business_name: string;
+    start_date: string;
+    end_date: string;
+    preferred_month?: number;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/business/launch-dates/', data);
+    return response.data;
+  },
+
+  /**
+   * Analyze business cycles
+   */
+  analyzeBusinessCycles: async (data: {
+    business_name: string;
+    registration_date?: string;
+    start_year?: number;
+    end_year?: number;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/business/cycles/', data);
+    return response.data;
+  },
+
+  /**
+   * Calculate financial timing
+   */
+  calculateFinancialTiming: async (data: {
+    business_name: string;
+    birth_date?: string;
+    transaction_type: string;
+    start_date: string;
+    end_date: string;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/business/financial-timing/', data);
+    return response.data;
+  },
+
+  /**
+   * Analyze team compatibility
+   */
+  analyzeTeamCompatibility: async (data: {
+    team_members: Array<{ name: string; birth_date: string; role?: string }>;
+    business_name?: string;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/business/team-analysis/', data);
+    return response.data;
+  },
+
+  /**
    * Calculate phone numerology (asset version)
    */
   calculatePhoneAsset: async (data: { phone_number: string }) => {
@@ -2671,6 +2786,67 @@ export const nameCorrectionAPI = {
     cultural_context?: string;
   }) => {
     const response = await apiClient.post('/api/v1/numerology/name-correction/analyze/', data);
+    return response.data;
+  },
+
+  /**
+   * Generate name suggestions
+   */
+  generateNameSuggestions: async (data: {
+    current_name: string;
+    target_vibration?: number;
+    gender?: string;
+    cultural_context?: string;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/name/suggestions/', data);
+    return response.data;
+  },
+
+  /**
+   * Optimize name vibration
+   */
+  optimizeNameVibration: async (data: {
+    name: string;
+    target_numbers?: number[];
+    avoid_numbers?: number[];
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/name/optimize/', data);
+    return response.data;
+  },
+
+  /**
+   * Analyze phonetic compatibility
+   */
+  analyzePhoneticCompatibility: async (data: {
+    name_1: string;
+    name_2: string;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/name/phonetic-analysis/', data);
+    return response.data;
+  },
+
+  /**
+   * Calculate name change timing
+   */
+  calculateNameChangeTiming: async (data: {
+    current_name: string;
+    new_name: string;
+    birth_date: string;
+    start_date: string;
+    end_date: string;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/name/change-timing/', data);
+    return response.data;
+  },
+
+  /**
+   * Compare name variations
+   */
+  compareNameVariations: async (data: {
+    name_variations: string[];
+    birth_date?: string;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/name/compare/', data);
     return response.data;
   },
 };
@@ -3063,6 +3239,62 @@ export const enhancedCyclesAPI = {
   },
 
   /**
+   * Analyze essence transitions
+   */
+  analyzeEssenceTransitions: async (data: {
+    birth_date: string;
+    start_year?: number;
+    end_year?: number;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/essence-transitions/', data);
+    return response.data;
+  },
+
+  /**
+   * Forecast essence trends
+   */
+  forecastEssenceTrends: async (data: {
+    birth_date: string;
+    years_ahead?: number;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/essence-forecast/', data);
+    return response.data;
+  },
+
+  /**
+   * Get cycle transitions
+   */
+  getCycleTransitions: async (params?: {
+    start_year?: number;
+    end_year?: number;
+  }) => {
+    const response = await apiClient.get('/api/v1/numerology/cycle-transitions/', { params });
+    return response.data;
+  },
+
+  /**
+   * Get cycle alerts
+   */
+  getCycleAlerts: async (params?: {
+    days_ahead?: number;
+    alert_types?: string[];
+  }) => {
+    const response = await apiClient.get('/api/v1/numerology/cycle-alerts/', { params });
+    return response.data;
+  },
+
+  /**
+   * Get personal hour
+   */
+  getPersonalHour: async (params?: {
+    date?: string;
+    hour?: number;
+  }) => {
+    const response = await apiClient.get('/api/v1/numerology/personal-hour/', { params });
+    return response.data;
+  },
+
+  /**
    * Get cycle timeline
    */
   getCycleTimeline: async (params?: { start_year?: number; end_year?: number }) => {
@@ -3089,6 +3321,54 @@ export const enhancedCyclesAPI = {
     target_year: number;
   }) => {
     const response = await apiClient.post('/api/v1/numerology/cycle-compatibility/', data);
+    return response.data;
+  },
+
+  /**
+   * Get detailed compatibility breakdown
+   */
+  getDetailedCompatibility: async (data: {
+    profile_1: any;
+    profile_2: any;
+    relationship_type?: string;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/compatibility/detailed/', data);
+    return response.data;
+  },
+
+  /**
+   * Get relationship timeline predictions
+   */
+  getCompatibilityTimeline: async (data: {
+    profile_1: any;
+    profile_2: any;
+    start_date?: string;
+    years_ahead?: number;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/compatibility/timeline/', data);
+    return response.data;
+  },
+
+  /**
+   * Get conflict resolution guidance
+   */
+  getConflictResolution: async (data: {
+    profile_1: any;
+    profile_2: any;
+    conflict_type?: string;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/compatibility/conflict-resolution/', data);
+    return response.data;
+  },
+
+  /**
+   * Analyze communication style
+   */
+  analyzeCommunicationStyle: async (data: {
+    profile_1: any;
+    profile_2: any;
+  }) => {
+    const response = await apiClient.post('/api/v1/numerology/compatibility/communication/', data);
     return response.data;
   },
 
