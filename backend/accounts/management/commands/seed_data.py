@@ -423,13 +423,14 @@ class Command(BaseCommand):
                         }
                     )
             
-            # Create compatibility checks
+            # Create compatibility checks (one per relationship type)
+            relationship_type = random.choice(['romantic', 'business', 'friendship', 'family'])
             CompatibilityCheck.objects.get_or_create(
                 user=user,
                 partner_name='Test Partner',
                 partner_birth_date=date(1990, 6, 20),
+                relationship_type=relationship_type,
                 defaults={
-                    'relationship_type': random.choice(['romantic', 'business', 'friendship', 'family']),
                     'compatibility_score': random.randint(60, 100),
                     'strengths': ['Communication', 'Trust'],
                     'challenges': ['Different interests'],
