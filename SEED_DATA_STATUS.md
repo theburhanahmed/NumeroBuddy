@@ -12,15 +12,15 @@
 - ❌ `notifications` - **NOT SEEDED** (table exists but no explicit seeding)
 - ✅ `email_templates` - Seeded via `_seed_accounts_additional_data()`
 - ✅ `audit_logs` - Seeded via `_seed_accounts_additional_data()`
-- ✅ `api_keys` (accounts) - Not explicitly seeded
-- ❌ `notification_preferences` - **NOT SEEDED** (imported but not used)
-- ❌ `privacy_settings` - **NOT SEEDED** (imported but not used)
+- ✅ `api_keys` (accounts) - Seeded via `_seed_accounts_additional_data()`
+- ✅ `notification_preferences` - Seeded via `_seed_accounts_additional_data()`
+- ✅ `privacy_settings` - Seeded via `_seed_accounts_additional_data()`
 
 ### Payments App
 - ✅ `subscriptions` - Seeded via `_seed_pricing_data()`
 - ✅ `payments` - Seeded via `_seed_pricing_data()`
-- ❌ `billing_history` - **NOT SEEDED** (imported but not used)
-- ❌ `webhook_events` - **NOT SEEDED** (imported but not used)
+- ✅ `billing_history` - Seeded via `_seed_pricing_data()`
+- ✅ `webhook_events` - Seeded via `_seed_pricing_data()`
 
 ### Feature Flags App
 - ✅ `feature_flags` - Seeded via `initialize_feature_flags` command
