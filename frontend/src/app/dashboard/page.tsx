@@ -27,7 +27,9 @@ import { ChaldeanInsightsCard } from '@/components/numerology/ChaldeanInsightsCa
 import { ZodiacPlanetCard } from '@/components/numerology/ZodiacPlanetCard';
 import { LoShuGridVisualization } from '@/components/numerology/LoShuGridVisualization';
 import { QuickActions } from '@/components/dashboard/quick-actions';
+import { QuickActionsWidget } from '@/components/dashboard/quick-actions-widget';
 import { Insights } from '@/components/dashboard/insights';
+import { InsightsWidget } from '@/components/dashboard/insights-widget';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
 import { Recommendations } from '@/components/dashboard/recommendations';
 import { Rewards } from '@/components/dashboard/rewards';
@@ -42,7 +44,7 @@ export default function Dashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  const { isOnboardingComplete, showOnboarding, triggerOnboarding } = useOnboarding();
+  const { isOnboardingComplete, showOnboarding, triggerOnboarding, dismissOnboarding } = useOnboarding();
   const { openChat } = useAIChat();
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
@@ -58,9 +60,9 @@ export default function Dashboard() {
   // Update showOnboarding when isOnboardingComplete changes
   useEffect(() => {
     if (isOnboardingComplete) {
-      setShowOnboarding(false);
+      dismissOnboarding();
     }
-  }, [isOnboardingComplete]);
+  }, [isOnboardingComplete, dismissOnboarding]);
 
   // Show tour for first-time dashboard visitors
   useEffect(() => {
