@@ -354,26 +354,6 @@ class Command(BaseCommand):
                             'processed': False,
                         }
                     )
-        
-        # Webhook Events
-        for user in users[:3]:
-            if user.subscription_plan in ['basic', 'premium', 'elite']:
-                stripe_event_id = f'evt_{random.randint(100000, 999999)}'
-                WebhookEvent.objects.get_or_create(
-                    stripe_event_id=stripe_event_id,
-                    defaults={
-                        'event_type': 'payment_intent.succeeded',
-                        'payload': {
-                            'id': stripe_event_id,
-                            'object': 'payment_intent',
-                            'amount': int(PRICING.get(user.subscription_plan, 0) * 100),
-                            'currency': 'usd',
-                            'customer': str(user.id),
-                            'status': 'succeeded',
-                        },
-                        'processed': False,
-                    }
-                )
 
     def _seed_numerology_data(self, users):
         """Seed numerology profiles and related data."""
