@@ -53,7 +53,7 @@ pycparser==2.22
 
 # Build dependencies for cryptography
 setuptools==75.1.0
-wheel==0.44.0
+wheel==0.45.1
 
 # Utilities
 python-dateutil==2.9.0.post0
