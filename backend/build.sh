@@ -310,9 +310,66 @@ PYTHON_SCRIPT
 # Run migrations with error handling
 python manage.py migrate --no-input --run-syncdb || echo "Warning: Some migrations may have failed, continuing..."
 
-# Ensure all accounts migrations are fully applied
+# Ensure all accounts migrations are fully applied (with fake option for existing tables)
 echo "Ensuring all accounts migrations are fully applied..."
-python manage.py migrate accounts --no-input
+python << 'PYTHON_SCRIPT'
+import os
+import sys
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'numerai.settings.production')
+django.setup()
+
+from django.db import connection
+from django.core.management import call_command
+
+cursor = connection.cursor()
+
+# Check if notifications table exists but migration isn't applied
+cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'notifications')")
+notifications_exists = cursor.fetchone()[0]
+
+cursor.execute("""
+    SELECT COUNT(*) FROM django_migrations 
+    WHERE app = 'accounts' AND name = '0003_notification'
+""")
+has_0003 = cursor.fetchone()[0] > 0
+
+if notifications_exists and not has_0003:
+    print("  → Notifications table exists but migration not marked, faking it...")
+    try:
+        call_command('migrate', 'accounts', '0003_notification', '--fake', verbosity=1, interactive=False)
+        print("  ✓ Faked accounts.0003_notification")
+    except Exception as e:
+        print(f"  ⚠ Failed to fake 0003: {e}")
+
+# Check if email_templates table exists but migration isn't applied
+cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'email_templates')")
+email_templates_exists = cursor.fetchone()[0]
+
+cursor.execute("""
+    SELECT COUNT(*) FROM django_migrations 
+    WHERE app = 'accounts' AND name = '0004_emailtemplate'
+""")
+has_0004 = cursor.fetchone()[0] > 0
+
+if email_templates_exists and not has_0004:
+    print("  → Email templates table exists but migration not marked, faking it...")
+    try:
+        call_command('migrate', 'accounts', '0004_emailtemplate', '--fake', verbosity=1, interactive=False)
+        print("  ✓ Faked accounts.0004_emailtemplate")
+    except Exception as e:
+        print(f"  ⚠ Failed to fake 0004: {e}")
+
+# Now run migrate accounts normally
+print("  → Running migrate accounts...")
+try:
+    call_command('migrate', 'accounts', verbosity=1, interactive=False)
+    print("  ✓ Accounts migrations completed")
+except Exception as e:
+    print(f"  ⚠ Migrate accounts failed: {e}")
+    # Don't exit - let the build continue
+PYTHON_SCRIPT
 
 # Verify critical tables exist (using actual db_table names from models)
 echo "Verifying critical database tables..."
