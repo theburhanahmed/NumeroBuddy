@@ -1,536 +1,466 @@
-# NumerAI Deployment Guide - Render.com Staging
+# Deployment Guide: Railway, Render, and Fly.io
 
-This guide provides step-by-step instructions for deploying NumerAI Sprint 1 to Render.com staging environment.
+This guide covers deploying the NumerAI Django backend to Railway, Render, and Fly.io platforms.
 
-## Table of Contents
-1. [Prerequisites](#prerequisites)
-2. [Cost Estimate](#cost-estimate)
-3. [Account Setup](#account-setup)
-4. [Database Setup](#database-setup)
-5. [Redis Setup](#redis-setup)
-6. [Backend Deployment](#backend-deployment)
-7. [Celery Worker Setup](#celery-worker-setup)
-8. [Frontend Deployment](#frontend-deployment)
-9. [Post-Deployment Verification](#post-deployment-verification)
-10. [Troubleshooting](#troubleshooting)
+## 📋 Prerequisites
 
----
+- Git repository with your code
+- PostgreSQL database (provided by platform or external)
+- Redis instance (for caching and Celery)
+- Environment variables configured
+- Domain name (optional, for custom domains)
 
-## Prerequisites
+## 🔧 Common Environment Variables
 
-- GitHub account with NumerAI repository
-- Render.com account (free tier available)
-- Git installed locally
-- Basic understanding of environment variables
-
----
-
-## Cost Estimate
-
-**Monthly Cost for Staging (Starter Plans):**
-- PostgreSQL Database: $7/month
-- Redis Instance: $10/month
-- Django Backend (Web Service): $7/month
-- Celery Worker: $7/month
-- Next.js Frontend (Web Service): $7/month
-
-**Total: ~$38/month**
-
-**Free Tier Option:**
-- You can use Render's free tier for testing, but services will spin down after 15 minutes of inactivity
-- Free tier has limitations: 512MB RAM, shared CPU, slower cold starts
-
----
-
-## Account Setup
-
-### Step 1: Create Render.com Account
-
-1. Go to https://render.com
-2. Click "Get Started" or "Sign Up"
-3. Sign up with GitHub (recommended for easier deployment)
-4. Verify your email address
-
-### Step 2: Connect GitHub Repository
-
-1. In Render Dashboard, click "New +"
-2. Select "Blueprint"
-3. Connect your GitHub account if not already connected
-4. Grant Render access to your NumerAI repository
-
----
-
-## Database Setup
-
-### Step 3: Create PostgreSQL Database
-
-1. In Render Dashboard, click "New +" → "PostgreSQL"
-2. Configure database:
-   - **Name**: `numerai-postgres`
-   - **Database**: `numerai`
-   - **User**: `numerai`
-   - **Region**: Oregon (us-west)
-   - **PostgreSQL Version**: 14
-   - **Plan**: Starter ($7/month)
-
-3. Click "Create Database"
-4. Wait 2-3 minutes for database to be ready
-5. Copy the **Internal Database URL** (starts with `postgresql://`)
-6. Save this URL - you'll need it for backend configuration
-
-**Important**: Use the **Internal Database URL** for better performance and security.
-
----
-
-## Redis Setup
-
-### Step 4: Create Redis Instance
-
-1. In Render Dashboard, click "New +" → "Redis"
-2. Configure Redis:
-   - **Name**: `numerai-redis`
-   - **Region**: Oregon (us-west) - same as database
-   - **Plan**: Starter ($10/month)
-   - **Maxmemory Policy**: allkeys-lru
-
-3. Click "Create Redis"
-4. Wait 1-2 minutes for Redis to be ready
-5. Copy the **Internal Redis URL** (starts with `redis://`)
-6. Save this URL - you'll need it for backend and Celery
-
----
-
-## Backend Deployment
-
-### Step 5: Deploy Django Backend
-
-1. In Render Dashboard, click "New +" → "Web Service"
-2. Connect to your GitHub repository
-3. Configure web service:
-   - **Name**: `numerai-backend`
-   - **Region**: Oregon (us-west)
-   - **Branch**: `main`
-   - **Root Directory**: `backend`
-   - **Runtime**: Python 3
-   - **Build Command**: `./build.sh`
-   - **Start Command**: `gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 numerai.wsgi:application`
-   - **Plan**: Starter ($7/month)
-
-4. Add Environment Variables (click "Advanced" → "Add Environment Variable"):
-
-   ```
-   PYTHON_VERSION = 3.11.0
-   DJANGO_SETTINGS_MODULE = numerai.settings.production
-   SECRET_KEY = <click "Generate" for random value>
-   DEBUG = False
-   ALLOWED_HOSTS = numerai-backend.onrender.com
-   DATABASE_URL = <paste Internal Database URL from Step 3>
-   REDIS_URL = <paste Internal Redis URL from Step 4>
-   CELERY_BROKER_URL = <paste Internal Redis URL from Step 4>
-   CELERY_RESULT_BACKEND = <paste Internal Redis URL from Step 4>
-   CORS_ALLOWED_ORIGINS = https://numerai-frontend.onrender.com
-   EMAIL_BACKEND = django.core.mail.backends.console.EmailBackend
-   DEFAULT_FROM_EMAIL = noreply@numerai.app
-   ```
-
-5. Add Health Check Path:
-   - **Health Check Path**: `/api/v1/health/`
-
-6. Click "Create Web Service"
-7. Wait 5-10 minutes for initial deployment
-8. Monitor build logs for any errors
-
-**Expected Output:**
-- Build logs should show: "Installing dependencies..." → "Collecting static files..." → "Running migrations..." → "Build completed successfully!"
-- Service should show "Live" status with green indicator
-
----
-
-## Celery Worker Setup
-
-### Step 6: Deploy Celery Worker
-
-1. In Render Dashboard, click "New +" → "Background Worker"
-2. Connect to your GitHub repository
-3. Configure worker:
-   - **Name**: `numerai-celery-worker`
-   - **Region**: Oregon (us-west)
-   - **Branch**: `main`
-   - **Root Directory**: `backend`
-   - **Runtime**: Python 3
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `celery -A numerai worker -l info`
-   - **Plan**: Starter ($7/month)
-
-4. Add Environment Variables (same as backend except CORS):
-
-   ```
-   PYTHON_VERSION = 3.11.0
-   DJANGO_SETTINGS_MODULE = numerai.settings.production
-   SECRET_KEY = <same as backend>
-   DATABASE_URL = <same as backend>
-   REDIS_URL = <same as backend>
-   CELERY_BROKER_URL = <same as backend>
-   CELERY_RESULT_BACKEND = <same as backend>
-   ```
-
-5. Click "Create Background Worker"
-6. Wait 3-5 minutes for deployment
-7. Check logs to verify Celery is running: "celery@... ready"
-
----
-
-## Frontend Deployment
-
-### Step 7: Deploy Next.js Frontend
-
-1. In Render Dashboard, click "New +" → "Web Service"
-2. Connect to your GitHub repository
-3. Configure web service:
-   - **Name**: `numerai-frontend`
-   - **Region**: Oregon (us-west)
-   - **Branch**: `main`
-   - **Root Directory**: `frontend`
-   - **Runtime**: Node
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
-   - **Plan**: Starter ($7/month)
-
-4. Add Environment Variables:
-
-   ```
-   NODE_VERSION = 18.17.0
-   NEXT_PUBLIC_API_URL = https://numerai-backend.onrender.com/api/v1
-   ```
-
-5. Click "Create Web Service"
-6. Wait 5-10 minutes for initial deployment
-7. Monitor build logs for any errors
-
-**Expected Output:**
-- Build logs should show: "Installing dependencies..." → "Building Next.js..." → "Build completed"
-- Service should show "Live" status
-
----
-
-## Post-Deployment Verification
-
-### Step 8: Verify Deployment
-
-#### 8.1 Backend Health Check
-
-1. Open browser and navigate to:
-   ```
-   https://numerai-backend.onrender.com/api/v1/health/
-   ```
-
-2. Expected response:
-   ```json
-   {
-     "status": "healthy",
-     "timestamp": "2025-11-10T..."
-   }
-   ```
-
-#### 8.2 API Documentation
-
-1. Navigate to:
-   ```
-   https://numerai-backend.onrender.com/api/schema/swagger-ui/
-   ```
-
-2. You should see the interactive API documentation with all 8 authentication endpoints
-
-#### 8.3 Frontend Access
-
-1. Navigate to:
-   ```
-   https://numerai-frontend.onrender.com
-   ```
-
-2. You should see the NumerAI landing page with Login and Register buttons
-
-#### 8.4 Test Authentication Flow
-
-1. Click "Register" on frontend
-2. Fill in registration form:
-   - Full Name: Test User
-   - Email: test@example.com
-   - Password: TestPass123
-   - Confirm Password: TestPass123
-
-3. Click "Create account"
-4. Check backend logs for OTP email (console backend)
-5. Copy 6-digit OTP from logs
-6. Enter OTP on verification page
-7. Should redirect to dashboard
-
-#### 8.5 Database Verification
-
-1. In Render Dashboard, go to PostgreSQL database
-2. Click "Connect" → "External Connection"
-3. Use provided credentials to connect with psql or pgAdmin
-4. Run query:
-   ```sql
-   SELECT COUNT(*) FROM users;
-   ```
-5. Should show 1 user (the test user you created)
-
-#### 8.6 Redis Verification
-
-1. In Render Dashboard, go to Redis instance
-2. Check "Metrics" tab
-3. Should show connection activity from backend and Celery
-
-#### 8.7 Celery Worker Verification
-
-1. In Render Dashboard, go to Celery worker
-2. Check logs
-3. Should see: "celery@... ready" and periodic heartbeat messages
-
----
-
-## Update Backend CORS Settings
-
-### Step 9: Update CORS After Frontend Deployment
-
-After frontend is deployed and you have the actual URL:
-
-1. Go to Backend web service in Render Dashboard
-2. Click "Environment"
-3. Update `CORS_ALLOWED_ORIGINS` with actual frontend URL:
-   ```
-   CORS_ALLOWED_ORIGINS = https://numerai-frontend.onrender.com
-   ```
-4. Click "Save Changes"
-5. Backend will automatically redeploy
-
----
-
-## Custom Domain Setup (Optional)
-
-### Step 10: Add Custom Domain
-
-If you have a custom domain:
-
-1. **For Backend**:
-   - Go to Backend web service → "Settings" → "Custom Domain"
-   - Add domain: `api.yourdomain.com`
-   - Update DNS with provided CNAME record
-   - Update `ALLOWED_HOSTS` environment variable
-
-2. **For Frontend**:
-   - Go to Frontend web service → "Settings" → "Custom Domain"
-   - Add domain: `app.yourdomain.com`
-   - Update DNS with provided CNAME record
-   - Update backend `CORS_ALLOWED_ORIGINS`
-
----
-
-## Environment Variables Reference
-
-### Backend Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `PYTHON_VERSION` | Python runtime version | `3.11.0` |
-| `DJANGO_SETTINGS_MODULE` | Django settings module | `numerai.settings.production` |
-| `SECRET_KEY` | Django secret key | Auto-generated |
-| `DEBUG` | Debug mode | `False` |
-| `ALLOWED_HOSTS` | Allowed hostnames | `numerai-backend.onrender.com` |
-| `DATABASE_URL` | PostgreSQL connection | Auto from database |
-| `REDIS_URL` | Redis connection | Auto from Redis |
-| `CELERY_BROKER_URL` | Celery broker | Same as REDIS_URL |
-| `CELERY_RESULT_BACKEND` | Celery results | Same as REDIS_URL |
-| `CORS_ALLOWED_ORIGINS` | Frontend URLs | `https://numerai-frontend.onrender.com` |
-| `EMAIL_BACKEND` | Email backend | `django.core.mail.backends.console.EmailBackend` |
-| `DEFAULT_FROM_EMAIL` | From email address | `noreply@numerai.app` |
-
-### Frontend Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NODE_VERSION` | Node.js runtime version | `18.17.0` |
-| `NEXT_PUBLIC_API_URL` | Backend API URL | `https://numerai-backend.onrender.com/api/v1` |
-
----
-
-## Monitoring and Logs
-
-### Accessing Logs
-
-1. **Backend Logs**:
-   - Go to Backend web service → "Logs"
-   - Real-time logs showing requests, errors, OTP codes
-
-2. **Celery Logs**:
-   - Go to Celery worker → "Logs"
-   - Shows task execution, scheduled jobs
-
-3. **Frontend Logs**:
-   - Go to Frontend web service → "Logs"
-   - Shows Next.js server logs, build output
-
-### Metrics
-
-1. Go to any service → "Metrics"
-2. View:
-   - CPU usage
-   - Memory usage
-   - Request count
-   - Response times
-
----
-
-## Scaling
-
-### Vertical Scaling (Upgrade Plan)
-
-To handle more traffic:
-
-1. Go to service → "Settings" → "Plan"
-2. Upgrade to Standard ($25/month) or Pro ($85/month)
-3. Benefits:
-   - More RAM (2GB → 4GB → 8GB)
-   - More CPU
-   - Better performance
-
-### Horizontal Scaling (Multiple Instances)
-
-For backend web service:
-
-1. Go to Backend → "Settings" → "Scaling"
-2. Increase instance count (2-10 instances)
-3. Load balancer automatically distributes traffic
-
----
-
-## Backup and Recovery
-
-### Database Backups
-
-Render automatically creates daily backups for paid PostgreSQL plans:
-
-1. Go to PostgreSQL database → "Backups"
-2. View available backups
-3. Restore from backup if needed
-
-### Manual Backup
+All platforms require these environment variables:
 
 ```bash
-# Export database
-pg_dump -h <host> -U <user> -d numerai > backup.sql
+# Django Settings
+DJANGO_SETTINGS_MODULE=numerai.settings.production
+SECRET_KEY=your-secret-key-here  # Generate with: python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+DEBUG=False
+ALLOWED_HOSTS=your-domain.com,your-app.up.railway.app,your-app.onrender.com
 
-# Restore database
-psql -h <host> -U <user> -d numerai < backup.sql
+# Database (usually auto-configured by platform)
+DATABASE_URL=postgresql://user:password@host:port/dbname
+
+# Redis (for caching and Celery)
+REDIS_URL=redis://host:port/0
+CELERY_BROKER_URL=redis://host:port/1
+CELERY_RESULT_BACKEND=redis://host:port/2
+
+# CORS Settings (adjust to your frontend URL)
+CORS_ALLOWED_ORIGINS=https://your-frontend.vercel.app,https://your-domain.com
+CSRF_TRUSTED_ORIGINS=https://your-frontend.vercel.app,https://your-domain.com
+
+# Email (configure based on your email service)
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+DEFAULT_FROM_EMAIL=noreply@your-domain.com
+
+# OpenAI (if using AI features)
+OPENAI_API_KEY=your-openai-api-key
+
+# Stripe (if using payments)
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Google OAuth (if using social auth)
+GOOGLE_OAUTH_CLIENT_ID=your-client-id
+GOOGLE_OAUTH_CLIENT_SECRET=your-client-secret
+
+# Apple OAuth (if using social auth)
+APPLE_CLIENT_ID=your-client-id
+APPLE_SECRET=your-secret
+
+# Sentry (optional, for error tracking)
+SENTRY_DSN=your-sentry-dsn
 ```
 
 ---
 
-## Security Best Practices
+## 🚂 Railway Deployment
 
-1. **Environment Variables**:
-   - Never commit `.env` files to Git
-   - Use Render's "Generate" for SECRET_KEY
-   - Rotate secrets periodically
+### Why Railway?
+- **Easiest setup**: Auto-detects Django and PostgreSQL
+- **Integrated services**: PostgreSQL and Redis available as add-ons
+- **Simple pricing**: Pay-as-you-go
+- **GitHub integration**: Auto-deploys on push
 
-2. **Database**:
-   - Use Internal Database URL (not External)
-   - Enable SSL connections
-   - Regular backups
+### Setup Steps
 
-3. **CORS**:
-   - Only allow your frontend domain
-   - Don't use wildcard (`*`) in production
+1. **Install Railway CLI** (optional, but recommended):
+   ```bash
+   npm i -g @railway/cli
+   railway login
+   ```
 
-4. **HTTPS**:
-   - Render provides free SSL certificates
-   - Always use HTTPS URLs
+2. **Create a new project**:
+   ```bash
+   cd backend
+   railway init
+   ```
 
-5. **Rate Limiting**:
-   - Already configured in Django settings
-   - Monitor for abuse in logs
+3. **Add PostgreSQL database**:
+   - In Railway dashboard: New → Database → PostgreSQL
+   - Railway automatically provides `DATABASE_URL` environment variable
 
----
+4. **Add Redis**:
+   - In Railway dashboard: New → Database → Redis
+   - Railway automatically provides `REDIS_URL` environment variable
+   - Set `CELERY_BROKER_URL` and `CELERY_RESULT_BACKEND` to the same Redis URL with different databases
 
-## Continuous Deployment
+5. **Configure environment variables**:
+   - In Railway dashboard: Variables tab
+   - Add all required environment variables from the list above
 
-Render automatically deploys on Git push:
+6. **Deploy**:
+   ```bash
+   railway up
+   ```
+   Or connect your GitHub repo in Railway dashboard for auto-deployments
 
-1. Make changes to code
-2. Commit and push to `main` branch
-3. Render detects changes
-4. Automatically builds and deploys
-5. Zero-downtime deployment
+7. **Add Celery Worker** (optional, for background tasks):
+   - Create a new service in Railway
+   - Use the same codebase
+   - Set start command: `celery -A numerai worker --loglevel=info --concurrency=2`
+   - Share environment variables with the web service
 
-**Disable Auto-Deploy** (if needed):
-1. Go to service → "Settings"
-2. Toggle "Auto-Deploy" off
-3. Deploy manually with "Manual Deploy" button
+8. **Add Celery Beat** (optional, for scheduled tasks):
+   - Create another service
+   - Set start command: `celery -A numerai beat --loglevel=info`
+   - Share environment variables
 
----
+### Railway Configuration Files
 
-## Cost Optimization
+- `backend/railway.json` - Railway-specific configuration
+- `backend/Procfile` - Process definitions (Railway uses this)
 
-### Tips to Reduce Costs
+### Railway Tips
 
-1. **Use Free Tier for Development**:
-   - Services spin down after 15 minutes
-   - Good for testing, not production
-
-2. **Suspend Unused Services**:
-   - Go to service → "Settings" → "Suspend"
-   - Stops billing until resumed
-
-3. **Optimize Worker**:
-   - Use cron jobs instead of always-on worker
-   - Render Cron Jobs are free
-
-4. **Monitor Usage**:
-   - Check "Metrics" regularly
-   - Downgrade if underutilized
-
----
-
-## Next Steps
-
-After successful staging deployment:
-
-1. **Test All Features**:
-   - Follow DEPLOYMENT_CHECKLIST.md
-   - Test authentication flow end-to-end
-   - Verify API endpoints
-
-2. **Set Up Production**:
-   - Create separate production services
-   - Use production domain
-   - Configure production email (SendGrid)
-
-3. **Monitor Performance**:
-   - Set up alerts for errors
-   - Monitor response times
-   - Check logs regularly
-
-4. **Prepare for Sprint 2**:
-   - Add OpenAI API key
-   - Configure Firebase for notifications
-   - Set up Stripe for payments
+- Railway auto-detects Python projects and uses Nixpacks builder
+- The `railway.json` file provides custom build/start commands
+- Use Railway's metrics dashboard to monitor performance
+- Set up custom domain in the Settings tab
 
 ---
 
-## Support
+## 🎨 Render Deployment
 
-**Render.com Support**:
-- Documentation: https://render.com/docs
-- Community Forum: https://community.render.com
-- Email: support@render.com
+### Why Render?
+- **Free tier available**: Good for testing
+- **Blueprints (render.yaml)**: Infrastructure as code
+- **Integrated services**: PostgreSQL and Redis available
+- **Automatic SSL**: Free SSL certificates
 
-**NumerAI Team**:
-- GitHub Issues: <repository-url>/issues
-- Internal Documentation: /workspace/docs/
+### Setup Steps
+
+1. **Create Render account** at [render.com](https://render.com)
+
+2. **One-click deployment with Blueprint**:
+   - Push `render.yaml` to your repository root
+   - In Render dashboard: New → Blueprint
+   - Connect your GitHub/GitLab repository
+   - Render will auto-detect `render.yaml` and create all services
+
+3. **Manual deployment** (if not using Blueprint):
+   - New → Web Service
+   - Connect repository
+   - Settings:
+     - **Root Directory**: `backend`
+     - **Build Command**: `chmod +x build.sh && ./build.sh`
+     - **Start Command**: `gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile - numerai.wsgi:application`
+     - **Health Check Path**: `/api/v1/health/`
+
+4. **Add PostgreSQL database**:
+   - New → PostgreSQL
+   - Render automatically provides `DATABASE_URL` to services linked to it
+
+5. **Add Redis**:
+   - New → Redis
+   - Render automatically provides `REDIS_URL` to services linked to it
+
+6. **Configure environment variables**:
+   - In each service: Environment tab
+   - Add all required variables (see list above)
+
+7. **Add Celery Worker** (for background tasks):
+   - New → Background Worker
+   - Root Directory: `backend`
+   - Build Command: `chmod +x build.sh && ./build.sh`
+   - Start Command: `celery -A numerai worker --loglevel=info --concurrency=2`
+   - Link to database and Redis
+
+8. **Add Celery Beat** (for scheduled tasks):
+   - New → Background Worker
+   - Start Command: `celery -A numerai beat --loglevel=info`
+   - Link to database and Redis
+
+### Render Configuration Files
+
+- `render.yaml` - Blueprint configuration (in repository root)
+- All services defined in one file
+
+### Render Tips
+
+- Free tier has limits: Services spin down after 15 minutes of inactivity
+- Upgrade to paid plan for always-on services
+- Use `render.yaml` Blueprint for reproducible deployments
+- Environment variables can be synced across services
 
 ---
 
-**Deployment Status**: Ready for Staging
-**Last Updated**: November 10, 2025
-**Estimated Setup Time**: 30-45 minutes
+## ✈️ Fly.io Deployment
+
+### Why Fly.io?
+- **Global edge deployment**: Deploy close to users
+- **Docker-based**: Full control over container
+- **Scaling**: Easy horizontal scaling
+- **Multiple processes**: Run web, worker, and beat in same app
+
+### Setup Steps
+
+1. **Install Fly CLI**:
+   ```bash
+   curl -L https://fly.io/install.sh | sh
+   # Or on macOS: brew install flyctl
+   ```
+
+2. **Login to Fly.io**:
+   ```bash
+   fly auth login
+   ```
+
+3. **Initialize Fly.io app** (from backend directory):
+   ```bash
+   cd backend
+   fly launch
+   ```
+   - This will read `fly.toml` if it exists
+   - Choose a region close to your users
+   - Don't deploy yet (we'll configure first)
+
+4. **Create PostgreSQL database**:
+   ```bash
+   fly postgres create --name numerai-db
+   fly postgres attach --app numerai-backend numerai-db
+   ```
+   This automatically sets `DATABASE_URL`
+
+5. **Create Redis instance**:
+   ```bash
+   fly redis create --name numerai-redis
+   ```
+   Note the connection URL and set it as:
+   ```bash
+   fly secrets set REDIS_URL="redis://..." \
+     CELERY_BROKER_URL="redis://..." \
+     CELERY_RESULT_BACKEND="redis://..."
+   ```
+
+6. **Set environment variables**:
+   ```bash
+   fly secrets set SECRET_KEY="your-secret-key" \
+     DJANGO_SETTINGS_MODULE="numerai.settings.production" \
+     DEBUG="False" \
+     ALLOWED_HOSTS="your-app.fly.dev" \
+     CORS_ALLOWED_ORIGINS="https://your-frontend.vercel.app"
+   ```
+   Set all other secrets as needed
+
+7. **Deploy the web service**:
+   ```bash
+   fly deploy
+   ```
+
+8. **Scale Celery Worker** (optional):
+   ```bash
+   fly scale count worker=1 --process-group worker
+   ```
+   This uses the `worker` process defined in `fly.toml`
+
+9. **Scale Celery Beat** (optional):
+   ```bash
+   fly scale count beat=1 --process-group beat
+   ```
+   Note: Only run ONE beat instance to avoid duplicate scheduled tasks
+
+10. **Set up volumes** (if needed for media files):
+    ```bash
+    fly volumes create media_data --size 10 --region iad
+    ```
+    Then mount it in `fly.toml` under `[mounts]`
+
+### Fly.io Configuration Files
+
+- `backend/fly.toml` - Fly.io application configuration
+- `backend/Dockerfile` - Container definition
+
+### Fly.io Tips
+
+- Use `fly status` to check app status
+- Use `fly logs` to view application logs
+- Use `fly ssh console` to access the container shell
+- Fly.io supports multiple regions for global distribution
+- Scale vertically: `fly scale vm shared-cpu-2x --memory 2048`
+- Scale horizontally: `fly scale count app=3`
+
+### Fly.io Process Groups
+
+The `fly.toml` defines three processes:
+- `app` - Main Django web server (auto-started)
+- `worker` - Celery worker (scale manually: `fly scale count worker=1`)
+- `beat` - Celery beat scheduler (scale manually: `fly scale count beat=1`)
+
+---
+
+## 🔄 Running Database Migrations
+
+### Railway
+```bash
+railway run python manage.py migrate
+```
+
+### Render
+Migrations run automatically during build (see `build.sh`), or:
+- Use Render Shell: `render shell`
+- Or use local CLI: `render run python manage.py migrate`
+
+### Fly.io
+```bash
+fly ssh console -C "python manage.py migrate"
+```
+
+---
+
+## 🧪 Health Checks
+
+All platforms use the health check endpoint: `/api/v1/health/`
+
+Test it manually:
+```bash
+curl https://your-app-url.com/api/v1/health/
+```
+
+Expected response:
+```json
+{"status": "healthy"}
+```
+
+---
+
+## 📊 Monitoring and Logs
+
+### Railway
+- Dashboard: Real-time logs and metrics
+- CLI: `railway logs`
+
+### Render
+- Dashboard: Logs and metrics
+- Log streaming in dashboard
+
+### Fly.io
+- CLI: `fly logs`
+- Dashboard: Metrics and logs
+- Integrate with Datadog, Sentry, etc.
+
+---
+
+## 🔐 Security Best Practices
+
+1. **Never commit secrets**: Use environment variables
+2. **Use strong SECRET_KEY**: Generate a new one for production
+3. **Enable HTTPS**: All platforms provide SSL automatically
+4. **Set DEBUG=False**: Always in production
+5. **Configure ALLOWED_HOSTS**: Restrict to your domains
+6. **Use database connection pooling**: Already configured in settings
+7. **Enable CORS properly**: Only allow your frontend domains
+8. **Regular updates**: Keep dependencies updated
+
+---
+
+## 🚀 Performance Optimization
+
+1. **Use CDN for static files**: 
+   - Configure `STATIC_URL` to point to CDN
+   - Or use WhiteNoise (already configured)
+
+2. **Database connection pooling**:
+   - Already configured with `conn_max_age=600`
+
+3. **Caching**:
+   - Redis caching is configured
+   - Enable query caching in Django settings
+
+4. **Worker processes**:
+   - Adjust Gunicorn workers: `(2 x CPU cores) + 1`
+   - Monitor memory usage
+
+5. **Celery concurrency**:
+   - Adjust based on task load: `--concurrency=2`
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Migration errors**:
+- Check migration history: `python manage.py showmigrations`
+- Reset if needed (careful!): `python manage.py migrate --fake-initial`
+
+**Static files not loading**:
+- Run: `python manage.py collectstatic`
+- Check `STATIC_ROOT` and `STATIC_URL` settings
+
+**Database connection errors**:
+- Verify `DATABASE_URL` format
+- Check database is accessible from platform
+- Verify network security groups
+
+**Celery tasks not running**:
+- Check Redis connection
+- Verify worker is running
+- Check logs for errors
+
+**CORS errors**:
+- Verify `CORS_ALLOWED_ORIGINS` includes frontend URL
+- Check `CSRF_TRUSTED_ORIGINS` matches frontend
+- Verify credentials are enabled if needed
+
+---
+
+## 📝 Platform Comparison
+
+| Feature | Railway | Render | Fly.io |
+|---------|---------|--------|--------|
+| **Free Tier** | Limited | Yes (15min sleep) | Yes (3 VMs) |
+| **Ease of Setup** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+| **PostgreSQL** | ✅ Add-on | ✅ Add-on | ✅ Separate app |
+| **Redis** | ✅ Add-on | ✅ Add-on | ✅ Separate app |
+| **Auto-deploy** | ✅ | ✅ | ✅ |
+| **Custom Domain** | ✅ | ✅ | ✅ |
+| **Scaling** | ✅ | ✅ | ✅✅✅ |
+| **Edge Locations** | Limited | Limited | ✅✅✅ Global |
+| **Docker Support** | ✅ | ✅ | ✅✅✅ |
+| **Process Groups** | Manual | Manual | ✅ Built-in |
+
+---
+
+## 🎯 Recommended Setup
+
+- **Development/Testing**: Render (free tier)
+- **Production (Simple)**: Railway (easiest)
+- **Production (Scalable)**: Fly.io (best for global scale)
+- **Hybrid**: Railway for web, Fly.io for workers
+
+---
+
+## 📚 Additional Resources
+
+- [Railway Docs](https://docs.railway.app)
+- [Render Docs](https://render.com/docs)
+- [Fly.io Docs](https://fly.io/docs)
+- [Django Deployment Checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/)
+
+---
+
+## 🔄 Updates and Maintenance
+
+After deploying, remember to:
+
+1. **Monitor logs** regularly
+2. **Update dependencies**: `pip install -r requirements.txt --upgrade`
+3. **Run migrations** when updating code
+4. **Backup database** regularly (most platforms auto-backup)
+5. **Review security** settings periodically
+6. **Scale resources** based on traffic
+
+---
+
+**Need help?** Check platform-specific support or create an issue in the repository.
