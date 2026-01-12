@@ -394,18 +394,18 @@ class Command(BaseCommand):
 
             # Create remedies and tracking
             for i in range(3):
-                remedy, _ = Remedy.objects.get_or_create(
+                remedy_type = random.choice(['mantra', 'gemstone', 'color', 'ritual', 'dietary', 'exercise'])
+                # Use create since there's no unique constraint - just create new remedies each time
+                remedy = Remedy.objects.create(
                     user=user,
-                    remedy_type=random.choice(['mantra', 'gemstone', 'color', 'ritual', 'dietary', 'exercise']),
-                    title=f'Remedy {i+1}',
-                    defaults={
-                        'description': f'Recommended remedy for {user.full_name}',
-                        'recommendation': 'Practice this daily for best results.',
-                        'priority': random.randint(1, 10),
-                        'difficulty': random.choice(['easy', 'medium', 'hard']),
-                        'frequency': random.choice(['daily', 'weekly', 'monthly']),
-                        'personalization_data': {'source': 'ai_generated', 'confidence': 0.85},
-                    }
+                    remedy_type=remedy_type,
+                    title=f'Remedy {i+1} for {user.full_name}',
+                    description=f'Recommended remedy for {user.full_name}',
+                    recommendation='Practice this daily for best results.',
+                    priority=random.randint(1, 10),
+                    difficulty=random.choice(['easy', 'medium', 'hard']),
+                    frequency=random.choice(['daily', 'weekly', 'monthly']),
+                    personalization_data={'source': 'ai_generated', 'confidence': 0.85},
                 )
                 
                 # Create remedy tracking
