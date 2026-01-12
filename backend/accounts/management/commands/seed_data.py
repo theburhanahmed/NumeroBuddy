@@ -1529,13 +1529,20 @@ class Command(BaseCommand):
         
         # Karmic Contract
         if persons.count() >= 2:
-            KarmicContract.objects.create(
+            KarmicContract.objects.get_or_create(
                 user=users[0],
                 parent_person=persons[0],
                 child_person=persons[1] if persons.count() > 1 else persons[0],
-                contract_type=random.choice(['teaching', 'learning', 'healing']),
-                karmic_lessons=['Unconditional love', 'Patience'],
-                relationship_dynamics='Parent-child relationship with strong karmic bonds',
+                defaults={
+                    'contract_type': random.choice(['teaching', 'learning', 'healing', 'karmic_debt', 'soul_evolution']),
+                    'karmic_lessons': ['Unconditional love', 'Patience', 'Understanding'],
+                    'compatibility_score': random.randint(60, 100),
+                    'analysis_data': {
+                        'relationship_dynamics': 'Parent-child relationship with strong karmic bonds',
+                        'strengths': ['Deep connection', 'Mutual growth'],
+                        'challenges': ['Communication', 'Boundaries'],
+                    },
+                }
             )
         
         # Feng Shui Analysis
