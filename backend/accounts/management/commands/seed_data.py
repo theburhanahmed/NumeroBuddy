@@ -394,40 +394,47 @@ class Command(BaseCommand):
 
             # Create remedies and tracking
             for i in range(3):
-                remedy = Remedy.objects.create(
+                remedy, _ = Remedy.objects.get_or_create(
                     user=user,
-                    remedy_type=random.choice(['mantra', 'gemstone', 'color', 'yoga', 'meditation']),
+                    remedy_type=random.choice(['mantra', 'gemstone', 'color', 'ritual', 'dietary', 'exercise']),
                     title=f'Remedy {i+1}',
-                    description=f'Recommended remedy for {user.full_name}',
-                    recommendation='Practice this daily for best results.',
-                    priority=random.randint(1, 10),
-                    difficulty=random.choice(['easy', 'medium', 'hard']),
-                    frequency=random.choice(['daily', 'weekly', 'monthly']),
+                    defaults={
+                        'description': f'Recommended remedy for {user.full_name}',
+                        'recommendation': 'Practice this daily for best results.',
+                        'priority': random.randint(1, 10),
+                        'difficulty': random.choice(['easy', 'medium', 'hard']),
+                        'frequency': random.choice(['daily', 'weekly', 'monthly']),
+                        'personalization_data': {'source': 'ai_generated', 'confidence': 0.85},
+                    }
                 )
                 
                 # Create remedy tracking
                 for j in range(5):
-                    RemedyTracking.objects.create(
+                    RemedyTracking.objects.get_or_create(
                         user=user,
                         remedy=remedy,
                         date=date.today() - timedelta(days=j),
-                        is_completed=random.choice([True, False]),
-                        mood_before=random.choice(['neutral', 'good', 'very_good']),
-                        mood_after=random.choice(['good', 'very_good']),
-                        effectiveness_rating=random.randint(3, 5),
-                        notes=f'Tracking entry {j+1}',
+                        defaults={
+                            'is_completed': random.choice([True, False]),
+                            'mood_before': random.choice(['neutral', 'good', 'very_good']),
+                            'mood_after': random.choice(['good', 'very_good']),
+                            'effectiveness_rating': random.randint(3, 5),
+                            'notes': f'Tracking entry {j+1}',
+                        }
                     )
             
             # Create compatibility checks
-            CompatibilityCheck.objects.create(
+            CompatibilityCheck.objects.get_or_create(
                 user=user,
                 partner_name='Test Partner',
                 partner_birth_date=date(1990, 6, 20),
-                relationship_type=random.choice(['romantic', 'business', 'friendship']),
-                compatibility_score=random.randint(60, 100),
-                strengths=['Communication', 'Trust'],
-                challenges=['Different interests'],
-                advice='Focus on open communication.',
+                defaults={
+                    'relationship_type': random.choice(['romantic', 'business', 'friendship', 'family']),
+                    'compatibility_score': random.randint(60, 100),
+                    'strengths': ['Communication', 'Trust'],
+                    'challenges': ['Different interests'],
+                    'advice': 'Focus on open communication.',
+                }
             )
 
             # Create Person entries (use get_or_create to handle unique constraint on user, name, birth_date)
@@ -1547,25 +1554,35 @@ class Command(BaseCommand):
         
         # Feng Shui Analysis
         for user in users[:3]:
-            FengShuiAnalysis.objects.create(
+            FengShuiAnalysis.objects.get_or_create(
                 user=user,
                 house_number=str(random.randint(1, 999)),
-                numerology_vibration=random.randint(1, 9),
-                hybrid_score=random.randint(70, 100),
-                recommendations=['Place water elements in north', 'Use number 8 colors'],
+                defaults={
+                    'property_address': f'{random.randint(100, 9999)} Main Street',
+                    'feng_shui_data': {
+                        'directions': ['north', 'east'],
+                        'elements': ['water', 'wood'],
+                    },
+                    'numerology_vibration': random.randint(1, 9),
+                    'hybrid_score': random.randint(70, 100),
+                    'recommendations': ['Place water elements in north', 'Use number 8 colors'],
+                }
             )
         
         # Space Optimization (requires FengShuiAnalysis)
         feng_shui_analyses = FengShuiAnalysis.objects.filter(user__in=users[:3])
         for analysis in feng_shui_analyses[:2]:
-            SpaceOptimization.objects.create(
+            SpaceOptimization.objects.get_or_create(
                 analysis=analysis,
                 room_name=random.choice(['Bedroom', 'Office', 'Living Room']),
-                room_number=str(random.randint(1, 9)),
-                direction=random.choice(['north', 'east', 'south', 'west']),
-                color_recommendations=['blue', 'green'],
-                number_combinations=[[random.randint(1, 9), random.randint(1, 9)]],
-                energy_flow_score=random.randint(70, 100),
+                defaults={
+                    'room_number': str(random.randint(1, 9)),
+                    'direction': random.choice(['north', 'east', 'south', 'west']),
+                    'color_recommendations': ['blue', 'green'],
+                    'number_combinations': [[random.randint(1, 9), random.randint(1, 9)]],
+                    'energy_flow_score': random.randint(70, 100),
+                    'layout_suggestions': ['Place bed in favorable position', 'Use specific colors'],
+                }
             )
         
         # Room Numerology (requires FengShuiAnalysis)
