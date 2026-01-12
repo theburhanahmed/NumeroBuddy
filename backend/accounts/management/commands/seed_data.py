@@ -19,7 +19,7 @@ from accounts.models import (
 )
 from accounts.models_notification_prefs import NotificationPreference
 from accounts.models_privacy import PrivacySettings
-from accounts.models_api_key import APIKey
+from accounts.models_api_key import APIKey as AccountsAPIKey
 from payments.models import Subscription, Payment, BillingHistory, WebhookEvent
 from feature_flags.models import FeatureFlag, SubscriptionFeatureAccess
 from numerology.models import (
@@ -46,7 +46,7 @@ from ai_chat.models import AIConversation, AIMessage
 from social.models import Connection, SocialGroup, Interaction
 from matchmaking.models import Match, MatchPreference
 from knowledge_graph.models import NumberRelationship, NumerologyPattern, NumerologyRule
-from analytics.models import UserActivityLog, EventTracking
+from analytics.models import UserActivityLog, EventTracking, UserJourney, ABTest, ConversionFunnel, BusinessMetric
 from decisions.models import Decision, DecisionOutcome, DecisionPattern
 from developer_api.models import APIKey as DeveloperAPIKey, APIUsage
 from meus.models import (
@@ -316,7 +316,7 @@ class Command(BaseCommand):
 
                 # Create payment history
                 if user.subscription_plan in PRICING:
-                    Payment.objects.create(
+                    payment = Payment.objects.create(
                         user=user,
                         subscription=subscription,
                         amount=PRICING[user.subscription_plan],
@@ -324,6 +324,56 @@ class Command(BaseCommand):
                         status='succeeded',
                         description=f'{user.subscription_plan.capitalize()} subscription payment',
                     )
+                    
+                    # Create billing history
+                    BillingHistory.objects.create(
+                        user=user,
+                        subscription=subscription,
+                        payment=payment,
+                        amount=PRICING[user.subscription_plan],
+                        currency='usd',
+                        description=f'{user.subscription_plan.capitalize()} subscription - {subscription.current_period_start.strftime("%B %Y")}',
+                        period_start=subscription.current_period_start,
+                        period_end=subscription.current_period_end,
+                    )
+                    
+                    # Create webhook event for payment
+                    stripe_event_id = f'evt_{random.randint(100000, 999999)}'
+                    WebhookEvent.objects.get_or_create(
+                        stripe_event_id=stripe_event_id,
+                        defaults={
+                            'event_type': 'payment_intent.succeeded',
+                            'payload': {
+                                'id': stripe_event_id,
+                                'object': 'payment_intent',
+                                'amount': int(PRICING[user.subscription_plan] * 100),
+                                'currency': 'usd',
+                                'customer': str(user.id),
+                                'status': 'succeeded',
+                            },
+                            'processed': False,
+                        }
+                    )
+        
+        # Webhook Events
+        for user in users[:3]:
+            if user.subscription_plan in ['basic', 'premium', 'elite']:
+                stripe_event_id = f'evt_{random.randint(100000, 999999)}'
+                WebhookEvent.objects.get_or_create(
+                    stripe_event_id=stripe_event_id,
+                    defaults={
+                        'event_type': 'payment_intent.succeeded',
+                        'payload': {
+                            'id': stripe_event_id,
+                            'object': 'payment_intent',
+                            'amount': int(PRICING.get(user.subscription_plan, 0) * 100),
+                            'currency': 'usd',
+                            'customer': str(user.id),
+                            'status': 'succeeded',
+                        },
+                        'processed': False,
+                    }
+                )
 
     def _seed_numerology_data(self, users):
         """Seed numerology profiles and related data."""
@@ -709,6 +759,77 @@ class Command(BaseCommand):
                 event_name='user_signup',
                 event_category='conversion',
                 event_properties={'source': 'web'},
+            )
+        
+        # User Journeys
+        for user in users[:3]:
+            session_id = f'session_{user.id}_{random.randint(1000, 9999)}'
+            UserJourney.objects.create(
+                user=user,
+                session_id=session_id,
+                journey_type=random.choice(['registration', 'subscription', 'report_generation', 'consultation_booking']),
+                steps=[
+                    {'step': 'landing', 'timestamp': str(timezone.now() - timedelta(minutes=10))},
+                    {'step': 'signup', 'timestamp': str(timezone.now() - timedelta(minutes=8))},
+                    {'step': 'profile', 'timestamp': str(timezone.now() - timedelta(minutes=5))},
+                ],
+                current_step='profile',
+                completed=random.choice([True, False]),
+                duration_seconds=random.randint(300, 1800),
+                steps_completed=random.randint(2, 5),
+                total_steps=5,
+                completed_at=timezone.now() if random.choice([True, False]) else None,
+            )
+        
+        # A/B Tests
+        ABTest.objects.get_or_create(
+            name='Homepage Hero CTA',
+            defaults={
+                'description': 'Test different call-to-action buttons on homepage',
+                'is_active': True,
+                'start_date': timezone.now() - timedelta(days=7),
+                'end_date': timezone.now() + timedelta(days=7),
+                'variants': [
+                    {'id': 'control', 'name': 'Original CTA', 'weight': 50},
+                    {'id': 'variant_a', 'name': 'New CTA Text', 'weight': 50},
+                ],
+                'target_audience': {'subscription_plan': 'free'},
+                'primary_metric': 'conversion_rate',
+                'secondary_metrics': ['click_rate', 'engagement_score'],
+            }
+        )
+        
+        # Conversion Funnels
+        ConversionFunnel.objects.get_or_create(
+            name='Subscription Funnel',
+            defaults={
+                'description': 'Track user journey from signup to subscription',
+                'is_active': True,
+                'time_window_hours': 24,
+                'steps': [
+                    {'name': 'signup', 'event': 'user_signup'},
+                    {'name': 'profile_complete', 'event': 'profile_completed'},
+                    {'name': 'first_reading', 'event': 'reading_viewed'},
+                    {'name': 'subscription_page', 'event': 'subscription_page_viewed'},
+                    {'name': 'subscription', 'event': 'subscription_created'},
+                ],
+            }
+        )
+        
+        # Business Metrics
+        for i in range(5):
+            period_start = timezone.now() - timedelta(days=i)
+            BusinessMetric.objects.get_or_create(
+                metric_name='daily_active_users',
+                period_start=period_start.replace(hour=0, minute=0, second=0),
+                period_type='day',
+                defaults={
+                    'metric_category': 'user',
+                    'value': Decimal(str(random.randint(100, 1000))),
+                    'value_type': 'count',
+                    'period_end': period_start.replace(hour=23, minute=59, second=59),
+                    'dimensions': {},
+                }
             )
 
     def _seed_knowledge_graph_data(self):
@@ -1564,4 +1685,73 @@ class Command(BaseCommand):
                 resource_type='user',
                 resource_id=str(user.id),
                 metadata={'ip_address': '127.0.0.1', 'user_agent': 'Mozilla/5.0'},
+            )
+        
+        # Notifications
+        for user in users[:5]:
+            for i in range(3):
+                Notification.objects.create(
+                    user=user,
+                    title=random.choice([
+                        'Daily Reading Available',
+                        'New Compatibility Match',
+                        'Report Ready',
+                        'Consultation Reminder',
+                        'Welcome to NumerAI'
+                    ]),
+                    message=random.choice([
+                        'Your daily numerology reading is ready!',
+                        'You have a new compatibility match.',
+                        'Your detailed report has been generated.',
+                        'You have an upcoming consultation.',
+                        'Welcome! Start exploring your numerology profile.'
+                    ]),
+                    notification_type=random.choice([
+                        'info', 'success', 'report_ready', 'daily_reading',
+                        'compatibility_match', 'consultation_reminder'
+                    ]),
+                    is_read=random.choice([True, False]),
+                    is_sent=random.choice([True, False]),
+                    data={'source': 'system', 'priority': 'normal'},
+                )
+        
+        # Notification Preferences
+        for user in users[:5]:
+            notification_types = ['info', 'success', 'report_ready', 'daily_reading', 'compatibility_match']
+            channels = ['in_app', 'email', 'push']
+            for notif_type in notification_types:
+                for channel in channels:
+                    NotificationPreference.objects.get_or_create(
+                        user=user,
+                        notification_type=notif_type,
+                        channel=channel,
+                        defaults={'enabled': random.choice([True, False])}
+                    )
+        
+        # Privacy Settings
+        for user in users[:5]:
+            PrivacySettings.objects.get_or_create(
+                user=user,
+                defaults={
+                    'share_analytics': random.choice([True, False]),
+                    'share_marketing': random.choice([True, False]),
+                    'share_third_party': False,
+                    'profile_visibility': random.choice(['public', 'private', 'friends']),
+                    'data_retention_consent': True,
+                    'data_retention_period_days': random.choice([365, 730, 1095]),
+                    'gdpr_consent': random.choice([True, False]),
+                    'privacy_policy_accepted': True,
+                    'privacy_policy_version': '1.0',
+                }
+            )
+        
+        # API Keys (accounts app - for mobile app authentication)
+        for user in users[:3]:
+            AccountsAPIKey.objects.get_or_create(
+                user=user,
+                name=f'{user.full_name} Mobile App Key',
+                defaults={
+                    'is_active': True,
+                    'expires_at': timezone.now() + timedelta(days=365),
+                }
             )
