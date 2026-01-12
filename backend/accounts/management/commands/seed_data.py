@@ -400,27 +400,34 @@ class Command(BaseCommand):
                 advice='Focus on open communication.',
             )
 
-            # Create Person entries
+            # Create Person entries (use get_or_create to handle unique constraint on user, name, birth_date)
             for i in range(2):
-                person = Person.objects.create(
+                birth_date = date(1990 + i, random.randint(1, 12), random.randint(1, 28))
+                person, created = Person.objects.get_or_create(
                     user=user,
                     name=f'Person {i+1}',
-                    birth_date=date(1990 + i, random.randint(1, 12), random.randint(1, 28)),
-                    relationship=random.choice(['spouse', 'friend', 'colleague', 'partner', 'other']),
+                    birth_date=birth_date,
+                    defaults={
+                        'relationship': random.choice(['spouse', 'friend', 'colleague', 'partner', 'other']),
+                    }
                 )
 
-                PersonNumerologyProfile.objects.create(
-                    person=person,
-                    life_path_number=random.randint(1, 9),
-                    destiny_number=random.randint(1, 9),
-                    soul_urge_number=random.randint(1, 9),
-                    personality_number=random.randint(1, 9),
-                    attitude_number=random.randint(1, 9),
-                    maturity_number=random.randint(1, 9),
-                    balance_number=random.randint(1, 9),
-                    personal_year_number=random.randint(1, 9),
-                    personal_month_number=random.randint(1, 9),
-                )
+                # Only create profile if person was just created or doesn't have one
+                if created or not hasattr(person, 'person_numerology_profile'):
+                    PersonNumerologyProfile.objects.get_or_create(
+                        person=person,
+                        defaults={
+                            'life_path_number': random.randint(1, 9),
+                            'destiny_number': random.randint(1, 9),
+                            'soul_urge_number': random.randint(1, 9),
+                            'personality_number': random.randint(1, 9),
+                            'attitude_number': random.randint(1, 9),
+                            'maturity_number': random.randint(1, 9),
+                            'balance_number': random.randint(1, 9),
+                            'personal_year_number': random.randint(1, 9),
+                            'personal_month_number': random.randint(1, 9),
+                        }
+                    )
 
     def _seed_consultations_data(self, users):
         """Seed consultation data."""
