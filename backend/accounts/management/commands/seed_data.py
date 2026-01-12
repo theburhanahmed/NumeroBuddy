@@ -1568,15 +1568,24 @@ class Command(BaseCommand):
                 energy_flow_score=random.randint(70, 100),
             )
         
-        # Room Numerology
-        for user in users[:3]:
-            RoomNumerology.objects.create(
-                user=user,
-                room_type=random.choice(['bedroom', 'office', 'living_room']),
-                room_number=random.randint(1, 9),
-                room_vibration=random.randint(1, 9),
-                recommendations=['Use specific colors', 'Place items in favorable positions'],
-                compatibility_score=random.randint(70, 100),
+        # Room Numerology (requires FengShuiAnalysis)
+        feng_shui_analyses = FengShuiAnalysis.objects.filter(user__in=users[:3])
+        for analysis in feng_shui_analyses[:2]:
+            RoomNumerology.objects.get_or_create(
+                analysis=analysis,
+                room_name=random.choice(['Bedroom', 'Office', 'Living Room', 'Kitchen', 'Bathroom']),
+                defaults={
+                    'room_number': str(random.randint(1, 9)),
+                    'direction': random.choice(['north', 'east', 'south', 'west', 'northeast', 'northwest', 'southeast', 'southwest']),
+                    'room_vibration': random.randint(1, 9),
+                    'direction_compatibility': {
+                        'score': random.randint(70, 100),
+                        'notes': 'Favorable direction for this room',
+                    },
+                    'color_recommendations': ['blue', 'green', 'white'],
+                    'number_recommendations': [random.randint(1, 9), random.randint(1, 9)],
+                    'layout_recommendations': ['Place bed in favorable position', 'Use specific colors', 'Place items in favorable positions'],
+                }
             )
         
         # Mental State Tracking
