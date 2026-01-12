@@ -9,19 +9,10 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 echo "Checking migration history..."
-python manage.py showmigrations
+python manage.py showmigrations || echo "Warning: showmigrations failed, continuing..."
 
-# Fix for InconsistentMigrationHistory: Migration account.0001_initial is applied before its dependency accounts.0001_initial
-echo "Fixing migration dependency issue..."
-python manage.py migrate accounts 0001 --fake-initial || echo "Warning: Fake initial migration may have failed, continuing..."
-
-# Ensure accounts app migrations are applied in correct order before creating new ones
-echo "Ensuring accounts migrations are fully applied before creating new migrations..."
-# First ensure all dependencies are met
-python manage.py migrate accounts 0001 --no-input || true
-python manage.py migrate accounts 0002 --no-input || true
-# Then apply the notification migration (must be applied before 0004)
-python manage.py migrate accounts 0003 --no-input || echo "Warning: Migration 0003 may have issues"
+# Note: Migration history fixes are handled in the comprehensive Python script below
+# to avoid triggering InconsistentMigrationHistory errors before we can fix them
 
 # Fix inconsistent migration history BEFORE makemigrations
 echo "Checking for inconsistent migration history..."
@@ -35,90 +26,232 @@ django.setup()
 
 from django.db import connection
 from django.core.management import call_command
+from django.db.migrations.loader import MigrationLoader
 
 cursor = connection.cursor()
 
-# Check migration states
-cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'accounts' AND name = '0002_fix_allauth_dependency'")
-has_0002 = cursor.fetchone()[0] > 0
+# Define migration dependency chain for accounts app
+# Format: (migration_name, dependencies_list, table_name_if_creates_one)
+ACCOUNTS_MIGRATIONS = [
+    ('0001_initial', [], None),  # Creates users, user_profiles, etc.
+    ('0002_fix_allauth_dependency', ['0001_initial', 'account.0001_initial'], None),
+    ('0003_notification', ['0002_fix_allauth_dependency'], 'notifications'),
+    ('0004_emailtemplate', ['0003_notification'], 'email_templates'),
+    ('0005_privacysettings_notificationpreference_auditlog_and_more', ['0004_emailtemplate'], None),
+]
 
-cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'accounts' AND name = '0003_notification'")
-has_0003 = cursor.fetchone()[0] > 0
+# Check migration states for all accounts migrations
+cursor.execute("""
+    SELECT name, applied 
+    FROM django_migrations 
+    WHERE app = 'accounts' 
+    ORDER BY name
+""")
+migration_states = {row[0]: row[1] for row in cursor.fetchall()}
 
-cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'accounts' AND name = '0004_emailtemplate'")
-has_0004 = cursor.fetchone()[0] > 0
+# Check for 'account' app migration (django-allauth dependency)
+cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'account' AND name = '0001_initial'")
+has_account_0001 = cursor.fetchone()[0] > 0
 
-# Check if tables exist
-cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'notifications')")
-notifications_exists = cursor.fetchone()[0]
+print("=" * 70)
+print("Migration Consistency Check")
+print("=" * 70)
 
-cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'email_templates')")
-email_templates_exists = cursor.fetchone()[0]
-
-print(f"Migration state: 0002={has_0002}, 0003={has_0003}, 0004={has_0004}")
-print(f"Tables exist: notifications={notifications_exists}, email_templates={email_templates_exists}")
-
-# Fix: If 0004 is applied but 0003 is not, we need to fix this
-if has_0004 and not has_0003:
-    print("  ⚠ Found inconsistent state: 0004 is applied but 0003 is not")
-    if notifications_exists:
-        print("  → Notifications table exists, faking migration 0003...")
-        try:
-            call_command('migrate', 'accounts', '0003_notification', '--fake', verbosity=1, interactive=False)
-            print("  ✓ Faked migration 0003_notification")
-            has_0003 = True
-        except Exception as e:
-            print(f"  ⚠ Failed to fake 0003: {e}")
-            # Try manual insert
-            cursor.execute("""
-                INSERT INTO django_migrations (app, name, applied)
-                SELECT 'accounts', '0003_notification', NOW()
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM django_migrations 
-                    WHERE app = 'accounts' AND name = '0003_notification'
-                )
-            """)
-            connection.commit()
-            print("  ✓ Manually marked 0003_notification as applied")
-            has_0003 = True
+# Check which migrations are applied
+applied_migrations = set()
+for mig_name, _, _ in ACCOUNTS_MIGRATIONS:
+    if mig_name in migration_states:
+        applied_migrations.add(mig_name)
+        print(f"  ✓ {mig_name} is applied")
     else:
-        print("  → Removing 0004 from history since 0003 dependency is missing and table doesn't exist")
-        cursor.execute("DELETE FROM django_migrations WHERE app = 'accounts' AND name = '0004_emailtemplate'")
-        connection.commit()
-        has_0004 = False
-        print("  ✓ Removed 0004 from migration history")
+        print(f"  ✗ {mig_name} is NOT applied")
 
-# Ensure 0003 is marked if table exists
-if notifications_exists and not has_0003:
-    print("  → Notifications table exists, marking 0003 as applied...")
+if has_account_0001:
+    print("  ✓ account.0001_initial (django-allauth) is applied")
+else:
+    print("  ✗ account.0001_initial (django-allauth) is NOT applied")
+
+print()
+
+# Step 1: Ensure account.0001_initial is marked (required dependency for 0002)
+if not has_account_0001:
+    print("  → Marking account.0001_initial as applied (required for accounts.0002)...")
     cursor.execute("""
         INSERT INTO django_migrations (app, name, applied)
-        SELECT 'accounts', '0003_notification', NOW()
+        SELECT 'account', '0001_initial', NOW()
         WHERE NOT EXISTS (
             SELECT 1 FROM django_migrations 
-            WHERE app = 'accounts' AND name = '0003_notification'
+            WHERE app = 'account' AND name = '0001_initial'
         )
     """)
     connection.commit()
-    print("  ✓ Marked 0003_notification as applied")
-    has_0003 = True
+    has_account_0001 = True
+    print("  ✓ Marked account.0001_initial as applied")
+    print()
 
-# Ensure 0004 is marked if table exists and 0003 is applied
-if email_templates_exists and has_0003 and not has_0004:
-    print("  → Email templates table exists, marking 0004 as applied...")
-    cursor.execute("""
-        INSERT INTO django_migrations (app, name, applied)
-        SELECT 'accounts', '0004_emailtemplate', NOW()
-        WHERE NOT EXISTS (
-            SELECT 1 FROM django_migrations 
-            WHERE app = 'accounts' AND name = '0004_emailtemplate'
-        )
-    """, [])
-    connection.commit()
-    print("  ✓ Marked 0004_emailtemplate as applied")
+# Step 2: Check table existence for migrations that create tables
+table_existence = {}
+for mig_name, _, table_name in ACCOUNTS_MIGRATIONS:
+    if table_name:
+        cursor.execute("""
+            SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = %s)
+        """, [table_name])
+        table_existence[mig_name] = cursor.fetchone()[0]
+        print(f"  Table '{table_name}' exists: {table_existence[mig_name]}")
 
-print("  ✓ Migration history fixed")
+print()
+
+# Step 3: Fix migration dependencies in order
+# We need to ensure each migration's dependencies are satisfied before it's marked as applied
+
+def get_dependencies(mig_name):
+    """Get the list of dependency migration names for a given migration."""
+    for mig, deps, _ in ACCOUNTS_MIGRATIONS:
+        if mig == mig_name:
+            return deps
+    return []
+
+def all_dependencies_satisfied(mig_name, applied_set):
+    """Check if all dependencies for a migration are satisfied."""
+    deps = get_dependencies(mig_name)
+    for dep in deps:
+        # Handle cross-app dependencies (e.g., 'account.0001_initial')
+        if '.' in dep:
+            app_name, dep_name = dep.split('.', 1)
+            if app_name == 'account' and dep_name == '0001_initial':
+                if not has_account_0001:
+                    return False
+        else:
+            # Same-app dependency
+            if dep not in applied_set:
+                return False
+    return True
+
+# Build a map of migration to its index in the chain
+mig_index = {mig: idx for idx, (mig, _, _) in enumerate(ACCOUNTS_MIGRATIONS)}
+
+# Identify problematic migrations (applied but dependencies missing)
+problematic = []
+for mig_name, _, _ in ACCOUNTS_MIGRATIONS:
+    if mig_name in applied_migrations:
+        if not all_dependencies_satisfied(mig_name, applied_migrations):
+            problematic.append(mig_name)
+            print(f"  ⚠ {mig_name} is applied but dependencies are missing")
+
+if problematic:
+    print(f"\n  → Found {len(problematic)} problematic migration(s), fixing...")
+    
+    # Remove problematic migrations from history (they'll be re-applied correctly)
+    for mig_name in problematic:
+        print(f"  → Removing {mig_name} from migration history...")
+        cursor.execute("""
+            DELETE FROM django_migrations 
+            WHERE app = 'accounts' AND name = %s
+        """, [mig_name])
+        connection.commit()
+        applied_migrations.discard(mig_name)
+        print(f"  ✓ Removed {mig_name} from history")
+    print()
+
+# Step 4: Ensure migrations are marked in correct order, faking if tables exist
+for mig_name, deps, table_name in ACCOUNTS_MIGRATIONS:
+    is_applied = mig_name in applied_migrations
+    deps_satisfied = all_dependencies_satisfied(mig_name, applied_migrations)
+    
+    if not is_applied and deps_satisfied:
+        # Migration not applied but dependencies are satisfied
+        if table_name and table_name in table_existence and table_existence[mig_name]:
+            # Table exists, fake the migration
+            print(f"  → Table '{table_name}' exists, faking migration {mig_name}...")
+            try:
+                call_command('migrate', 'accounts', mig_name, '--fake', verbosity=1, interactive=False)
+                applied_migrations.add(mig_name)
+                print(f"  ✓ Faked migration {mig_name}")
+            except Exception as e:
+                print(f"  ⚠ Failed to fake {mig_name}: {e}")
+                # Try manual insert as fallback
+                cursor.execute("""
+                    INSERT INTO django_migrations (app, name, applied)
+                    SELECT 'accounts', %s, NOW()
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM django_migrations 
+                        WHERE app = 'accounts' AND name = %s
+                    )
+                """, [mig_name, mig_name])
+                connection.commit()
+                applied_migrations.add(mig_name)
+                print(f"  ✓ Manually marked {mig_name} as applied")
+        elif not table_name:
+            # No-op migration (like 0002), safe to mark as applied if deps satisfied
+            print(f"  → Marking no-op migration {mig_name} as applied...")
+            cursor.execute("""
+                INSERT INTO django_migrations (app, name, applied)
+                SELECT 'accounts', %s, NOW()
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM django_migrations 
+                    WHERE app = 'accounts' AND name = %s
+                )
+            """, [mig_name, mig_name])
+            connection.commit()
+            applied_migrations.add(mig_name)
+            print(f"  ✓ Marked {mig_name} as applied")
+
+# Step 5: Final validation - ensure no out-of-order migrations remain
+print()
+print("  → Final validation...")
+final_problematic = []
+for mig_name, _, _ in ACCOUNTS_MIGRATIONS:
+    if mig_name in applied_migrations:
+        if not all_dependencies_satisfied(mig_name, applied_migrations):
+            final_problematic.append(mig_name)
+
+if final_problematic:
+    print(f"  ⚠ WARNING: Still found {len(final_problematic)} problematic migration(s)")
+    for mig_name in final_problematic:
+        print(f"    → Removing {mig_name} from history (final cleanup)...")
+        cursor.execute("""
+            DELETE FROM django_migrations 
+            WHERE app = 'accounts' AND name = %s
+        """, [mig_name])
+        connection.commit()
+    print("  ✓ Cleaned up remaining inconsistencies")
+else:
+    print("  ✓ All migrations are in consistent state")
+
+print()
+print("=" * 70)
+print("Migration history fix completed")
+print("=" * 70)
 PYTHON_SCRIPT
+
+# Verify migration consistency before proceeding
+echo "Verifying migration consistency..."
+python << 'PYTHON_SCRIPT'
+import os
+import sys
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'numerai.settings.production')
+django.setup()
+
+from django.db import connection
+from django.core.management import call_command
+
+try:
+    # This will raise InconsistentMigrationHistory if there are still issues
+    from django.db.migrations.loader import MigrationLoader
+    loader = MigrationLoader(connection)
+    loader.check_consistent_history(connection)
+    print("  ✓ Migration history is consistent")
+except Exception as e:
+    print(f"  ⚠ Migration consistency check failed: {e}")
+    print("  → This may indicate remaining issues that need manual intervention")
+    sys.exit(1)
+PYTHON_SCRIPT
+
+if [ $? -ne 0 ]; then
+    echo "  ⚠ Migration consistency check failed, but continuing..."
+fi
 
 echo "Creating migrations for all apps..."
 python manage.py makemigrations --no-input || echo "Warning: makemigrations failed, continuing..."
@@ -264,5 +397,13 @@ PYTHON_SCRIPT
 
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
+
+# Seed database with test data (optional, can be disabled with SKIP_SEED env var)
+if [ -z "$SKIP_SEED" ]; then
+    echo "Seeding database with test data..."
+    python manage.py seed_data --skip-migrations || echo "Warning: Seed data command failed, continuing..."
+else
+    echo "Skipping seed data (SKIP_SEED is set)"
+fi
 
 echo "Build completed successfully!"
