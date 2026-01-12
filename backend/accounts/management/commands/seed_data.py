@@ -24,11 +24,19 @@ from payments.models import Subscription, Payment, BillingHistory, WebhookEvent
 from feature_flags.models import FeatureFlag, SubscriptionFeatureAccess
 from numerology.models import (
     NumerologyProfile, DailyReading, CompatibilityCheck, Remedy,
-    RemedyTracking, Person, PersonNumerologyProfile
+    RemedyTracking, RemedyEffectiveness, RemedyCombination, RemedyReminder,
+    Person, PersonNumerologyProfile, RajYogDetection, Explanation,
+    WeeklyReport, YearlyReport, NameReport, PhoneReport, DetailedReading,
+    HealthNumerologyProfile, NameCorrection, SpiritualNumerologyProfile,
+    SoulContract, KarmicTimeline, RebirthCycle, PredictiveCycle,
+    BreakthroughYear, CrisisYear, LifeMilestone, GenerationalAnalysis,
+    FamilyUnitProfile, KarmicContract, FengShuiAnalysis, SpaceOptimization,
+    RoomNumerology, MentalStateTracking, MentalStateAnalysis, EmotionalCycle
 )
 from consultations.models import (
     Expert, Consultation, ExpertAvailability, ConsultationReview,
-    ExpertApplication, ExpertChatConversation, ExpertChatMessage
+    ExpertApplication, ExpertVerificationDocument, ExpertChatConversation, 
+    ExpertChatMessage, ExpertUnavailability
 )
 from reports.models import ReportTemplate, GeneratedReport, ScheduledReport, ReportComparison
 from rewards.models import Reward, Achievement, PointsTransaction, UserReward, UserAchievement
@@ -159,6 +167,8 @@ class Command(BaseCommand):
             self._seed_additional_consultations_data(users, experts)
             self._seed_additional_reports_data(users)
             self._seed_additional_rewards_data(users)
+            self._seed_additional_numerology_data(users)
+            self._seed_accounts_additional_data(users)
             self.stdout.write(self.style.SUCCESS('✓ Additional data seeded'))
 
         self.stdout.write(self.style.SUCCESS('\n' + '=' * 60))
@@ -785,6 +795,39 @@ class Command(BaseCommand):
                     message_content='Hello! I would be happy to help. What would you like to know?',
                     message_type='text',
                 )
+        
+        # Create expert applications
+        for i, expert in enumerate(experts[:2]):
+            ExpertApplication.objects.get_or_create(
+                expert=expert,
+                defaults={
+                    'application_text': f'Application from {expert.name}',
+                    'status': random.choice(['pending', 'under_review', 'approved']),
+                    'submitted_at': timezone.now() - timedelta(days=random.randint(1, 30)),
+                }
+            )
+        
+        # Create expert verification documents
+        applications = ExpertApplication.objects.filter(expert__in=experts[:2])
+        for application in applications:
+            ExpertVerificationDocument.objects.create(
+                expert=application.expert,
+                application=application,
+                document_type=random.choice(['certificate', 'license', 'education']),
+                document_name=f'{application.expert.name} Certificate',
+                description='Professional certification document',
+                is_verified=random.choice([True, False]),
+            )
+        
+        # Create expert unavailability
+        for expert in experts[:2]:
+            start_date = date.today() + timedelta(days=random.randint(1, 7))
+            ExpertUnavailability.objects.create(
+                expert=expert,
+                start_date=start_date,
+                end_date=start_date + timedelta(days=random.randint(1, 3)),
+                reason=random.choice(['personal', 'holiday', 'training']),
+            )
 
     def _seed_additional_reports_data(self, users):
         """Seed additional report data."""
@@ -1024,3 +1067,422 @@ class Command(BaseCommand):
                         'expires_at': timezone.now() + timedelta(days=30),
                     }
                 )
+    
+    def _seed_additional_numerology_data(self, users):
+        """Seed additional numerology models."""
+        # Get existing profiles and persons
+        profiles = NumerologyProfile.objects.filter(user__in=users[:5])
+        persons = Person.objects.filter(user__in=users[:3])
+        remedies = Remedy.objects.filter(user__in=users[:3])
+        
+        # Remedy Effectiveness
+        for remedy in remedies[:3]:
+            RemedyEffectiveness.objects.create(
+                user=remedy.user,
+                remedy=remedy,
+                effectiveness_score=random.uniform(3.5, 5.0),
+                feedback='Very effective, noticed positive changes',
+                period_start=date.today() - timedelta(days=30),
+                period_end=date.today(),
+            )
+        
+        # Remedy Combinations
+        if remedies.count() >= 2:
+            RemedyCombination.objects.create(
+                user=remedies[0].user,
+                primary_remedy=remedies[0],
+                secondary_remedy=remedies[1],
+                combination_score=random.uniform(7.0, 10.0),
+                notes='Combination for morning energy',
+            )
+        
+        # Remedy Reminders
+        for remedy in remedies[:3]:
+            RemedyReminder.objects.create(
+                user=remedy.user,
+                remedy=remedy,
+                reminder_time='09:00:00',
+                is_active=True,
+                frequency='daily',
+            )
+        
+        # RajYog Detection
+        for profile in profiles[:3]:
+            person = persons.filter(user=profile.user).first() if persons.exists() else None
+            RajYogDetection.objects.create(
+                user=profile.user,
+                person=person,
+                is_detected=random.choice([True, False]),
+                yog_type=random.choice(['leadership', 'spiritual', 'material']) if random.choice([True, False]) else None,
+                yog_name='Leadership Raj Yog' if random.choice([True, False]) else None,
+                strength_score=random.randint(70, 100) if random.choice([True, False]) else 0,
+                contributing_numbers={'life_path': profile.life_path_number, 'destiny': profile.destiny_number},
+                detected_combinations=[[profile.life_path_number, profile.destiny_number]],
+            )
+        
+        # Explanations
+        for profile in profiles[:3]:
+            Explanation.objects.create(
+                user=profile.user,
+                explanation_type=random.choice(['raj_yog', 'daily', 'number', 'general']),
+                title='Life Path Number Meaning',
+                content='Your life path number indicates strong leadership qualities and independence.',
+                context_data={'life_path_number': profile.life_path_number},
+            )
+        
+        # Weekly Reports
+        for user in users[:3]:
+            person = persons.filter(user=user).first() if persons.exists() else None
+            week_start = date.today() - timedelta(days=7)
+            WeeklyReport.objects.create(
+                user=user,
+                person=person,
+                week_start_date=week_start,
+                week_end_date=week_start + timedelta(days=6),
+                week_number=random.randint(1, 52),
+                year=date.today().year,
+                weekly_number=random.randint(1, 9),
+                personal_year_number=random.randint(1, 9),
+                personal_month_number=random.randint(1, 9),
+                main_theme='A week of growth and opportunities',
+                weekly_summary='Focus on communication and make important decisions',
+                daily_insights=[{'day': i, 'insight': f'Day {i} insight'} for i in range(7)],
+                weekly_trends={'trend': 'positive', 'energy': 'high'},
+                recommendations=['Focus on communication', 'Good time for decisions'],
+                challenges=['Time management', 'Balancing priorities'],
+                opportunities=['New connections', 'Career growth'],
+            )
+        
+        # Yearly Reports
+        for user in users[:3]:
+            person = persons.filter(user=user).first() if persons.exists() else None
+            YearlyReport.objects.create(
+                user=user,
+                person=person,
+                year=date.today().year,
+                personal_year_number=random.randint(1, 9),
+                main_theme='A transformative year ahead',
+                yearly_summary='Growth, relationships, and career opportunities',
+                key_themes=['Growth', 'Relationships', 'Career'],
+                monthly_overview=[{'month': i, 'theme': f'Month {i} theme'} for i in range(1, 13)],
+                key_dates=[{'date': str(date.today() + timedelta(days=random.randint(30, 365))), 'significance': 'Important event'}],
+                opportunities=['Career advancement', 'New relationships'],
+                challenges=['Work-life balance', 'Financial planning'],
+                recommendations=['Focus on growth', 'Maintain balance'],
+            )
+        
+        # Name Reports
+        for user in users[:3]:
+            NameReport.objects.create(
+                user=user,
+                name_analyzed=user.full_name,
+                destiny_number=random.randint(1, 9),
+                soul_urge_number=random.randint(1, 9),
+                personality_number=random.randint(1, 9),
+                analysis='Your name carries strong vibrations of leadership and creativity.',
+            )
+        
+        # Phone Reports
+        for user in users[:3]:
+            phone_num = f'+1{random.randint(1000000000, 9999999999)}'
+            PhoneReport.objects.create(
+                user=user,
+                phone_number=phone_num,
+                phone_vibration=random.randint(1, 9),
+                compatibility_score=random.randint(70, 100),
+                analysis='This phone number is compatible with your numerology profile.',
+            )
+        
+        # Detailed Readings
+        for profile in profiles[:3]:
+            DetailedReading.objects.create(
+                user=profile.user,
+                number_type='life_path',
+                number_value=profile.life_path_number,
+                reading_text='Your life path number reveals your core purpose and natural talents.',
+                insights=['Natural leader', 'Independent spirit', 'Innovative thinker'],
+            )
+        
+        # Health Numerology Profile
+        for profile in profiles[:3]:
+            HealthNumerologyProfile.objects.get_or_create(
+                user=profile.user,
+                defaults={
+                    'stress_number': random.randint(1, 9),
+                    'vitality_number': random.randint(1, 9),
+                    'health_cycle_number': random.randint(1, 9),
+                    'health_cycles': {'nine_year': random.randint(1, 9), 'seven_year': random.randint(1, 7)},
+                    'current_cycle': {'phase': 'growth', 'number': random.randint(1, 9)},
+                    'medical_timing': {'optimal_months': [3, 6, 9]},
+                    'health_windows': [{'year': date.today().year, 'months': [3, 6, 9]}],
+                    'risk_periods': [],
+                }
+            )
+        
+        # Name Correction
+        for user in users[:3]:
+            NameCorrection.objects.create(
+                user=user,
+                original_name=user.full_name,
+                current_expression=random.randint(1, 9),
+                target_expression=random.randint(1, 9),
+                suggestions=[{'name': f'{user.full_name} Modified', 'reason': 'Better numerology alignment'}],
+                recommendations=['Consider name adjustments for better alignment'],
+            )
+        
+        # Spiritual Numerology Profile
+        for profile in profiles[:3]:
+            SpiritualNumerologyProfile.objects.get_or_create(
+                user=profile.user,
+                defaults={
+                    'spiritual_number': random.randint(1, 9),
+                    'spiritual_path': 'Enlightenment and service',
+                    'karmic_lessons': ['Patience', 'Compassion'],
+                    'spiritual_insights': {'awakening_level': 'moderate', 'soul_age': 'mature'},
+                }
+            )
+        
+        # Soul Contract
+        for profile in profiles[:3]:
+            SoulContract.objects.get_or_create(
+                user=profile.user,
+                defaults={
+                    'contract_type': random.choice(['service', 'learning', 'teaching']),
+                    'contract_details': 'Your soul contract involves helping others through numerology insights.',
+                    'karmic_debts': [random.randint(1, 9)],
+                    'spiritual_mission': 'Spread awareness and guidance',
+                }
+            )
+        
+        # Karmic Timeline
+        for profile in profiles[:3]:
+            KarmicTimeline.objects.create(
+                user=profile.user,
+                timeline_data={
+                    'past_lives': [{'era': 'ancient', 'role': 'teacher'}],
+                    'current_life': {'purpose': 'service', 'lessons': ['compassion']},
+                    'future_potential': {'growth': 'spiritual', 'impact': 'high'},
+                },
+                karmic_cycles=[{'cycle': 1, 'theme': 'learning'}, {'cycle': 2, 'theme': 'teaching'}],
+            )
+        
+        # Rebirth Cycle
+        for profile in profiles[:3]:
+            RebirthCycle.objects.create(
+                user=profile.user,
+                cycle_number=random.randint(1, 9),
+                cycle_phase=random.choice(['beginning', 'middle', 'end']),
+                rebirth_insights='You are in a phase of spiritual renewal.',
+                cycle_duration_years=random.randint(7, 9),
+            )
+        
+        # Predictive Cycle
+        for user in users[:3]:
+            PredictiveCycle.objects.create(
+                user=user,
+                cycle_type=random.choice(['nine_year', 'breakthrough', 'crisis', 'opportunity']),
+                year=date.today().year,
+                cycle_data={'number': random.randint(1, 9), 'phase': 'growth'},
+            )
+        
+        # Breakthrough Year
+        for user in users[:3]:
+            BreakthroughYear.objects.create(
+                user=user,
+                year=date.today().year + random.randint(0, 2),
+                personal_year=random.randint(1, 9),
+                breakthrough_type=random.choice(['career', 'spiritual', 'personal']),
+                description='A year of major breakthroughs and transformations',
+                preparation='Focus on personal growth and opportunities',
+            )
+        
+        # Crisis Year
+        for user in users[:3]:
+            CrisisYear.objects.create(
+                user=user,
+                year=date.today().year + random.randint(1, 3),
+                personal_year=random.randint(1, 9),
+                crisis_type=random.choice(['financial', 'relationship', 'health']),
+                severity=random.choice(['low', 'medium', 'high']),
+                guidance='Focus on stability and seek support during challenging times.',
+            )
+        
+        # Life Milestone
+        for user in users[:3]:
+            LifeMilestone.objects.create(
+                user=user,
+                milestone_type=random.choice(['career', 'relationship', 'spiritual']),
+                predicted_date=date.today() + timedelta(days=random.randint(90, 365)),
+                significance='A significant life event that will shape your future',
+                numerology_context={'number': random.randint(1, 9), 'meaning': 'Transformation'},
+            )
+        
+        # Generational Analysis
+        if persons.count() >= 2:
+            person_ids = sorted([str(p.id) for p in persons[:2]])
+            family_hash = hashlib.sha256(''.join(person_ids).encode()).hexdigest()
+            GenerationalAnalysis.objects.get_or_create(
+                user=users[0],
+                family_unit_hash=family_hash,
+                defaults={
+                    'generational_number': random.randint(1, 9),
+                    'analysis_data': {'common_numbers': [1, 5], 'patterns': ['independence', 'innovation']},
+                }
+            )
+        
+        # Family Unit Profile
+        if persons.count() >= 2:
+            person_ids = sorted([str(p.id) for p in persons[:2]])
+            family_hash = hashlib.sha256(''.join(person_ids).encode()).hexdigest()
+            FamilyUnitProfile.objects.get_or_create(
+                user=users[0],
+                family_unit_hash=family_hash,
+                defaults={
+                    'member_count': persons.count(),
+                    'family_life_path': random.randint(1, 9),
+                    'family_destiny': random.randint(1, 9),
+                    'generational_number': random.randint(1, 9),
+                    'compatibility_score': random.randint(70, 100),
+                    'dynamics': {'harmony': 'high', 'communication': 'strong'},
+                }
+            )
+        
+        # Karmic Contract
+        if persons.count() >= 2:
+            KarmicContract.objects.create(
+                user=users[0],
+                parent_person=persons[0],
+                child_person=persons[1] if persons.count() > 1 else persons[0],
+                contract_type=random.choice(['teaching', 'learning', 'healing']),
+                karmic_lessons=['Unconditional love', 'Patience'],
+                relationship_dynamics='Parent-child relationship with strong karmic bonds',
+            )
+        
+        # Feng Shui Analysis
+        for user in users[:3]:
+            FengShuiAnalysis.objects.create(
+                user=user,
+                house_number=str(random.randint(1, 999)),
+                numerology_vibration=random.randint(1, 9),
+                hybrid_score=random.randint(70, 100),
+                recommendations=['Place water elements in north', 'Use number 8 colors'],
+            )
+        
+        # Space Optimization (requires FengShuiAnalysis)
+        feng_shui_analyses = FengShuiAnalysis.objects.filter(user__in=users[:3])
+        for analysis in feng_shui_analyses[:2]:
+            SpaceOptimization.objects.create(
+                analysis=analysis,
+                room_name=random.choice(['Bedroom', 'Office', 'Living Room']),
+                room_number=str(random.randint(1, 9)),
+                direction=random.choice(['north', 'east', 'south', 'west']),
+                color_recommendations=['blue', 'green'],
+                number_combinations=[[random.randint(1, 9), random.randint(1, 9)]],
+                energy_flow_score=random.randint(70, 100),
+            )
+        
+        # Room Numerology
+        for user in users[:3]:
+            RoomNumerology.objects.create(
+                user=user,
+                room_type=random.choice(['bedroom', 'office', 'living_room']),
+                room_number=random.randint(1, 9),
+                room_vibration=random.randint(1, 9),
+                recommendations=['Use specific colors', 'Place items in favorable positions'],
+                compatibility_score=random.randint(70, 100),
+            )
+        
+        # Mental State Tracking
+        for user in users[:3]:
+            for i in range(5):
+                MentalStateTracking.objects.get_or_create(
+                    user=user,
+                    date=date.today() - timedelta(days=i),
+                    defaults={
+                        'emotional_state': random.choice(['very_positive', 'positive', 'neutral', 'negative']),
+                        'mood_score': random.randint(50, 100),
+                        'stress_level': random.randint(0, 50),
+                        'notes': f'Day {i+1} tracking',
+                    }
+                )
+        
+        # Mental State Analysis
+        for user in users[:3]:
+            MentalStateAnalysis.objects.create(
+                user=user,
+                period_start=date.today() - timedelta(days=30),
+                period_end=date.today(),
+                overall_state=random.choice(['balanced', 'positive', 'needs_attention']),
+                numerology_insights='Your current numerology cycle supports mental clarity',
+                recommendations=['Practice meditation', 'Maintain routine'],
+                analysis_data={'patterns': ['stable', 'growing'], 'trends': ['improving']},
+            )
+        
+        # Emotional Cycle
+        for user in users[:3]:
+            EmotionalCycle.objects.create(
+                user=user,
+                cycle_phase=random.choice(['high', 'low', 'transition']),
+                cycle_number=random.randint(1, 9),
+                emotional_insights='Current emotional cycle supports growth and healing',
+                cycle_duration_days=random.randint(7, 28),
+                peak_dates=[date.today() + timedelta(days=random.randint(1, 30)) for _ in range(2)],
+            )
+    
+    def _seed_accounts_additional_data(self, users):
+        """Seed additional accounts models."""
+        # OTP Codes
+        for user in users[:2]:
+            OTPCode.objects.create(
+                user=user,
+                code=str(random.randint(100000, 999999)),
+                type=random.choice(['email', 'phone']),
+                expires_at=timezone.now() + timedelta(minutes=10),
+            )
+        
+        # Refresh Tokens
+        for user in users[:2]:
+            RefreshToken.objects.create(
+                user=user,
+                token=f'refresh_token_{user.id}_{random.randint(1000, 9999)}',
+                expires_at=timezone.now() + timedelta(days=30),
+            )
+        
+        # Device Tokens
+        for user in users[:3]:
+            DeviceToken.objects.create(
+                user=user,
+                fcm_token=f'fcm_token_{user.id}_{random.randint(100000, 999999)}',
+                device_type=random.choice(['ios', 'android', 'web']),
+                device_name=random.choice(['iPhone 14', 'Samsung Galaxy', 'Chrome Browser']),
+            )
+        
+        # Password Reset Tokens
+        for user in users[:2]:
+            PasswordResetToken.objects.create(
+                user=user,
+                token=f'reset_token_{user.id}_{random.randint(1000, 9999)}',
+                expires_at=timezone.now() + timedelta(hours=1),
+            )
+        
+        # Email Templates
+        email_templates = [
+            {'name': 'Welcome Email', 'subject': 'Welcome to NumerAI', 'template_type': 'welcome'},
+            {'name': 'Daily Reading', 'subject': 'Your Daily Numerology Reading', 'template_type': 'daily_reading'},
+            {'name': 'Report Ready', 'subject': 'Your Report is Ready', 'template_type': 'report_ready'},
+        ]
+        for template_data in email_templates:
+            EmailTemplate.objects.get_or_create(
+                name=template_data['name'],
+                defaults=template_data
+            )
+        
+        # Audit Logs
+        for user in users[:3]:
+            AuditLog.objects.create(
+                user=user,
+                action=random.choice(['profile_update', 'subscription_change', 'payment']),
+                resource_type='user',
+                resource_id=str(user.id),
+                metadata={'ip_address': '127.0.0.1', 'user_agent': 'Mozilla/5.0'},
+            )

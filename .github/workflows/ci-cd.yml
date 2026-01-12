@@ -262,70 +262,137 @@ jobs:
           npm audit --audit-level=moderate || true
           npm outdated || true
 
-  deploy-staging:
-    name: Deploy to Staging
+  deploy-backend-staging:
+    name: Deploy Backend to Staging
     runs-on: ubuntu-latest
-    needs: [changes, test-backend, build-frontend, security-scan]
+    needs: [changes, test-backend, security-scan]
     if: |
       github.ref == 'refs/heads/develop' && 
       github.event_name == 'push' &&
-      needs.changes.outputs.deploy == 'true' &&
-      (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped') &&
-      (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped')
+      needs.changes.outputs.backend == 'true' &&
+      needs.test-backend.result == 'success' &&
+      (needs.security-scan.result == 'success' || needs.security-scan.result == 'skipped')
     environment:
       name: staging
       url: https://numerai-staging.onrender.com
     steps:
       - uses: actions/checkout@v6
       
-      - name: Deploy to Render
+      - name: Deploy Backend to Render
         run: |
-          echo "Deployment to staging would happen here"
-          echo "Configure Render webhook or use Render CLI for actual deployment"
+          echo "Backend deployment to staging would happen here"
+          echo "Configure Render webhook or use Render CLI for backend deployment"
       
-      - name: Health Check
+      - name: Backend Health Check
         run: |
-          echo "Running health checks after deployment"
+          echo "Running backend health checks after deployment"
           # curl -f https://numerai-staging.onrender.com/api/v1/health/ || exit 1
 
-  deploy-production:
-    name: Deploy to Production
+  deploy-frontend-staging:
+    name: Deploy Frontend to Staging
     runs-on: ubuntu-latest
-    needs: [changes, test-backend, build-frontend, security-scan]
+    needs: [changes, build-frontend, security-scan]
+    if: |
+      github.ref == 'refs/heads/develop' && 
+      github.event_name == 'push' &&
+      needs.changes.outputs.frontend == 'true' &&
+      needs.build-frontend.result == 'success' &&
+      (needs.security-scan.result == 'success' || needs.security-scan.result == 'skipped')
+    environment:
+      name: staging
+      url: https://numerai-staging.onrender.com
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Deploy Frontend to Render
+        run: |
+          echo "Frontend deployment to staging would happen here"
+          echo "Configure Render webhook or use Render CLI for frontend deployment"
+      
+      - name: Frontend Health Check
+        run: |
+          echo "Running frontend health checks after deployment"
+          # curl -f https://numerai-staging.onrender.com || exit 1
+
+  deploy-backend-production:
+    name: Deploy Backend to Production
+    runs-on: ubuntu-latest
+    needs: [changes, test-backend, security-scan]
     if: |
       github.ref == 'refs/heads/main' && 
       github.event_name == 'push' &&
-      needs.changes.outputs.deploy == 'true' &&
-      (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped') &&
-      (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped')
+      needs.changes.outputs.backend == 'true' &&
+      needs.test-backend.result == 'success' &&
+      (needs.security-scan.result == 'success' || needs.security-scan.result == 'skipped')
     environment:
       name: production
       url: https://numerai.onrender.com
     steps:
       - uses: actions/checkout@v6
       
-      - name: Canary Deployment
+      - name: Canary Deployment (Backend)
         run: |
-          echo "Canary deployment would happen here"
-          echo "1. Deploy to 10% of traffic"
+          echo "Backend canary deployment would happen here"
+          echo "1. Deploy backend to 10% of traffic"
           echo "2. Monitor metrics for 5 minutes"
           echo "3. If healthy, deploy to 50%"
           echo "4. Monitor for 5 minutes"
           echo "5. If healthy, deploy to 100%"
       
-      - name: Deploy to Production
+      - name: Deploy Backend to Production
         run: |
-          echo "Full production deployment"
+          echo "Full backend production deployment"
           echo "Configure deployment service here"
       
-      - name: Post-deployment Health Check
+      - name: Post-deployment Backend Health Check
         run: |
-          echo "Running health checks"
+          echo "Running backend health checks"
           # curl -f https://numerai.onrender.com/api/v1/health/ || exit 1
       
       - name: Rollback on Failure
         if: failure()
         run: |
-          echo "Deployment failed, initiating rollback"
+          echo "Backend deployment failed, initiating rollback"
+          # Add rollback logic here
+
+  deploy-frontend-production:
+    name: Deploy Frontend to Production
+    runs-on: ubuntu-latest
+    needs: [changes, build-frontend, security-scan]
+    if: |
+      github.ref == 'refs/heads/main' && 
+      github.event_name == 'push' &&
+      needs.changes.outputs.frontend == 'true' &&
+      needs.build-frontend.result == 'success' &&
+      (needs.security-scan.result == 'success' || needs.security-scan.result == 'skipped')
+    environment:
+      name: production
+      url: https://numerai.onrender.com
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Canary Deployment (Frontend)
+        run: |
+          echo "Frontend canary deployment would happen here"
+          echo "1. Deploy frontend to 10% of traffic"
+          echo "2. Monitor metrics for 5 minutes"
+          echo "3. If healthy, deploy to 50%"
+          echo "4. Monitor for 5 minutes"
+          echo "5. If healthy, deploy to 100%"
+      
+      - name: Deploy Frontend to Production
+        run: |
+          echo "Full frontend production deployment"
+          echo "Configure deployment service here"
+      
+      - name: Post-deployment Frontend Health Check
+        run: |
+          echo "Running frontend health checks"
+          # curl -f https://numerai.onrender.com || exit 1
+      
+      - name: Rollback on Failure
+        if: failure()
+        run: |
+          echo "Frontend deployment failed, initiating rollback"
           # Add rollback logic here
 
