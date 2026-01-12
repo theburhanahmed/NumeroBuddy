@@ -1719,13 +1719,31 @@ class Command(BaseCommand):
         
         # Email Templates
         email_templates = [
-            {'name': 'Welcome Email', 'subject': 'Welcome to NumerAI', 'template_type': 'welcome'},
-            {'name': 'Daily Reading', 'subject': 'Your Daily Numerology Reading', 'template_type': 'daily_reading'},
-            {'name': 'Report Ready', 'subject': 'Your Report is Ready', 'template_type': 'report_ready'},
+            {
+                'template_type': 'welcome',
+                'subject': 'Welcome to NumerAI',
+                'body_html': '<h1>Welcome to NumerAI!</h1><p>Thank you for joining us.</p>',
+                'body_text': 'Welcome to NumerAI! Thank you for joining us.',
+                'variables': {'user_name': 'string'},
+            },
+            {
+                'template_type': 'daily_reading',
+                'subject': 'Your Daily Numerology Reading',
+                'body_html': '<h1>Your Daily Reading</h1><p>Here is your numerology reading for today.</p>',
+                'body_text': 'Your Daily Reading: Here is your numerology reading for today.',
+                'variables': {'reading_date': 'date', 'lucky_number': 'number'},
+            },
+            {
+                'template_type': 'report_ready',
+                'subject': 'Your Report is Ready',
+                'body_html': '<h1>Report Ready</h1><p>Your numerology report has been generated.</p>',
+                'body_text': 'Report Ready: Your numerology report has been generated.',
+                'variables': {'report_name': 'string', 'report_url': 'url'},
+            },
         ]
         for template_data in email_templates:
             EmailTemplate.objects.get_or_create(
-                name=template_data['name'],
+                template_type=template_data['template_type'],
                 defaults=template_data
             )
         
