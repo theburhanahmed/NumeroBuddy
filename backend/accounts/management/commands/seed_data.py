@@ -424,18 +424,23 @@ class Command(BaseCommand):
                     )
             
             # Create compatibility checks (one per relationship type)
+            # Handle existing duplicates by deleting them first, then creating
             relationship_type = random.choice(['romantic', 'business', 'friendship', 'family'])
-            CompatibilityCheck.objects.get_or_create(
+            CompatibilityCheck.objects.filter(
+                user=user,
+                partner_name='Test Partner',
+                partner_birth_date=date(1990, 6, 20),
+                relationship_type=relationship_type
+            ).delete()
+            CompatibilityCheck.objects.create(
                 user=user,
                 partner_name='Test Partner',
                 partner_birth_date=date(1990, 6, 20),
                 relationship_type=relationship_type,
-                defaults={
-                    'compatibility_score': random.randint(60, 100),
-                    'strengths': ['Communication', 'Trust'],
-                    'challenges': ['Different interests'],
-                    'advice': 'Focus on open communication.',
-                }
+                compatibility_score=random.randint(60, 100),
+                strengths=['Communication', 'Trust'],
+                challenges=['Different interests'],
+                advice='Focus on open communication.',
             )
 
             # Create Person entries (use get_or_create to handle unique constraint on user, name, birth_date)
