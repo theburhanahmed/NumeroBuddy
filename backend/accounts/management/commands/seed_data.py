@@ -1165,30 +1165,38 @@ class Command(BaseCommand):
         # Yearly Reports
         for user in users[:3]:
             person = persons.filter(user=user).first() if persons.exists() else None
-            YearlyReport.objects.create(
+            YearlyReport.objects.get_or_create(
                 user=user,
                 person=person,
                 year=date.today().year,
-                personal_year_number=random.randint(1, 9),
-                main_theme='A transformative year ahead',
-                yearly_summary='Growth, relationships, and career opportunities',
-                key_themes=['Growth', 'Relationships', 'Career'],
-                monthly_overview=[{'month': i, 'theme': f'Month {i} theme'} for i in range(1, 13)],
-                key_dates=[{'date': str(date.today() + timedelta(days=random.randint(30, 365))), 'significance': 'Important event'}],
-                opportunities=['Career advancement', 'New relationships'],
-                challenges=['Work-life balance', 'Financial planning'],
-                recommendations=['Focus on growth', 'Maintain balance'],
+                defaults={
+                    'personal_year_number': random.randint(1, 9),
+                    'personal_year_cycle': random.choice(['beginning', 'middle', 'end']),
+                    'annual_overview': 'A transformative year ahead with growth, relationships, and career opportunities',
+                    'major_themes': ['Growth', 'Relationships', 'Career'],
+                    'month_by_month': {str(i): f'Month {i} theme' for i in range(1, 13)},
+                    'key_dates': [{'date': str(date.today() + timedelta(days=random.randint(30, 365))), 'significance': 'Important event'}],
+                    'opportunities': ['Career advancement', 'New relationships'],
+                    'challenges': ['Work-life balance', 'Financial planning'],
+                    'recommendations': ['Focus on growth', 'Maintain balance'],
+                }
             )
         
         # Name Reports
         for user in users[:3]:
             NameReport.objects.create(
                 user=user,
-                name_analyzed=user.full_name,
-                destiny_number=random.randint(1, 9),
-                soul_urge_number=random.randint(1, 9),
-                personality_number=random.randint(1, 9),
-                analysis='Your name carries strong vibrations of leadership and creativity.',
+                name=user.full_name,
+                name_type=random.choice(['birth', 'current', 'nickname']),
+                system=random.choice(['pythagorean', 'chaldean']),
+                normalized_name=user.full_name.upper(),
+                numbers={
+                    'expression': random.randint(1, 9),
+                    'soul_urge': random.randint(1, 9),
+                    'personality': random.randint(1, 9),
+                    'name_vibration': random.randint(1, 9),
+                },
+                breakdown={'letters': {}, 'words': {}},
             )
         
         # Phone Reports
@@ -1196,20 +1204,32 @@ class Command(BaseCommand):
             phone_num = f'+1{random.randint(1000000000, 9999999999)}'
             PhoneReport.objects.create(
                 user=user,
-                phone_number=phone_num,
-                phone_vibration=random.randint(1, 9),
-                compatibility_score=random.randint(70, 100),
-                analysis='This phone number is compatible with your numerology profile.',
+                phone_raw=phone_num,
+                phone_e164=phone_num,
+                country='US',
+                method=random.choice(['core', 'full', 'compatibility']),
+                computed={
+                    'vibration': random.randint(1, 9),
+                    'compatibility_score': random.randint(70, 100),
+                    'breakdown': {},
+                    'evidence_map': {},
+                },
             )
         
         # Detailed Readings
         for profile in profiles[:3]:
-            DetailedReading.objects.create(
+            DetailedReading.objects.get_or_create(
                 user=profile.user,
-                number_type='life_path',
-                number_value=profile.life_path_number,
-                reading_text='Your life path number reveals your core purpose and natural talents.',
-                insights=['Natural leader', 'Independent spirit', 'Innovative thinker'],
+                reading_type='life_path',
+                number=profile.life_path_number,
+                defaults={
+                    'detailed_interpretation': 'Your life path number reveals your core purpose and natural talents.',
+                    'career_insights': 'Natural leadership abilities and innovative thinking will serve you well in your career.',
+                    'relationship_insights': 'You value independence and seek partners who respect your need for space.',
+                    'life_purpose': 'To lead and inspire others through your unique vision and creativity.',
+                    'challenges_and_growth': 'Learn to balance independence with collaboration.',
+                    'personalized_advice': 'Focus on developing your leadership skills while remaining open to feedback.',
+                }
             )
         
         # Health Numerology Profile
