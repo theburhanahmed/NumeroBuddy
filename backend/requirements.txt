@@ -69,7 +69,7 @@ pytest-django==4.8.0
 pytest-cov==4.1.0
 
 # Error Tracking & Monitoring
-sentry-sdk==1.40.0
+sentry-sdk==2.49.0
 
 # GraphQL
 graphene-django==3.1.5
