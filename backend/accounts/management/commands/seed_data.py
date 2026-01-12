@@ -235,24 +235,34 @@ class Command(BaseCommand):
 
             users.append(user)
 
-        # Create additional random users
+        # Create additional random users (skip if they already exist)
         for i in range(10):
-            user = User.objects.create_user(
-                email=f'user{i}@test.com',
-                full_name=f'Test User {i}',
-                password='testpass123',
-                subscription_plan=random.choice(['free', 'basic', 'premium', 'elite']),
-                is_verified=random.choice([True, False]),
-            )
-            
-            if random.choice([True, False]):
-                UserProfile.objects.create(
-                    user=user,
-                    date_of_birth=date(1990 + i, random.randint(1, 12), random.randint(1, 28)),
-                    gender=random.choice(['male', 'female', 'other']),
-                    timezone='Asia/Kolkata',
+            email = f'user{i}@test.com'
+            try:
+                user = User.objects.get(email=email)
+                # User already exists, add to list
+                users.append(user)
+            except User.DoesNotExist:
+                # Create new user
+                user = User.objects.create_user(
+                    email=email,
+                    full_name=f'Test User {i}',
+                    password='testpass123',
+                    subscription_plan=random.choice(['free', 'basic', 'premium', 'elite']),
+                    is_verified=random.choice([True, False]),
                 )
-            users.append(user)
+                users.append(user)
+            
+            # Create profile if it doesn't exist
+            if not hasattr(user, 'profile') or not user.profile:
+                UserProfile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        'date_of_birth': date(1990 + i, random.randint(1, 12), random.randint(1, 28)),
+                        'gender': random.choice(['male', 'female', 'other']),
+                        'timezone': 'Asia/Kolkata',
+                    }
+                )
 
         return users
 
