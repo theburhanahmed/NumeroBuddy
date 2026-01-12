@@ -78,4 +78,4 @@ django-graphql-jwt==0.4.0
 # WebSocket & Real-time
 channels==4.0.0
 channels-redis==4.1.0
-daphne==4.0.0
+daphne==4.2.1
