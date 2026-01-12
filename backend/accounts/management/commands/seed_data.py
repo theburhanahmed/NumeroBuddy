@@ -1604,25 +1604,58 @@ class Command(BaseCommand):
         
         # Mental State Analysis
         for user in users[:3]:
-            MentalStateAnalysis.objects.create(
+            MentalStateAnalysis.objects.get_or_create(
                 user=user,
                 period_start=date.today() - timedelta(days=30),
                 period_end=date.today(),
-                overall_state=random.choice(['balanced', 'positive', 'needs_attention']),
-                numerology_insights='Your current numerology cycle supports mental clarity',
-                recommendations=['Practice meditation', 'Maintain routine'],
-                analysis_data={'patterns': ['stable', 'growing'], 'trends': ['improving']},
+                defaults={
+                    'stress_patterns': {
+                        'identified_patterns': ['work_stress', 'sleep_issues'],
+                        'frequency': 'moderate',
+                        'triggers': ['deadlines', 'social_events'],
+                    },
+                    'wellbeing_recommendations': [
+                        'Practice meditation daily',
+                        'Maintain consistent sleep schedule',
+                        'Engage in physical activity',
+                    ],
+                    'mood_predictions': {
+                        'next_week': 'positive',
+                        'next_month': 'balanced',
+                        'confidence': 0.75,
+                    },
+                    'emotional_compatibility': {
+                        'with_family': 0.85,
+                        'with_friends': 0.90,
+                        'with_partner': 0.80,
+                    },
+                    'numerology_correlations': {
+                        'life_path_influence': 'strong',
+                        'current_cycle': 'growth',
+                        'insights': 'Your current numerology cycle supports mental clarity',
+                    },
+                }
             )
         
         # Emotional Cycle
         for user in users[:3]:
-            EmotionalCycle.objects.create(
+            start_date = date.today() - timedelta(days=random.randint(1, 30))
+            end_date = start_date + timedelta(days=random.randint(7, 28))
+            EmotionalCycle.objects.get_or_create(
                 user=user,
-                cycle_phase=random.choice(['high', 'low', 'transition']),
-                cycle_number=random.randint(1, 9),
-                emotional_insights='Current emotional cycle supports growth and healing',
-                cycle_duration_days=random.randint(7, 28),
-                peak_dates=[date.today() + timedelta(days=random.randint(1, 30)) for _ in range(2)],
+                cycle_type=random.choice(['daily', 'weekly', 'monthly', 'yearly']),
+                start_date=start_date,
+                defaults={
+                    'end_date': end_date,
+                    'predicted_mood': random.choice(['positive', 'balanced', 'reflective', 'energetic']),
+                    'mood_score_range': [random.randint(50, 70), random.randint(70, 90)],
+                    'energy_level': random.choice(['low', 'low-moderate', 'moderate', 'moderate-high', 'high']),
+                    'recommendations': [
+                        'Practice mindfulness',
+                        'Engage in creative activities',
+                        'Maintain social connections',
+                    ],
+                }
             )
     
     def _seed_accounts_additional_data(self, users):
