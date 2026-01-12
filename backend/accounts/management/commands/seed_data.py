@@ -1271,23 +1271,24 @@ class Command(BaseCommand):
             SpiritualNumerologyProfile.objects.get_or_create(
                 user=profile.user,
                 defaults={
-                    'spiritual_number': random.randint(1, 9),
-                    'spiritual_path': 'Enlightenment and service',
-                    'karmic_lessons': ['Patience', 'Compassion'],
-                    'spiritual_insights': {'awakening_level': 'moderate', 'soul_age': 'mature'},
+                    'soul_contracts': [{'number': random.randint(1, 9), 'type': 'primary'}],
+                    'karmic_cycles': [{'cycle': random.randint(1, 9), 'phase': 'active'}],
+                    'rebirth_cycles': [{'cycle': random.randint(1, 9), 'year': date.today().year}],
+                    'divine_gifts': ['healing', 'intuition', 'teaching'],
+                    'spiritual_alignment': {'level': 'moderate', 'path': 'service'},
+                    'past_life_connections': {'connections': ['teacher', 'healer']},
                 }
             )
         
         # Soul Contract
         for profile in profiles[:3]:
-            SoulContract.objects.get_or_create(
+            SoulContract.objects.create(
                 user=profile.user,
-                defaults={
-                    'contract_type': random.choice(['service', 'learning', 'teaching']),
-                    'contract_details': 'Your soul contract involves helping others through numerology insights.',
-                    'karmic_debts': [random.randint(1, 9)],
-                    'spiritual_mission': 'Spread awareness and guidance',
-                }
+                contract_number=random.randint(1, 9),
+                contract_type=random.choice(['primary', 'secondary', 'karmic', 'soul_evolution']),
+                description='Your soul contract involves helping others through numerology insights.',
+                lessons=['Patience', 'Compassion', 'Service'],
+                fulfillment_status=random.choice(['pending', 'in_progress', 'fulfilled']),
             )
         
         # Karmic Timeline
