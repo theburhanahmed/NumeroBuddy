@@ -1751,10 +1751,11 @@ class Command(BaseCommand):
         for user in users[:3]:
             AuditLog.objects.create(
                 user=user,
-                action=random.choice(['profile_update', 'subscription_change', 'payment']),
+                action=random.choice(['profile_update', 'subscription_update', 'payment_create']),
                 resource_type='user',
                 resource_id=str(user.id),
-                metadata={'ip_address': '127.0.0.1', 'user_agent': 'Mozilla/5.0'},
+                ip_address='127.0.0.1',
+                user_agent='Mozilla/5.0',
             )
         
         # Notifications
