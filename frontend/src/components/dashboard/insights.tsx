@@ -35,8 +35,10 @@ export function Insights({ insights: providedInsights }: InsightsProps) {
       setLoading(true);
       const response = await numerologyAPI.getDashboardInsights();
       setInsights(Array.isArray(response) ? response : []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch insights:', error);
+      // Set empty array on error to prevent crashes
+      setInsights([]);
     } finally {
       setLoading(false);
     }

@@ -39,8 +39,10 @@ export function Recommendations({ recommendations: providedRecommendations }: Re
       setLoading(true);
       const response = await numerologyAPI.getDashboardRecommendations();
       setRecommendations(Array.isArray(response) ? response : []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch recommendations:', error);
+      // Set empty array on error to prevent crashes
+      setRecommendations([]);
     } finally {
       setLoading(false);
     }

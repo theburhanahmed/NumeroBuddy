@@ -96,20 +96,60 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             # #endregion
             
             # Create user profile with provided details
-            # The signal will create an empty profile, so we update it with the provided data
-            profile, created = UserProfile.objects.get_or_create(user=user)
-            # #region agent log
-            logger.info(f'registration_profile_handled', extra={'profile_created': created, 'profile_id': str(profile.id)})
-            # #endregion
-            for key, value in profile_data.items():
-                if value is not None:
-                    setattr(profile, key, value)
-            profile.save()
-            
-            # Mark profile as completed if date_of_birth is provided
-            if profile.date_of_birth:
-                profile.profile_completed_at = timezone.now()
-                profile.save()
+            # Use get_or_create to handle race conditions (signal might also create profile)
+            try:
+                profile, created = UserProfile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        'timezone': profile_data.get('timezone', 'Asia/Kolkata')
+                    }
+                )
+                # #region agent log
+                logger.info(f'registration_profile_handled', extra={'profile_created': created, 'profile_id': str(profile.id)})
+                # #endregion
+                
+                # Update profile with provided data (even if it was just created)
+                profile_updated = False
+                for key, value in profile_data.items():
+                    if value is not None:
+                        setattr(profile, key, value)
+                        profile_updated = True
+                
+                # Mark profile as completed if date_of_birth is provided
+                if profile.date_of_birth and not profile.profile_completed_at:
+                    profile.profile_completed_at = timezone.now()
+                    profile_updated = True
+                
+                if profile_updated:
+                    profile.save()
+                    # #region agent log
+                    logger.info(f'registration_profile_updated', extra={'profile_id': str(profile.id), 'fields_updated': list(profile_data.keys())})
+                    # #endregion
+            except Exception as profile_error:
+                # #region agent log
+                logger.error(f'registration_profile_creation_failed', extra={
+                    'user_id': str(user.id),
+                    'error': str(profile_error),
+                    'error_type': type(profile_error).__name__
+                }, exc_info=True)
+                # #endregion
+                # Try to get existing profile if creation failed due to race condition
+                try:
+                    profile = UserProfile.objects.get(user=user)
+                    # Update with provided data
+                    for key, value in profile_data.items():
+                        if value is not None:
+                            setattr(profile, key, value)
+                    if profile.date_of_birth and not profile.profile_completed_at:
+                        profile.profile_completed_at = timezone.now()
+                    profile.save()
+                    # #region agent log
+                    logger.info(f'registration_profile_recovered', extra={'profile_id': str(profile.id)})
+                    # #endregion
+                except UserProfile.DoesNotExist:
+                    # If profile still doesn't exist, this is a real error
+                    logger.error(f'registration_profile_final_failure', extra={'user_id': str(user.id)})
+                    raise
             
             # Generate and send OTP
             from .utils import generate_otp, send_otp_email

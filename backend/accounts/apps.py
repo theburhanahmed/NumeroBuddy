@@ -10,6 +10,9 @@ class AccountsConfig(AppConfig):
     
     def ready(self):
         """Run startup checks when Django is ready."""
+        # Import signals to ensure they're registered
+        import accounts.signals  # noqa: F401
+        
         # Only run in production/actual server, not during migrations
         import os
         if os.environ.get('RUN_MAIN') != 'true':

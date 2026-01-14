@@ -18,12 +18,24 @@ interface ScrollInteractionProps {
 /**
  * Scroll-based camera and scene rotation
  * Uses GSAP ScrollTrigger for smooth scroll-driven animations
+ * 
+ * ⚠️ IMPORTANT: This component MUST be rendered as a child of a <Canvas> component
+ * from @react-three/fiber. The useThree() hook requires the Canvas context to function.
+ * 
+ * Correct usage:
+ * ```tsx
+ * <Canvas>
+ *   <ScrollInteraction enabled={true} />
+ * </Canvas>
+ * ```
  */
 export function ScrollInteraction({
   enabled = true,
   rotationSpeed = 0.1,
   parallaxAmount = 0.5,
 }: ScrollInteractionProps) {
+  // useThree() hook - must be called unconditionally at top level
+  // Will throw error if component is not inside a <Canvas> component
   const { camera, scene } = useThree()
   const prefersReducedMotion = useReducedMotion()
   const scrollRef = useRef<number>(0)

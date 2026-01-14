@@ -35,8 +35,10 @@ export function ActivityFeed({ activities: providedActivities, limit = 10 }: Act
       setLoading(true);
       const response = await numerologyAPI.getDashboardActivity({ limit });
       setActivities(Array.isArray(response) ? response : []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch activities:', error);
+      // Set empty array on error to prevent crashes
+      setActivities([]);
     } finally {
       setLoading(false);
     }

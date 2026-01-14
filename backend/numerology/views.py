@@ -66,6 +66,8 @@ logger = logging.getLogger(__name__)
 @permission_classes([IsAuthenticated])
 def calculate_numerology_profile(request):
     """Calculate and save user's numerology profile."""
+    from accounts.models import UserProfile
+    
     user = request.user
     
     # Get full name from request data or user profile
@@ -75,8 +77,13 @@ def calculate_numerology_profile(request):
         if hasattr(user, 'full_name') and user.full_name:
             full_name = user.full_name
         # Try to get full name from user profile
-        elif hasattr(user, 'profile') and hasattr(user.profile, 'full_name') and user.profile.full_name:
-            full_name = user.profile.full_name
+        else:
+            try:
+                profile = user.profile
+                if hasattr(profile, 'full_name') and profile.full_name:
+                    full_name = profile.full_name
+            except UserProfile.DoesNotExist:
+                pass
     
     birth_date_str = request.data.get('birth_date')
     system = request.data.get('system', 'pythagorean')
@@ -89,11 +96,20 @@ def calculate_numerology_profile(request):
     
     if not birth_date_str:
         # Try to get birth date from user profile
-        if not (hasattr(user, 'profile') and hasattr(user.profile, 'date_of_birth') and user.profile.date_of_birth):
+        try:
+            profile = user.profile
+            if profile.date_of_birth:
+                birth_date = profile.date_of_birth
+            else:
+                return Response({
+                    'error': 'Birth date is required. Please provide birth_date in the request or update your profile.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except UserProfile.DoesNotExist:
+            # Profile doesn't exist - this shouldn't happen if signup worked correctly
+            # But handle it gracefully
             return Response({
-                'error': 'Birth date is required'
+                'error': 'User profile not found. Please complete your profile first or provide birth_date in the request.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        birth_date = user.profile.date_of_birth
     else:
         try:
             # Import datetime module correctly
