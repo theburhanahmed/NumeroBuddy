@@ -10,7 +10,9 @@ import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-butto
 import { CrystalNumerologyCube } from '@/components/3d/crystal-numerology-cube';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { numerologyAPI } from '@/lib/numerology-api';
 import { toast } from 'sonner';
+
 export default function CompatibilityChecker() {
   const { tier } = useSubscription();
   const [person1, setPerson1] = useState({
@@ -23,24 +25,52 @@ export default function CompatibilityChecker() {
   });
   const [result, setResult] = useState<any>(null);
   const [isCalculating, setIsCalculating] = useState(false);
-  const calculateCompatibility = () => {
+  const [error, setError] = useState<string | null>(null);
+
+  const calculateCompatibility = async () => {
     if (!person1.name || !person1.birthDate || !person2.name || !person2.birthDate) {
       toast.error('Please fill in all fields');
       return;
     }
-    setIsCalculating(true);
-    setTimeout(() => {
-      setResult({
-        score: 85,
-        lifePath1: 7,
-        lifePath2: 3,
-        strengths: ['Excellent intellectual connection', 'Complementary communication styles', 'Mutual respect for independence', 'Shared spiritual interests'],
-        challenges: ['Different social needs', 'May need to work on emotional expression', 'Balance between alone time and togetherness'],
-        advice: 'This is a highly compatible pairing with great potential for growth.'
+
+    try {
+      setIsCalculating(true);
+      setError(null);
+      setResult(null);
+
+      // Format birth date to YYYY-MM-DD if needed
+      const formatDate = (dateStr: string) => {
+        if (dateStr.includes('T')) {
+          return dateStr.split('T')[0];
+        }
+        return dateStr;
+      };
+
+      const response = await numerologyAPI.checkCompatibility({
+        partner_name: person2.name.trim(),
+        partner_birth_date: formatDate(person2.birthDate),
+        relationship_type: 'romantic' // Default to romantic, could be made configurable
       });
-      setIsCalculating(false);
+
+      setResult({
+        score: response.compatibility_score || 0,
+        lifePath1: response.user_life_path || null,
+        lifePath2: response.partner_life_path || null,
+        strengths: response.strengths || [],
+        challenges: response.challenges || [],
+        advice: response.advice || 'Compatibility analysis completed.',
+        relationship_type: response.relationship_type || 'romantic'
+      });
+
       toast.success('Compatibility calculated!');
-    }, 1500);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || 'Failed to calculate compatibility. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      setResult(null);
+    } finally {
+      setIsCalculating(false);
+    }
   };
   return (
     <CosmicPageLayout>
@@ -152,10 +182,17 @@ export default function CompatibilityChecker() {
             className="w-full"
             icon={<SparklesIcon className="w-5 h-5" />}
             ariaLabel="Check compatibility"
-            disabled={isCalculating}
+            disabled={isCalculating || !person1.name || !person1.birthDate || !person2.name || !person2.birthDate}
           >
             {isCalculating ? 'Calculating...' : 'Calculate Compatibility'}
           </TouchOptimizedButton>
+
+          {error && (
+            <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
+              <AlertCircleIcon className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
         </SpaceCard>
       </motion.div>
 

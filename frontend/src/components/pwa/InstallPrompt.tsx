@@ -35,7 +35,11 @@ export function InstallPrompt() {
     // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e as BeforeInstallPromptEvent)
+      const promptEvent = e as BeforeInstallPromptEvent
+      setDeferredPrompt(promptEvent)
+      
+      // Only show our custom prompt UI if user hasn't dismissed it
+      // The browser's native prompt will be shown when user clicks Install
       if (!dismissed) {
         // Show prompt after a delay
         setTimeout(() => {
@@ -61,12 +65,23 @@ export function InstallPrompt() {
   const handleInstall = async () => {
     if (!deferredPrompt) return
 
-    deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
+    try {
+      // Call the native browser prompt
+      await deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
 
-    if (outcome === 'accepted') {
+      if (outcome === 'accepted') {
+        setShowPrompt(false)
+        setDeferredPrompt(null)
+      } else {
+        // User dismissed, hide our custom prompt too
+        setShowPrompt(false)
+        setDismissed(true)
+      }
+    } catch (error) {
+      console.error('Error showing install prompt:', error)
+      // If native prompt fails, just hide our custom UI
       setShowPrompt(false)
-      setDeferredPrompt(null)
     }
   }
 

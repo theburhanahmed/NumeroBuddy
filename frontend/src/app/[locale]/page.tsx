@@ -29,60 +29,9 @@ import { MagneticCard } from '@/components/magnetic/magnetic-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
 import { PerformanceMonitor } from '@/components/3d/performance-monitor';
 
-// #region agent log
-const logDebug = (message: string, data: any) => {
-  fetch('http://127.0.0.1:7242/ingest/bd39975f-6fe4-411e-a1e1-89be47e83836', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location: '[locale]/page.tsx',
-      message,
-      data,
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'B'
-    })
-  }).catch(() => {});
-};
-// #endregion agent log
-
 export default function Home() {
   const router = useRouter();
   const isMobile = useIsMobile();
-
-  // #region agent log
-  // Log immediately on component render (not just in useEffect)
-  // This should fire if the component is being called at all
-  try {
-    if (typeof window !== 'undefined') {
-      logDebug('Home component rendering - CLIENT', {
-        pathname: window.location.pathname,
-        href: window.location.href,
-        isMobile,
-        timestamp: Date.now()
-      });
-    } else {
-      logDebug('Home component rendering - SERVER', {
-        timestamp: Date.now()
-      });
-    }
-  } catch (e) {
-    // Log even if there's an error
-    logDebug('Home component rendering - ERROR', {
-      error: String(e),
-      timestamp: Date.now()
-    });
-  }
-  
-  useEffect(() => {
-    logDebug('Home component mounted (useEffect)', {
-      pathname: window.location.pathname,
-      href: window.location.href,
-      isMobile
-    });
-  }, [isMobile]);
-  // #endregion agent log
 
   const features = [
     {
