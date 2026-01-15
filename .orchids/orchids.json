@@ -1,0 +1,8 @@
+{
+  "projectId": "7cb37d58-9766-4293-aa7a-0c4c38434ab0",
+  "createdAt": 1768463620329,
+  "startupCommands": [
+    "cd frontend && bun install && bun run dev",
+    "cd backend && source venv/bin/activate && python manage.py runserver 8000"
+  ]
+}
