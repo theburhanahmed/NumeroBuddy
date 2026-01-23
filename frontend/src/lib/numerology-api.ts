@@ -1417,6 +1417,83 @@ export const numerologyAPI = {
   async getCompleteCoreNumbers(): Promise<CompleteCoreNumbers> {
     const response = await apiClient.get('/api/v1/numerology/core-numbers/');
     return response.data;
+  },
+
+  // ============================================================================
+  // Structured Engine API (New)
+  // ============================================================================
+
+  /**
+   * Calculate core numbers using the structured engine.
+   */
+  async calculateEngineCoreNumbers(day: number, month: number, year: number): Promise<any> {
+    const response = await apiClient.post('/api/v1/numerology/engines/core-numbers/', { day, month, year });
+    return response.data;
+  },
+
+  /**
+   * Calculate predictive yearly data using the structured engine.
+   */
+  async calculateEnginePredictiveYearly(data: {
+    birth_day: number;
+    birth_month: number;
+    birth_year: number;
+    target_year: number;
+    driver_number: number;
+  }): Promise<any> {
+    const response = await apiClient.post('/api/v1/numerology/engines/predictive/yearly/', data);
+    return response.data;
+  },
+
+  /**
+   * Check compatibility using the 81-combination engine.
+   */
+  async checkEngineCompatibility81(person1: any, person2: any): Promise<any> {
+    const response = await apiClient.post('/api/v1/numerology/engines/compatibility/check-81/', { person1, person2 });
+    return response.data;
+  },
+
+  /**
+   * Analyze Lo Shu grid using the structured engine.
+   */
+  async analyzeEngineLoShu(birthDate: string): Promise<any> {
+    const response = await apiClient.post('/api/v1/numerology/engines/lo-shu/analyze/', { birth_date: birthDate });
+    return response.data;
+  },
+
+  /**
+   * Get compound number interpretation.
+   */
+  async getEngineCompoundNumber(number: number): Promise<any> {
+    const response = await apiClient.get(`/api/v1/numerology/engines/compound/${number}/`);
+    return response.data;
+  },
+
+  /**
+   * Analyze business name using the structured engine.
+   */
+  async analyzeEngineBusiness(businessName: string, ownerBirthNumber: number): Promise<any> {
+    const response = await apiClient.post('/api/v1/numerology/engines/business/analyze/', {
+      business_name: businessName,
+      owner_birth_number: ownerBirthNumber
+    });
+    return response.data;
+  },
+
+  /**
+   * Calculate Kua number and directions.
+   */
+  async calculateEngineKua(year: number, gender: string): Promise<any> {
+    const response = await apiClient.post('/api/v1/numerology/engines/feng-shui/kua/', { year, gender });
+    return response.data;
+  },
+
+  /**
+   * Analyze health using Kabala name analysis engine.
+   */
+  async analyzeEngineHealthKabala(name: string): Promise<any> {
+    const response = await apiClient.post('/api/v1/numerology/engines/health/kabala-analysis/', { name });
+    return response.data;
   }
 };
 

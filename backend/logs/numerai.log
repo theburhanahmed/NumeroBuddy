@@ -27880,3 +27880,7 @@ WARNING 2026-01-23 22:27:31,085 log Not Found: /
 WARNING 2026-01-23 22:27:31,085 log Not Found: /
 WARNING 2026-01-23 22:27:31,087 basehttp "GET / HTTP/1.1" 404 4846
 WARNING 2026-01-23 22:27:31,087 basehttp "GET / HTTP/1.1" 404 4846
+DEBUG 2026-01-23 23:15:45,717 apps Notifications table verified
+DEBUG 2026-01-23 23:15:45,717 apps Notifications table verified
+INFO 2026-01-23 23:15:45,915 autoreload Watching for file changes with StatReloader
+INFO 2026-01-23 23:15:45,915 autoreload Watching for file changes with StatReloader
