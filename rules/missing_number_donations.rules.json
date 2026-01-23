@@ -1,0 +1,48 @@
+{
+  "inputs": [
+    "missing_number",
+    "excess_number",
+    "birth_number",
+    "destiny_number"
+  ],
+  "calculations": [],
+  "conditions": [
+    {
+      "id": "sun_worship_exclusion",
+      "if": "birth_number == 8 && destiny_number == 8",
+      "then": "do_not_worship_sun"
+    }
+  ],
+  "outputs": [
+    {
+      "category": "donations_by_number",
+      "items": {
+        "1": { "items": ["wheat", "copper", "ruby", "red_clothes", "red_flowers", "saffron", "ghee"], "day": "Sunday", "to": "Temple" },
+        "2": { "items": ["rice", "milk", "silver", "pearl", "curd", "white_clothes", "white_flowers"], "day": "Monday", "to": "Temple" },
+        "3": { "items": ["chana_daal", "gold", "salt", "haldi", "gud", "brown_sugar", "laddu", "yellow_cloth", "yellow_flowers"], "day": "Thursday", "to": "Temple" },
+        "4": { "items": ["blanket", "raddish", "saffron", "mixed_7_grains", "coal", "blue_clothes"], "day": ["Wednesday", "Saturday"], "time": "evening", "to": "Sweepers" },
+        "5": { "items": ["green_clothes", "green_vegetables", "books", "ghee", "camphor", "spinach"], "day": "Wednesday", "to": ["Students", "Deaf people"] },
+        "6": { "items": ["rice", "milk", "curd", "kheer", "white_clothes", "sugar", "white_flowers", "camphor", "silver"], "day": "Friday", "to": "Small girls" },
+        "7": { "items": ["til", "goat", "calf", "blanket", "iron_weapons", "grey_materials"], "day": "Thursday", "time": "after_sunset", "to": "General" },
+        "8": { "items": ["black_til", "blanket", "iron_products", "wool", "shoes"], "day": "Saturday", "time": "after_sunset", "to": ["Needy", "Handicapped"] },
+        "9": { "items": ["wheat", "saffron", "red_flowers", "red_clothes", "copper", "red_sandalwood"], "day": "Tuesday", "time": "evening", "to": ["Temple", "Needy"] }
+      },
+      "mark": "advisory-only"
+    },
+    {
+      "category": "element_remedies",
+      "elements": {
+        "wood": { "numbers": [4, 3], "items": ["Five Mukhi Rudraksh", "Tulsi Mala", "Wooden Bracelet"] },
+        "earth": { "numbers": [2, 5, 8], "items": ["White Crystal Mala", "White Crystal Bracelet"], "hand": "left" },
+        "fire": { "numbers": [9], "items": ["Red Thread", "Molitie"], "hand": ["left", "right"] },
+        "water": { "numbers": [1], "items": ["Increase water intake", "Worship Sun with water"] },
+        "metal_silver": { "numbers": [7], "items": ["Metal strap watch", "Silver & Golden mix strap watch"] },
+        "metal_gold": { "numbers": [6], "items": ["Golden strap watch"] }
+      },
+      "mark": "advisory-only"
+    }
+  ],
+  "warnings": [],
+  "remedies": [],
+  "confidence_level": "high"
+}

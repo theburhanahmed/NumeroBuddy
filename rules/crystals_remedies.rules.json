@@ -1,0 +1,111 @@
+{
+  "inputs": [
+    "planet",
+    "birth_number"
+  ],
+  "calculations": [],
+  "conditions": [],
+  "outputs": [
+    {
+      "category": "sun",
+      "number": 1,
+      "crystals": ["Red Jasper", "Sunstone"],
+      "substitutes": ["Ruby", "Garnet", "Red Spinel", "Red Zircon", "Red Tourmaline", "Rose Quartz"],
+      "benefits": ["boosts_energy_stamina_focus", "calms_emotions", "promotes_courage", "wealth_luxuries_prosperity", "leadership_qualities"],
+      "mark": "advisory-only"
+    },
+    {
+      "category": "moon",
+      "number": 2,
+      "crystals": ["Moonstone", "Peach Moonstone"],
+      "substitutes": ["Pearl", "Quartz"],
+      "benefits": ["relieve_anger_anxiety_panic", "enhances_fortune", "emotional_strength", "creative_intuitive_power"],
+      "mark": "advisory-only"
+    },
+    {
+      "category": "jupiter",
+      "number": 3,
+      "crystals": ["Citrine"],
+      "substitutes": ["Yellow Sapphire", "Yellow Zircon", "Yellow Tourmaline", "Yellow Topaz", "Amethyst"],
+      "benefits": ["manifesting_financial_abundance", "wisdom_intelligence", "mental_clarity_confidence"],
+      "mark": "advisory-only"
+    },
+    {
+      "category": "rahu",
+      "number": 4,
+      "crystals": ["Tulsi"],
+      "substitutes": ["Hessonite", "Gomed", "Hessonite Garnet", "Rudraksha Mala"],
+      "benefits": ["purifies_mind_body_soul", "positive_vibes", "increases_concentration"],
+      "mark": "advisory-only"
+    },
+    {
+      "category": "mercury",
+      "number": 5,
+      "crystals": ["Green Aventurine"],
+      "substitutes": ["Emerald", "Aquamarine", "Peridot", "Green Zircon", "Green Agate", "Jade", "Green Tourmaline"],
+      "benefits": ["manifest_desires_wealth_success", "healing", "good_luck_prosperity"],
+      "mark": "advisory-only"
+    },
+    {
+      "category": "venus",
+      "number": 6,
+      "crystals": ["Pink Opal", "Rose Quartz"],
+      "substitutes": ["Diamond", "White Sapphire", "White Zircon", "White Tourmaline"],
+      "benefits": ["love_and_humility", "aesthetic_sense", "magnet_for_opportunities", "inner_peace"],
+      "mark": "advisory-only"
+    },
+    {
+      "category": "ketu",
+      "number": 7,
+      "crystals": ["Tiger Eye"],
+      "substitutes": ["Cat's Eye", "Pearl"],
+      "benefits": ["courage_and_confidence", "resolve_conflict", "stability_in_body_mind", "mental_clarity"],
+      "mark": "advisory-only"
+    },
+    {
+      "category": "saturn",
+      "number": 8,
+      "crystals": ["Amethyst"],
+      "substitutes": ["Blue Sapphire", "Blue Zircon", "Lapis Lazuli"],
+      "benefits": ["activates_mind_sixth_sense", "prosperity_wealth", "success_financial_stability"],
+      "mark": "advisory-only"
+    },
+    {
+      "category": "mars",
+      "number": 9,
+      "crystals": ["Carnelian"],
+      "substitutes": ["Coral", "Red Jasper"],
+      "benefits": ["empowers_confidence_motivation", "fills_with_life_force", "truthful_expressive"],
+      "mark": "advisory-only"
+    },
+    {
+      "special": "finance_bracelet",
+      "components": ["Citrine", "Pyrite", "Green Aventurine"],
+      "benefits": ["money_attraction", "growth_opportunities"],
+      "mark": "advisory-only"
+    }
+  ],
+  "warnings": [
+    {
+      "topic": "cleansing",
+      "warning": "no_water_contact_for_specific_stones",
+      "stones": ["Malachite", "Selenite", "Black Tourmaline", "Angelite", "Celestine", "Kyanite"]
+    },
+    {
+      "topic": "charging",
+      "warning": "no_steel_or_dhatu_bowl",
+      "remedy": "use_ceramic_or_glass"
+    }
+  ],
+  "remedies": [
+    {
+      "name": "cleansing",
+      "methods": ["spray_water_or_gangajal", "moonlight_charging", "incense_sticks_smoke", "body_heat_rubbing"]
+    },
+    {
+      "name": "programming",
+      "steps": ["hold_near_heart", "clear_mind", "focus_on_intention", "repeat_affirmation"]
+    }
+  ],
+  "confidence_level": "high"
+}

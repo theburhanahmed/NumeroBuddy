@@ -1,0 +1,90 @@
+{
+  "inputs": [
+    "name",
+    "birth_day_of_week",
+    "birth_hour"
+  ],
+  "calculations": [
+    {
+      "name": "kabala_name_value",
+      "formula": "sum_of_values(name, table='Sepharial_Kabala')",
+      "note": "Reduce only if total exceeds 22"
+    },
+    {
+      "name": "money_number",
+      "formula": "kabala_name_value",
+      "note": "If sum is 4 or 8, it is not considered a money number"
+    }
+  ],
+  "conditions": [],
+  "outputs": [
+    {
+      "category": "kabala_alphabet_table",
+      "mapping": {
+        "A": 1, "B": 2, "G": 3, "D": 4, "E": 5, "U": 6, "V": 6, "W": 6, "Z": 7, "H": 8, "Th": 9, "I": 10, "J": 10, "Y": 10, "C": 11, "K": 11, "L": 12, "M": 13, "N": 14, "X": 15, "O": 16, "F": 17, "P": 17, "Ts": 18, "Tz": 18, "Q": 19, "R": 20, "S": 21, "T": 22
+      },
+      "mark": "deterministic"
+    },
+    {
+      "category": "health_traits_by_kabala_number",
+      "traits": {
+        "1": "stress_and_worry_advisory",
+        "2": "digestive_and_excretory_tracts",
+        "3": "lumber_region_kidneys_skin",
+        "4": "uterus_bladders_excretory_pelvic",
+        "5": "appetite_control_liver",
+        "6": "relationships_affect_health_kidneys_eyes",
+        "7": "over_activity_bp_hips_liver_lungs",
+        "8": "joints_skin_rheumatic_asthma",
+        "9": "legs_ankles_eyes_blood_circulation",
+        "10": "digestive_insomnia_nervous_system",
+        "11": "food_poisoning_medication_sensitivity",
+        "12": "lungs_respiratory_hygiene",
+        "13": "mental_strain_insomnia_influenza",
+        "14": "throat_neck_tonsils_weight_midlife",
+        "15": "bones_knees_rheumatic_mineral_deficiency",
+        "16": "cuts_wounds_fever_machinery_risk",
+        "17": "asthma_bronchitis_nervous_lungs",
+        "18": "digestive_stomach_chest_congestion",
+        "19": "spine_back_heart_blood",
+        "20": "stomach_abdominal_womb_gynecological",
+        "21": "vitality_heart_anxiety",
+        "22": "frequent_ups_and_downs_seasonal"
+      },
+      "mark": "deterministic"
+    },
+    {
+      "category": "share_market_sectors",
+      "sectors": {
+        "1": ["transport", "railways", "newspapers", "aluminum"],
+        "2": ["tea", "coffee", "cocoa", "cereals", "restaurants"],
+        "3": ["diamonds", "luxury", "watches", "perfumes"],
+        "4": ["chemicals", "drugs", "rubber", "breweries", "hotels"],
+        "5": ["shipping", "publishing", "law", "stationers"],
+        "6": ["copper", "currency_exchange", "tobacco", "entertainment"],
+        "7": ["insurance", "shipping", "paper_making"],
+        "8": ["govt_securities", "mines", "bricks", "cement"],
+        "9": ["aircraft", "musical_publishing", "tv", "cables"],
+        "10": ["scientific_instruments", "electricity", "refrigerators"],
+        "11": ["psychic_publications", "crystals", "drugs_preservatives"],
+        "12": ["hospitals_nursing_homes", "fishing", "cinema"],
+        "13": ["wool", "timber", "iron_steel", "armaments"],
+        "14": ["banks", "financial_trusts", "leather", "optical"],
+        "15": ["coal_mines", "slate", "concrete"],
+        "16": ["iron_mines", "cutlery", "road_bridge_building"],
+        "17": ["newspaper_radio_telephone", "municipal_stock"],
+        "18": ["water_board", "soft_drinks", "property_land_agriculture"],
+        "19": ["sporting_interests", "education", "theatre"],
+        "20": ["property_silver_furniture", "domestic_appliances"],
+        "21": ["gold", "theatrical_shares", "gilt_edged_stocks"],
+        "22": ["industrial_shares", "agriculture_land", "engineering"]
+      },
+      "mark": "advisory-only"
+    }
+  ],
+  "warnings": [
+    { "id": "kabala_4_8_money", "warning": "Sum 4 or 8 not considered as money number." }
+  ],
+  "remedies": [],
+  "confidence_level": "high"
+}
