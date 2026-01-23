@@ -27884,3 +27884,7 @@ DEBUG 2026-01-23 23:15:45,717 apps Notifications table verified
 DEBUG 2026-01-23 23:15:45,717 apps Notifications table verified
 INFO 2026-01-23 23:15:45,915 autoreload Watching for file changes with StatReloader
 INFO 2026-01-23 23:15:45,915 autoreload Watching for file changes with StatReloader
+DEBUG 2026-01-23 23:16:45,369 apps Notifications table verified
+DEBUG 2026-01-23 23:16:45,369 apps Notifications table verified
+INFO 2026-01-23 23:16:45,514 autoreload Watching for file changes with StatReloader
+INFO 2026-01-23 23:16:45,514 autoreload Watching for file changes with StatReloader
