@@ -2,11 +2,21 @@
 URL routing for numerology application.
 """
 from django.urls import path
-from . import views
+from . import views, engine_views
 
 app_name = 'numerology'
 
 urlpatterns = [
+    # Engine-based endpoints (New)
+    path('engines/core-numbers/', engine_views.core_numbers_view, name='engine-core-numbers'),
+    path('engines/predictive/yearly/', engine_views.predictive_yearly_view, name='engine-predictive-yearly'),
+    path('engines/compatibility/check-81/', engine_views.compatibility_check_81_view, name='engine-compatibility-check-81'),
+    path('engines/lo-shu/analyze/', engine_views.lo_shu_analyze_view, name='engine-lo-shu-analyze'),
+    path('engines/compound/<int:number>/', engine_views.compound_number_view, name='engine-compound-number'),
+    path('engines/business/analyze/', engine_views.business_analyze_view, name='engine-business-analyze'),
+    path('engines/feng-shui/kua/', engine_views.feng_shui_kua_view, name='engine-feng-shui-kua'),
+    path('engines/health/kabala-analysis/', engine_views.health_kabala_view, name='engine-health-kabala'),
+
     # Health check
     path('health/', views.health_check, name='health-check'),
     
