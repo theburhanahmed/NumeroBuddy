@@ -27830,3 +27830,53 @@ DEBUG 2026-01-23 22:20:36,634 apps Notifications table verified
 DEBUG 2026-01-23 22:20:36,634 apps Notifications table verified
 INFO 2026-01-23 22:20:36,903 autoreload Watching for file changes with StatReloader
 INFO 2026-01-23 22:20:36,903 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-23 22:20:43,724 log Not Found: /
+WARNING 2026-01-23 22:20:43,724 log Not Found: /
+WARNING 2026-01-23 22:20:43,731 log Not Found: /
+WARNING 2026-01-23 22:20:43,731 log Not Found: /
+WARNING 2026-01-23 22:20:43,756 basehttp "GET / HTTP/1.1" 404 4846
+WARNING 2026-01-23 22:20:43,756 basehttp "GET / HTTP/1.1" 404 4846
+INFO 2026-01-23 22:20:43,753 basehttp - Broken pipe from ('127.0.0.1', 49551)
+INFO 2026-01-23 22:20:43,753 basehttp - Broken pipe from ('127.0.0.1', 49551)
+WARNING 2026-01-23 22:20:43,937 log Not Found: /
+WARNING 2026-01-23 22:20:43,937 log Not Found: /
+WARNING 2026-01-23 22:20:43,941 basehttp "GET / HTTP/1.1" 404 4846
+WARNING 2026-01-23 22:20:43,941 basehttp "GET / HTTP/1.1" 404 4846
+INFO 2026-01-23 22:22:50,545 autoreload /Users/burhanahmed/Desktop/NumerAI/backend/venv/lib/python3.9/site-packages/reportlab/rl_settings.py changed, reloading.
+INFO 2026-01-23 22:22:50,545 autoreload /Users/burhanahmed/Desktop/NumerAI/backend/venv/lib/python3.9/site-packages/reportlab/rl_settings.py changed, reloading.
+DEBUG 2026-01-23 22:23:06,028 apps Notifications table verified
+DEBUG 2026-01-23 22:23:06,028 apps Notifications table verified
+INFO 2026-01-23 22:23:06,914 autoreload Watching for file changes with StatReloader
+INFO 2026-01-23 22:23:06,914 autoreload Watching for file changes with StatReloader
+DEBUG 2026-01-23 22:23:44,544 apps Notifications table verified
+DEBUG 2026-01-23 22:23:44,544 apps Notifications table verified
+DEBUG 2026-01-23 22:24:10,157 apps Notifications table verified
+DEBUG 2026-01-23 22:24:10,157 apps Notifications table verified
+INFO 2026-01-23 22:24:10,483 autoreload Watching for file changes with StatReloader
+INFO 2026-01-23 22:24:10,483 autoreload Watching for file changes with StatReloader
+INFO 2026-01-23 22:25:55,540 autoreload /Users/burhanahmed/Desktop/NumerAI/backend/venv/lib/python3.9/site-packages/graphene_django/filter/filterset.py changed, reloading.
+INFO 2026-01-23 22:25:55,540 autoreload /Users/burhanahmed/Desktop/NumerAI/backend/venv/lib/python3.9/site-packages/graphene_django/filter/filterset.py changed, reloading.
+DEBUG 2026-01-23 22:25:59,428 apps Notifications table verified
+DEBUG 2026-01-23 22:25:59,428 apps Notifications table verified
+INFO 2026-01-23 22:25:59,647 autoreload Watching for file changes with StatReloader
+INFO 2026-01-23 22:25:59,647 autoreload Watching for file changes with StatReloader
+DEBUG 2026-01-23 22:26:10,433 apps Notifications table verified
+DEBUG 2026-01-23 22:26:10,433 apps Notifications table verified
+INFO 2026-01-23 22:26:10,568 autoreload Watching for file changes with StatReloader
+INFO 2026-01-23 22:26:10,568 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-23 22:26:50,573 log Not Found: /
+WARNING 2026-01-23 22:26:50,573 log Not Found: /
+WARNING 2026-01-23 22:26:50,600 log Not Found: /
+WARNING 2026-01-23 22:26:50,600 log Not Found: /
+WARNING 2026-01-23 22:26:50,602 basehttp "GET / HTTP/1.1" 404 4846
+WARNING 2026-01-23 22:26:50,602 basehttp "GET / HTTP/1.1" 404 4846
+INFO 2026-01-23 22:26:50,603 basehttp - Broken pipe from ('127.0.0.1', 51266)
+INFO 2026-01-23 22:26:50,603 basehttp - Broken pipe from ('127.0.0.1', 51266)
+WARNING 2026-01-23 22:27:09,491 log Not Found: /
+WARNING 2026-01-23 22:27:09,491 log Not Found: /
+WARNING 2026-01-23 22:27:09,492 basehttp "GET / HTTP/1.1" 404 4846
+WARNING 2026-01-23 22:27:09,492 basehttp "GET / HTTP/1.1" 404 4846
+WARNING 2026-01-23 22:27:31,085 log Not Found: /
+WARNING 2026-01-23 22:27:31,085 log Not Found: /
+WARNING 2026-01-23 22:27:31,087 basehttp "GET / HTTP/1.1" 404 4846
+WARNING 2026-01-23 22:27:31,087 basehttp "GET / HTTP/1.1" 404 4846
