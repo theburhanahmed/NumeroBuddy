@@ -1,0 +1,92 @@
+{
+  "inputs": [
+    "entity_name",
+    "birth_number",
+    "destiny_number",
+    "phone_number",
+    "logo_color",
+    "signature_style"
+  ],
+  "calculations": [
+    {
+      "name": "company_name_total",
+      "formula": "calculate_chaldean_sum(entity_name, exclusions=['PVT LTD', 'LTD', 'LLP', 'HUF', 'Senior Secondary'])"
+    },
+    {
+      "name": "mobile_total",
+      "formula": "sum_of_digits(phone_number, exclude=[0])"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "business_harmony",
+      "if": "is_compatible(company_name_total, birth_number) && is_compatible(company_name_total, destiny_number)",
+      "then": "harmonious_vibration"
+    },
+    {
+      "id": "mobile_digit_check",
+      "if": "phone_number.contains(4) || phone_number.contains(8)",
+      "then": "avoid_digit_warning"
+    },
+    {
+      "id": "mobile_digit_2_check",
+      "if": "phone_number.contains(2) && !(birth_number == 2 || destiny_number == 2 || sun_sign == 'Cancer')",
+      "then": "avoid_digit_2_warning"
+    }
+  ],
+  "outputs": [
+    {
+      "category": "mobile_combos",
+      "good": ["12", "21", "13", "31", "15", "51", "25", "52", "29", "92", "37", "73", "38", "83", "47", "74", "57", "75", "69", "96", "78", "87"],
+      "neutral": ["17", "71", "19", "91", "24", "42", "35", "53", "36", "63", "39", "93", "49", "94", "56", "65", "58", "85", "59", "95", "79", "97"],
+      "malefic": ["14", "41", "16", "61", "18", "81", "23", "32", "26", "62", "27", "72", "28", "82", "34", "43", "45", "54", "46", "64", "48", "84", "67", "76", "68", "86", "89", "98"],
+      "mark": "deterministic"
+    },
+    {
+      "category": "mobile_total_preference",
+      "purpose": {
+        "job_authority": "1 (46 > 64 > 37 > 55)",
+        "knowledge_luck": "3 (66 > 39 > 30)",
+        "balance_money": "5 (41 > 32 > 50 > 59)",
+        "marriage_luxury": "6 (42 > 24 > 33 > 60)"
+      },
+      "mark": "deterministic"
+    },
+    {
+      "category": "signature",
+      "rules": ["incline_15_to_45_degrees_upward", "base_line_underneath", "no_cut_letters", "first_letter_capital", "no_spaces", "no_backward_ending", "avoid_black_ink"],
+      "mark": "advisory-only"
+    }
+  ],
+  "warnings": [
+    {
+      "id": "mobile_repeats",
+      "repeats_3_plus": {
+        "11": "emotional_ego_fast_speaking",
+        "22": "mood_swings_depression_bp",
+        "33": "hungry_for_knowledge",
+        "44": "delay_struggle_headache",
+        "55": "lazy_communication_money_increase",
+        "66": "luxury_lover_travel",
+        "77": "internal_disturbances_anxiety",
+        "88": "delay_disturbance_obstacles",
+        "99": "debt_anger_blood_issues"
+      }
+    },
+    {
+      "id": "visiting_card",
+      "rules": ["south_west_corner_heavy", "logo_center_top", "name_big_under_logo"],
+      "mark": "advisory-only"
+    }
+  ],
+  "remedies": [
+    {
+      "missing_lo_shu": "repeat_friendly_digits_multiple_times",
+      "leadership": "repeat_1",
+      "knowledge": "repeat_3",
+      "stability": "repeat_5",
+      "finance": "repeat_6"
+    }
+  ],
+  "confidence_level": "high"
+}

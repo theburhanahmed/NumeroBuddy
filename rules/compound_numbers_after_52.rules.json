@@ -1,0 +1,261 @@
+{
+  "inputs": [
+    "compound_number",
+    "destiny_number",
+    "prominent_numbers"
+  ],
+  "calculations": [
+    {
+      "name": "reduction_to_root",
+      "formula": "sum_of_digits(compound_number)"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "53_vibration",
+      "if": "compound_number == 53",
+      "then": "vibration_similarity_8"
+    },
+    {
+      "id": "54_destiny_9",
+      "if": "compound_number == 54 && destiny_number == 9",
+      "then": "flourishing_and_fortunate"
+    },
+    {
+      "id": "58_prominent_8",
+      "if": "compound_number == 58 && prominent_numbers.includes(8)",
+      "then": "roller_coaster_ride"
+    },
+    {
+      "id": "61_predominant_2",
+      "if": "compound_number == 61 && prominent_numbers.includes(2)",
+      "then": "great_name_compatibility"
+    },
+    {
+      "id": "63_prominent_2_7",
+      "if": "compound_number == 63 && (prominent_numbers.includes(2) || prominent_numbers.includes(7))",
+      "then": "not_good"
+    },
+    {
+      "id": "63_neutral_3_6_9",
+      "if": "compound_number == 63 && (prominent_numbers.includes(3) || prominent_numbers.includes(6) || prominent_numbers.includes(9))",
+      "then": "neutral"
+    },
+    {
+      "id": "64_prominent_1_2_4",
+      "if": "compound_number == 64 && (prominent_numbers.includes(1) || prominent_numbers.includes(2) || prominent_numbers.includes(4))",
+      "then": "favorable"
+    },
+    {
+      "id": "65_prominent_7",
+      "if": "compound_number == 65 && prominent_numbers.includes(7)",
+      "then": "suitable"
+    },
+    {
+      "id": "65_not_9",
+      "if": "compound_number == 65 && prominent_numbers.includes(9)",
+      "then": "not_suitable"
+    },
+    {
+      "id": "66_prominent_3_5_7_9",
+      "if": "compound_number == 66 && (prominent_numbers.includes(3) || prominent_numbers.includes(5) || prominent_numbers.includes(7) || prominent_numbers.includes(9))",
+      "then": "favorable"
+    },
+    {
+      "id": "67_prominent_2_8",
+      "if": "compound_number == 67 && (prominent_numbers.includes(2) || prominent_numbers.includes(8))",
+      "then": "not_suitable"
+    },
+    {
+      "id": "68_prominent_5_8_9",
+      "if": "compound_number == 68 && (prominent_numbers.includes(5) || prominent_numbers.includes(8) || prominent_numbers.includes(9))",
+      "then": "favorable"
+    },
+    {
+      "id": "70_prominent_2",
+      "if": "compound_number == 70 && prominent_numbers.includes(2)",
+      "then": "not_too_bad"
+    },
+    {
+      "id": "73_prominent_1_4",
+      "if": "compound_number == 73 && (prominent_numbers.includes(1) || prominent_numbers.includes(4))",
+      "then": "better_number"
+    }
+  ],
+  "outputs": [
+    {
+      "number": 53,
+      "traits": ["success_in_spying", "detective", "defence", "politician", "RAW"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 54,
+      "traits": ["prosperity", "intelligence", "name_fame", "health", "wealth", "speaking_power"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 55,
+      "traits": ["high_position", "leadership", "physical_strength", "mental_strength", "highly_intelligent", "victory"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 56,
+      "traits": ["positive_but_impossible_plans", "supported_by_people", "success_after_hard_work"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 57,
+      "traits": ["impasse_opposing_forces", "humorous_nature"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 58,
+      "traits": ["straight_forward", "loving", "caring", "science_background", "good_doctors"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 59,
+      "traits": ["mercury_mars_combined", "protected_by_hidden_energies", "overcome_obstacles", "speculative_tendency", "long_lived"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 60,
+      "traits": ["lucky", "light_hearted", "cheerful", "balanced_life", "happy_family"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 61,
+      "traits": ["maintain_balance", "ambition", "peace"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 62,
+      "traits": ["explaining_things_in_detail", "ethics"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 63,
+      "traits": ["good_health", "pure_hearted", "successful_in_business"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 64,
+      "traits": ["love_freedom", "fortunate_for_business_medical_law"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 65,
+      "traits": ["royal_star_of_the_scorpion", "pleasures", "married_life", "good_relationships", "support_from_elders"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 66,
+      "traits": ["powerful", "success_all_fronts", "brilliant_speakers"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 67,
+      "traits": ["imagination", "creativity", "grounded", "superb_communicators"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 68,
+      "traits": ["unlucky_number"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 69,
+      "traits": ["steady_development", "hassle_free_life", "entrepreneur", "stable_family", "successful_married_life"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 70,
+      "traits": ["lucky_rising_number", "luxurious_life"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 71,
+      "traits": ["powerful_number", "industrious"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 72,
+      "traits": ["favourable_material_success"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 73,
+      "traits": ["freedom", "wisdom", "popularity", "recognition", "government_jobs"],
+      "mark": "deterministic"
+    }
+  ],
+  "warnings": [
+    {
+      "number": 53,
+      "warning": "potential_blackmailer",
+      "condition": "negative_traits_dominate"
+    },
+    {
+      "number": 56,
+      "warning": "short_term_pleasure_consequences"
+    },
+    {
+      "number": 57,
+      "warning": "long_term_stagnation",
+      "condition": "conflicts_not_solved"
+    },
+    {
+      "number": 59,
+      "warning": "unfair_earning_tactics"
+    },
+    {
+      "number": 62,
+      "warning": "hurried_decisions",
+      "traits": ["bored", "accident_prone", "powerful_enemies"]
+    },
+    {
+      "number": 63,
+      "warning": "extravagant",
+      "traits": ["not_team_players"]
+    },
+    {
+      "number": 64,
+      "warning": "domestic_problems",
+      "traits": ["not_interested_in_married_life", "remain_single"]
+    },
+    {
+      "number": 65,
+      "warning": "fear_of_accidents_or_injuries"
+    },
+    {
+      "number": 68,
+      "warning": "no_success",
+      "traits": ["financial_position_not_good", "obstacles_in_ventures"]
+    },
+    {
+      "number": 70,
+      "warning": "evolution_too_little_too_late",
+      "traits": ["financial_crisis"]
+    },
+    {
+      "number": 71,
+      "warning": "face_obstacles_in_love_emotions",
+      "traits": ["no_material_growth"]
+    },
+    {
+      "number": 72,
+      "warning": "challenges_and_problems"
+    }
+  ],
+  "remedies": [
+    {
+      "number": 56,
+      "remedy": "exercise_self_control"
+    },
+    {
+      "number": 72,
+      "remedy": "suitable_change_in_name"
+    }
+  ],
+  "confidence_level": "high"
+}

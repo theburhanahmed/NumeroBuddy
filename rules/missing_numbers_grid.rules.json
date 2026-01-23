@@ -1,0 +1,57 @@
+{
+  "inputs": [
+    "dob_digits"
+  ],
+  "calculations": [
+    {
+      "name": "lo_shu_grid",
+      "formula": "count_occurrences(dob_digits, range(1, 10))"
+    }
+  ],
+  "conditions": [],
+  "outputs": [
+    {
+      "category": "lo_shu_grid_access",
+      "number_repeats": {
+        "1": ["Introvert", "Communicative", "Talkative", "Compassionate"],
+        "2": ["Sensitive", "Bright", "Very Sensitive", "Loners"],
+        "3": ["Excellent", "Creative", "Over Imaginative", "Over Imaginative"],
+        "4": ["Orderly and Stable", "Pragmatic", "Hardworking", "Immersed in Physical"],
+        "5": ["Caring", "Persistent", "Determined", "Instantaneous action"],
+        "6": ["Good Advisers", "Overprotective", "Stress and Worry", "Inexpressive"],
+        "7": ["Learn with Experiences", "Spiritual", "Learn Through Loss", "Difficulties in Life"],
+        "8": ["Scrupulous/detail", "Adamant", "Materialistic", "Ceaselessly in Motion"],
+        "9": ["Intelligent", "Critical", "Givers", "Brilliant but loners"]
+      },
+      "mark": "deterministic"
+    },
+    {
+      "category": "missing_number_traits",
+      "traits": {
+        "1": "difficulty_expressing_emotions_low_willpower",
+        "2": "lack_sensitivity_patience_self_confidence",
+        "3": "lack_confidence_logic_flickering_mind",
+        "4": "unorganized_lack_courage_wealth_stomach_issues",
+        "5": "communication_failure_instability_no_house_luck",
+        "6": "money_family_marriage_problems_no_luxury",
+        "7": "no_spiritual_interest_family_support_child_issues",
+        "8": "financial_indecision_unfinished_tasks_home_issues",
+        "9": "name_fame_decrease_insensitive_impulsive"
+      },
+      "mark": "deterministic"
+    }
+  ],
+  "warnings": [],
+  "remedies": [
+    { "number": 1, "soul": ["Sun Argh before 8am", "Sunlight 10m", "Red thread", "Donate wheat/jaggery", "Blessing from Father"], "body": ["Red Jasper", "Ruby", "1 Mukhi Rudraksha"] },
+    { "number": 2, "soul": ["Shivling milk/water", "Donate rice/sugar", "Green water bottle", "Silver glass water", "Aquarium North"], "body": ["Pearl ring silver", "Silver bracelet", "Rudraksha crystal", "2 Mukhi Rudraksha"] },
+    { "number": 3, "soul": ["Temple Thursday 9 yellow sweets", "Donate chane ki daal/turmeric", "Water banana plant", "Offer jaggery roti cow", "Turmeric/Kesar tilak", "Books for needy"], "body": ["Yellow sapphire silver", "Amethyst silver", "Citrine bracelet", "5 Mukhi Rudraksha"] },
+    { "number": 4, "soul": ["Feed street dog", "Khatu shyam temple monthly", "Donate til/oil/udad/coconut", "Clean terrace/washroom", "Keep wood element"], "body": ["Rudraksha crystal", "5 Mukhi Rudraksha mala", "Tulsi mala", "8 Mukhi Rudraksha"] },
+    { "number": 5, "soul": ["Ganesh temple 5 laddus", "Feed raw potato cow", "Donate green clothes/camphor", "Walk on grass", "Donate to transgender green saree"], "body": ["Emerald ring", "Green jade", "Green aventurine", "4 Mukhi Rudraksha"] },
+    { "number": 6, "soul": ["Temple Friday 15 white sweets", "Prepare kheer", "Donate rice/sugar/milk Gurudwara", "Use perfume daily", "Golden chain watch"], "body": ["Crystal bracelet", "Diamond ring gold", "White sapphire gold", "6 Mukhi Rudraksha"] },
+    { "number": 7, "soul": ["Feed street dog", "Donate til/oil/coconut", "Donate blanket winter", "Wear silver watch"], "body": ["Cats eye silver", "Pearl ring silver", "Tiger eye", "Seven chakra bracelet", "9 Mukhi Rudraksha"] },
+    { "number": 8, "soul": ["Respect labor", "Donate as much as possible", "Shani temple 45 degree", "No Shani purchases Saturday", "No non-veg Saturday"], "body": ["Amethyst ring silver", "Amethyst bracelet", "Green jade", "7 Mukhi Rudraksha"] },
+    { "number": 9, "soul": ["Worship Hanuman daily", "Hanuman temple Tuesday/Saturday", "Donate masur dal/wheat Tuesday"], "body": ["Coral ring", "Red thread", "Red jasper", "Carnelian", "3 Mukhi Rudraksha"] }
+  ],
+  "confidence_level": "high"
+}

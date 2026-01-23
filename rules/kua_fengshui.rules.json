@@ -1,0 +1,90 @@
+{
+  "inputs": [
+    "birth_year",
+    "gender"
+  ],
+  "calculations": [
+    {
+      "name": "kua_number",
+      "formula": "if gender == 'female' then reduce_to_single_digit(sum_of_digits(birth_year) + 4) else 11 - reduce_to_single_digit(sum_of_digits(birth_year))"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "kua_group",
+      "if": "kua_number in [1, 3, 4, 9] || (kua_number == 5 && gender == 'male')",
+      "then": "East group",
+      "else": "West group"
+    }
+  ],
+  "outputs": [
+    {
+      "kua_number": 1,
+      "directions": { "wealth": "South-East", "health": "East", "love": "South", "peace": "North" },
+      "avoid": { "obstacle": "West", "quarrel": "North-East", "lawsuit": "North-West", "disaster": "South-West" },
+      "donation": "Food to poor on Saturday",
+      "mark": "deterministic"
+    },
+    {
+      "kua_number": 2,
+      "directions": { "wealth": "North-East", "health": "West", "love": "North-West", "peace": "South-West" },
+      "avoid": { "obstacle": "East", "quarrel": "South-East", "lawsuit": "South", "disaster": "North" },
+      "donation": "Give food/pulses to birds",
+      "mark": "deterministic"
+    },
+    {
+      "kua_number": 3,
+      "directions": { "wealth": "South", "health": "North", "love": "South-East", "peace": "East" },
+      "avoid": { "obstacle": "South-West", "quarrel": "North-West", "lawsuit": "North-East", "disaster": "West" },
+      "donation": "Medicine to needy/poor",
+      "mark": "deterministic"
+    },
+    {
+      "kua_number": 4,
+      "directions": { "wealth": "North", "health": "South", "love": "East", "peace": "South-East" },
+      "avoid": { "obstacle": "North-West", "quarrel": "South-West", "lawsuit": "West", "disaster": "North-East" },
+      "donation": "Books to poor/needful kids",
+      "mark": "deterministic"
+    },
+    {
+      "kua_number": 5,
+      "note": "Male follows 2, Female follows 8",
+      "male_mapping": 2,
+      "female_mapping": 8,
+      "mark": "deterministic"
+    },
+    {
+      "kua_number": 6,
+      "directions": { "wealth": "West", "health": "North-East", "love": "South-West", "peace": "North-West" },
+      "avoid": { "obstacle": "South-East", "quarrel": "East", "lawsuit": "North", "disaster": "South" },
+      "donation": "Help in marriage of poor girls",
+      "mark": "deterministic"
+    },
+    {
+      "kua_number": 7,
+      "directions": { "wealth": "North-West", "health": "South-West", "love": "North-East", "peace": "West" },
+      "avoid": { "obstacle": "North", "quarrel": "South", "lawsuit": "South-East", "disaster": "East" },
+      "donation": "Food/Medicine to blind",
+      "mark": "deterministic"
+    },
+    {
+      "kua_number": 8,
+      "directions": { "wealth": "South-West", "health": "North-West", "love": "West", "peace": "North-East" },
+      "avoid": { "obstacle": "South", "quarrel": "North", "lawsuit": "East", "disaster": "South-East" },
+      "donation": "Food to religious place",
+      "mark": "deterministic"
+    },
+    {
+      "kua_number": 9,
+      "directions": { "wealth": "East", "health": "South-East", "love": "North", "peace": "South" },
+      "avoid": { "obstacle": "North-East", "quarrel": "West", "lawsuit": "South-West", "disaster": "North-West" },
+      "donation": "Take blessings of seniors daily",
+      "mark": "deterministic"
+    }
+  ],
+  "warnings": [
+    { "id": "facing_directions", "rule": "Face the lucky direction while eating, working, planning, and sitting. Sleep with head pointing towards it." }
+  ],
+  "remedies": [],
+  "confidence_level": "high"
+}

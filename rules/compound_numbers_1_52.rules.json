@@ -1,0 +1,111 @@
+{
+  "inputs": [
+    "compound_number",
+    "prominent_numbers"
+  ],
+  "calculations": [],
+  "conditions": [
+    {
+      "id": "15_prominent_4_8",
+      "if": "compound_number == 15 && (prominent_numbers.includes(4) || prominent_numbers.includes(8))",
+      "then": "accidental_prone_violent_death"
+    },
+    {
+      "id": "17_prominent_4_8",
+      "if": "compound_number == 17 && (prominent_numbers.includes(4) || prominent_numbers.includes(8))",
+      "then": "unlucky_number"
+    },
+    {
+      "id": "22_prominent_8",
+      "if": "compound_number == 22 && prominent_numbers.includes(8)",
+      "then": "faces_many_difficulties"
+    },
+    {
+      "id": "38_prominent_9",
+      "if": "compound_number == 38 && prominent_numbers.includes(9)",
+      "then": "prone_to_accidents"
+    },
+    {
+      "id": "39_prominent_1_6",
+      "if": "compound_number == 39 && (prominent_numbers.includes(1) || prominent_numbers.includes(6))",
+      "then": "prone_to_skin_diseases"
+    },
+    {
+      "id": "41_prominent_5_8",
+      "if": "compound_number == 41 && (prominent_numbers.includes(5) || prominent_numbers.includes(8))",
+      "then": "favorable_if_controlled"
+    },
+    {
+      "id": "42_prominent_3",
+      "if": "compound_number == 42 && prominent_numbers.includes(3)",
+      "then": "confusion_in_personal_life"
+    }
+  ],
+  "outputs": [
+    { "number": 10, "traits": ["wheel_of_fortune", "name_fame_success", "fortunate_plans"], "mark": "deterministic" },
+    { "number": 11, "traits": ["hungry_lion", "hidden_dangers", "treachery", "obstacles"], "mark": "deterministic" },
+    { "number": 12, "traits": ["sacrifice_victim", "suffering_anxiety", "eloquence"], "mark": "deterministic" },
+    { "number": 13, "traits": ["skeleton_death", "change_plans_place", "new_beginning"], "mark": "deterministic" },
+    { "number": 14, "traits": ["temperance", "movement_combination", "speculative_fortune"], "mark": "deterministic" },
+    { "number": 15, "traits": ["magic_occult_mystery", "charismatic", "artistic"], "mark": "deterministic" },
+    { "number": 16, "traits": ["tower_struck_lightning", "unexpected_fatality", "failure"], "mark": "deterministic" },
+    { "number": 17, "traits": ["twinkling_star", "immortality", "peace_love"], "mark": "deterministic" },
+    { "number": 18, "traits": ["shining_moon_blood", "materialism_vs_spiritualism", "fear"], "mark": "deterministic" },
+    { "number": 19, "traits": ["prince_of_heaven", "king_life", "prosperity"], "mark": "deterministic" },
+    { "number": 20, "traits": ["awakening", "healing", "rebirth"], "mark": "deterministic" },
+    { "number": 21, "traits": ["universe", "advancement", "honours"], "mark": "deterministic" },
+    { "number": 22, "traits": ["blinded_man", "highly_emotional", "decision_shrewdness"], "mark": "deterministic" },
+    { "number": 23, "traits": ["royal_star_lion", "support_superiors", "fortunate"], "mark": "deterministic" },
+    { "number": 24, "traits": ["gains_opposite_sex", "creative_success", "glamour"], "mark": "deterministic" },
+    { "number": 25, "traits": ["strength_experience", "intuitive", "astrology"], "mark": "deterministic" },
+    { "number": 26, "traits": ["grave_warning", "ruined_bad_company", "social_guru"], "mark": "deterministic" },
+    { "number": 27, "traits": ["sceptre", "authority_power", "luck"], "mark": "deterministic" },
+    { "number": 28, "traits": ["contradictions", "deceived_by_others", "loss_through_law"], "mark": "deterministic" },
+    { "number": 29, "traits": ["uncertainties_deception", "hidden_setbacks", "unreliable_friends"], "mark": "deterministic" },
+    { "number": 30, "traits": ["mental_inclination", "knowledge_over_money"], "mark": "deterministic" },
+    { "number": 31, "traits": ["loneliness_solitude", "research_intellectual"], "mark": "deterministic" },
+    { "number": 32, "traits": ["royal_star_bull", "magical_power", "politician_vibration"], "mark": "deterministic" },
+    { "number": 33, "traits": ["wisdom", "luxury", "fortunate_business"], "mark": "deterministic" },
+    { "number": 34, "traits": ["real_estate", "foreign_travel", "advisor"], "mark": "deterministic" },
+    { "number": 35, "traits": ["no_help_relatives", "deception", "unlucky_marriage"], "mark": "deterministic" },
+    { "number": 36, "traits": ["hard_work_career", "success_away_from_home"], "mark": "deterministic" },
+    { "number": 37, "traits": ["good_planners", "opposite_sex_help", "partnership_luck"], "mark": "deterministic" },
+    { "number": 38, "traits": ["spirituality", "power_success", "optimist"], "mark": "deterministic" },
+    { "number": 39, "traits": ["extremes_peak_bottom", "professionals", "fortunate"], "mark": "deterministic" },
+    { "number": 40, "traits": ["business_success", "authoritative", "writing_lecturing"], "mark": "deterministic" },
+    { "number": 41, "traits": ["leadership", "excel_work", "impossible_achieved"], "mark": "deterministic" },
+    { "number": 42, "traits": ["great_fame", "creative_fields", "manipulation_skill"], "mark": "deterministic" },
+    { "number": 43, "traits": ["strife_struggle", "unstable_personal_life", "revolution"], "mark": "deterministic" },
+    { "number": 44, "traits": ["justice_practicality", "dignity", "greed"], "mark": "deterministic" },
+    { "number": 45, "traits": ["manage_large_orgs", "turn_dreams_reality", "integrity"], "mark": "deterministic" },
+    { "number": 46, "traits": ["continuous_success", "determined", "stable_domestic"], "mark": "deterministic" },
+    { "number": 47, "traits": ["movement_expansion", "counselor", "banker"], "mark": "deterministic" },
+    { "number": 48, "traits": ["frequent_failures", "under_command", "arts_prosperity"], "mark": "deterministic" },
+    { "number": 49, "traits": ["diplomacy_spirituality", "limits_vs_expansion", "hard_work"], "mark": "deterministic" },
+    { "number": 50, "traits": ["charismatic", "high_adaptability", "spouse_important"], "mark": "deterministic" },
+    { "number": 51, "traits": ["unexpected_gains", "symbol_victory", "military_suitable"], "mark": "deterministic" },
+    { "number": 52, "traits": ["help_others", "strong_intuition", "struggle_to_goals"], "mark": "deterministic" }
+  ],
+  "warnings": [
+    { "number": 11, "warning": "ominous_warning_hidden_dangers" },
+    { "number": 12, "warning": "paralysis_nervous_breakdown_risk" },
+    { "number": 14, "warning": "risk_from_natural_forces", "elements": ["water", "air", "fire"] },
+    { "number": 16, "warning": "fatality_accidents_broken_relations" },
+    { "number": 18, "warning": "earn_money_through_unrest", "no_religious_duties": true },
+    { "number": 26, "warning": "ruined_by_bad_company_speculation" },
+    { "number": 28, "warning": "loss_through_trust_and_law" },
+    { "number": 29, "warning": "quarrels_humiliation_disruption" },
+    { "number": 35, "warning": "not_good_for_marriage_relationships" },
+    { "number": 43, "warning": "hindrances_and_revolution" },
+    { "number": 47, "warning": "troublesome_with_water", "avoid_deep_water": true },
+    { "number": 51, "warning": "dangers_enemies_assassination_risk" }
+  ],
+  "remedies": [
+    { "number": 12, "remedy": "immediate_change_name_spelling" },
+    { "number": 16, "remedy": "change_name_spelling" },
+    { "number": 18, "remedy": "change_name_to_total_6" },
+    { "number": 43, "remedy": "change_name_to_favorable_compound" },
+    { "number": 51, "remedy": "change_name_spelling" }
+  ],
+  "confidence_level": "high"
+}

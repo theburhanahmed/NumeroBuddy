@@ -1,0 +1,94 @@
+{
+  "inputs": [
+    "first_name",
+    "middle_name",
+    "last_name"
+  ],
+  "calculations": [
+    {
+      "name": "chaldean_letter_values",
+      "table": {
+        "A": 1, "I": 1, "J": 1, "Q": 1, "Y": 1,
+        "B": 2, "K": 2, "R": 2,
+        "C": 3, "G": 3, "L": 3, "S": 3,
+        "D": 4, "M": 4, "T": 4,
+        "E": 5, "H": 5, "N": 5, "X": 5,
+        "U": 6, "V": 6, "W": 6,
+        "O": 7, "Z": 7,
+        "F": 8, "P": 8
+      }
+    },
+    {
+      "name": "name_total_process",
+      "steps": [
+        "1. Assign values to each name individually",
+        "2. Add values for first, middle, last names separately",
+        "3. If any name sum is a single digit, do not reduce further",
+        "4. Reduce double digits to compound or single as per Scenario rules",
+        "5. Master numbers (11, 22, 33) must not be reduced"
+      ]
+    }
+  ],
+  "conditions": [
+    {
+      "id": "scenario_1_reduction",
+      "note": "Reduce till compound after addition. If no compound, go back one step."
+    },
+    {
+      "id": "scenario_2_single_digit_stop",
+      "if": "first_row_result is single_digit",
+      "then": "stop_reduction"
+    },
+    {
+      "id": "scenario_3_row_consistency",
+      "rule": "Both numbers in addition row must be same digit count (both single or both double) for valid reduction"
+    }
+  ],
+  "outputs": [
+    {
+      "category": "letter_energies",
+      "traits": {
+        "A": "Sun, progress, confidence, administrative",
+        "B": "Moon, rich, strong mind, artistic",
+        "C": "Hardworking, slow finance, elder blessing deficit",
+        "D": "Rahu, expansion, quick action, vigorous",
+        "E": "Mercury, riches, sharp intelligence, spirituality",
+        "F": "Desires, discovery, financial/health caution",
+        "G": "Jupiter, riches, devotion, family progress",
+        "H": "Saturn, hard work, lazy indifference, defamation risk",
+        "I": "Mars, victory, employment, confidence",
+        "J": "Leadership, happiness, intoxicant risk",
+        "K": "Mixed, success/failure alternate, desires",
+        "L": "Trials, tribulations, deception, suicidal tendency risk",
+        "M": "Rahu, vigorous, adamant, achievements",
+        "N": "Mercury, soft, riches, beautiful speech",
+        "O": "Weak Venus, empty, zero, sorrows, total defeat",
+        "P": "Saturn, greedy, progress, talented speech",
+        "Q": "Suspicions, confusion, rude questions",
+        "R": "Vigor, self confidence, advisor, chosen leader",
+        "S": "Constructive/Destructive, extremist ideas, health risk",
+        "T": "Mixed, double-faced, pleasure illusion, health issues",
+        "U": "Self confidence, happiness, knowledge, divine thinking",
+        "V": "Family attachment, speaker, introspection, luck",
+        "W": "Pleasure, wife affection, zeolite for progress",
+        "X": "Analysis, antiques, no eagerness for money",
+        "Y": "Knowledge, riches, dominate others, skillfully used words",
+        "Z": "Miserly, selfish, stubborn, cunning intelligence"
+      },
+      "mark": "deterministic"
+    },
+    {
+      "category": "name_vibrations",
+      "positive": ["JAN", "NS", "UN", "NJ", "HAN", "NK", "RAT", "RP", "VN", "GG", "IT", "LV", "GA", "KA", "RY", "NN", "BA", "KI", "RC", "JK", "VIN", "VS", "JIN", "JA", "AR", "VN", "JAY", "MG", "RA", "HA", "AL", "MJ", "SA", "YA", "JEE", "PM", "ON", "DRA", "SN", "JUG", "IN", "NC", "LK", "JAG", "AN", "JA", "GV", "DA", "RS", "JO", "CP", "NM", "CAN", "GO", "PK", "NV", "WN", "MK", "AD"],
+      "negative": ["SK", "EZ", "LES", "SC", "EJ", "BAN", "SL", "ER", "MAR", "LS", "PP", "SC", "GN", "VR", "VC", "BN", "VK", "ASH", "NA", "RD", "RASH", "NI", "NT", "NU", "NAN", "EL", "AS", "KL", "RJ", "LO", "NO", "RZ", "IL", "DI", "SU", "RO", "LS"],
+      "mark": "deterministic"
+    }
+  ],
+  "warnings": [
+    { "id": "4_and_8_names", "warning": "Avoid total 4 or 8 if birth is 4 or 8. Also avoid number 15; use 6 or 24 instead." },
+    { "id": "letter_L_warning", "warning": "Sound of ILL, difficult period, suicidal tendencies risk." },
+    { "id": "letter_O_warning", "warning": "Signifies zero, emptiness, defeat." }
+  ],
+  "remedies": [],
+  "confidence_level": "high"
+}

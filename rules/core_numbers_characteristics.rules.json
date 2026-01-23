@@ -1,0 +1,118 @@
+{
+  "inputs": [
+    "dob_day",
+    "dob_month",
+    "dob_year"
+  ],
+  "calculations": [
+    {
+      "name": "birth_number",
+      "formula": "reduce_to_single_digit(dob_day)"
+    },
+    {
+      "name": "destiny_number",
+      "formula": "reduce_to_single_digit(dob_day + dob_month + dob_year)"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "master_number_11",
+      "if": "sum_of_digits(dob_day) == 11 || sum_of_digits(full_dob) == 11",
+      "then": "Master Number 11: The Communicator"
+    },
+    {
+      "id": "master_number_22",
+      "if": "sum_of_digits(dob_day) == 22 || sum_of_digits(full_dob) == 22",
+      "then": "Master Number 22: The Master Builder"
+    },
+    {
+      "id": "master_number_33",
+      "if": "sum_of_digits(full_dob) == 33",
+      "then": "Master Number 33: The Master Teacher"
+    }
+  ],
+  "outputs": [
+    {
+      "number": 1,
+      "planet": "Sun",
+      "keywords": ["Leadership", "Freedom", "Independent", "Path Maker"],
+      "positive": ["energetic", "management_skills", "courageous"],
+      "negative": ["stubborn", "domineering", "ego", "shouting_aggression"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 2,
+      "planet": "Moon",
+      "keywords": ["Intuition", "Sensitivity", "Mother India", "Cooperate"],
+      "positive": ["dreamy", "romantic", "peacemaker", "forgiving"],
+      "negative": ["mood_swings", "lack_independence", "shy", "lazy"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 3,
+      "planet": "Jupiter",
+      "keywords": ["Knowledge", "Wealth", "Counsellor", "Advice"],
+      "positive": ["imaginative", "multi_tasker", "lucky", "hardworking"],
+      "negative": ["good_starter_bad_finisher", "diverted_easily", "critical"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 4,
+      "planet": "Rahu",
+      "keywords": ["Discipline", "Organized", "Struggle", "Practical"],
+      "positive": ["constructive", "sharp_memory", "never_give_up"],
+      "negative": ["lacks_imagination", "argumentative", "unsuccessful_relationships"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 5,
+      "planet": "Mercury",
+      "keywords": ["Versatile", "Quick Thinker", "Airport", "Change"],
+      "positive": ["good_communicator", "lucky", "smart_worker", "adaptable"],
+      "negative": ["trust_too_easily", "lack_concentration", "moody", "lazy"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 6,
+      "planet": "Venus",
+      "keywords": ["Home", "Family", "Peace", "Generosity"],
+      "positive": ["romantic", "magnetic", "artistic", "responsible"],
+      "negative": ["manipulative", "spend_lavishly", "addiction_prone"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 7,
+      "planet": "Neptune",
+      "keywords": ["Research", "Disappointment", "Calm", "Heart"],
+      "positive": ["intuitive", "philosophical", "good_speaker", "intellectual"],
+      "negative": ["over_trust", "cheated_often", "low_confidence", "indecisive"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 8,
+      "planet": "Saturn",
+      "keywords": ["Hardship", "Struggle", "Patience", "Judge"],
+      "positive": ["will_power", "tenacity", "executive_ability", "mathematics"],
+      "negative": ["revengeful", "materialistic", "legal_issues", "money_not_easy"],
+      "mark": "deterministic"
+    },
+    {
+      "number": 9,
+      "planet": "Mars",
+      "keywords": ["Humanitarian", "Energy", "Commander", "True Warrior"],
+      "positive": ["straightforward", "help_others", "high_moral", "fitness_freak"],
+      "negative": ["moody", "impulsive", "short_tempered", "accident_prone"],
+      "mark": "deterministic"
+    }
+  ],
+  "warnings": [
+    { "id": "karmic_debt_13", "trait": "laziness_selfishness_past", "remedy": "hard_work_labor_payment" },
+    { "id": "karmic_debt_14", "trait": "abuse_freedom_past", "remedy": "self_discipline_vulnerability" },
+    { "id": "karmic_debt_16", "trait": "strong_ego_failed_relationships_past", "remedy": "meditation_thoughtful_to_others" },
+    { "id": "karmic_debt_19", "trait": "abuse_power_past", "remedy": "caring_priority_charity" }
+  ],
+  "remedies": [
+    { "id": "affinity_families", "families": ["1 & 4", "2 & 7 (1, 2, 4, 7)", "3, 6, 9", "5 (Go with all)"] }
+  ],
+  "confidence_level": "high"
+}
