@@ -24,14 +24,14 @@ from payments.models import Subscription, Payment, BillingHistory, WebhookEvent
 from feature_flags.models import FeatureFlag, SubscriptionFeatureAccess
 from numerology.models import (
     NumerologyProfile, DailyReading, CompatibilityCheck, Remedy,
-    RemedyTracking, RemedyEffectiveness, RemedyCombination, RemedyReminder,
+    RemedyTracking, RemedyReminder,
     Person, PersonNumerologyProfile, RajYogDetection, Explanation,
     WeeklyReport, YearlyReport, NameReport, PhoneReport, DetailedReading,
     HealthNumerologyProfile, NameCorrection, SpiritualNumerologyProfile,
     SoulContract, KarmicTimeline, RebirthCycle, PredictiveCycle,
-    BreakthroughYear, CrisisYear, LifeMilestone, GenerationalAnalysis,
-    FamilyUnitProfile, KarmicContract, FengShuiAnalysis, SpaceOptimization,
-    RoomNumerology, MentalStateTracking, MentalStateAnalysis, EmotionalCycle
+    LifeMilestone, GenerationalAnalysis,
+    KarmicContract, FengShuiAnalysis, SpaceOptimization,
+    RoomNumerology, MentalStateTracking, MentalStateAnalysis,
 )
 from consultations.models import (
     Expert, Consultation, ExpertAvailability, ConsultationReview,
@@ -41,7 +41,7 @@ from consultations.models import (
 from reports.models import ReportTemplate, GeneratedReport, ScheduledReport, ReportComparison
 from rewards.models import Reward, Achievement, PointsTransaction, UserReward, UserAchievement
 from smart_calendar.models import NumerologyEvent, PersonalCycle, AuspiciousDate, CalendarReminder
-from dashboard.models import DashboardWidget, UserActivity, QuickInsight
+from dashboard.models import DashboardWidget, QuickInsight
 from ai_chat.models import AIConversation, AIMessage
 from social.models import Connection, SocialGroup, Interaction
 from matchmaking.models import Match, MatchPreference
@@ -664,15 +664,15 @@ class Command(BaseCommand):
                     defaults={'position': i, 'is_visible': True}
                 )
 
-            # Create activities
+            # Create activities (consolidated in analytics.UserActivityLog)
             for i in range(10):
-                UserActivity.objects.create(
+                UserActivityLog.objects.create(
                     user=user,
                     activity_type=random.choice([
                         'birth_chart_viewed', 'daily_reading_viewed',
                         'compatibility_checked', 'ai_chat_used'
                     ]),
-                    metadata={},
+                    activity_data={},
                 )
 
             # Create quick insights
@@ -1205,27 +1205,8 @@ class Command(BaseCommand):
         persons = Person.objects.filter(user__in=users[:3])
         remedies = Remedy.objects.filter(user__in=users[:3])
         
-        # Remedy Effectiveness
-        for remedy in remedies[:3]:
-            RemedyEffectiveness.objects.create(
-                user=remedy.user,
-                remedy=remedy,
-                effectiveness_score=random.uniform(3.5, 5.0),
-                feedback='Very effective, noticed positive changes',
-                period_start=date.today() - timedelta(days=30),
-                period_end=date.today(),
-            )
-        
-        # Remedy Combinations
-        if remedies.count() >= 2:
-            RemedyCombination.objects.create(
-                user=remedies[0].user,
-                primary_remedy=remedies[0],
-                secondary_remedy=remedies[1],
-                combination_score=random.uniform(7.0, 10.0),
-                notes='Combination for morning energy',
-            )
-        
+        # RemedyEffectiveness, RemedyCombination deprecated; use RemedyTracking.effectiveness_rating
+
         # Remedy Reminders
         for remedy in remedies[:3]:
             RemedyReminder.objects.create(
@@ -1460,36 +1441,41 @@ class Command(BaseCommand):
                 }
             )
         
-        # Breakthrough Year
+        # Breakthrough / Crisis (unified in PredictiveCycle)
         for user in users[:3]:
             year = date.today().year + random.randint(0, 2)
-            BreakthroughYear.objects.get_or_create(
+            PredictiveCycle.objects.get_or_create(
                 user=user,
+                cycle_type='breakthrough',
                 year=year,
                 defaults={
-                    'personal_year': random.randint(1, 9),
-                    'breakthrough_type': random.choice(['career', 'spiritual', 'personal']),
-                    'description': 'A year of major breakthroughs and transformations',
-                    'preparation': 'Focus on personal growth and opportunities',
+                    'cycle_data': {
+                        'personal_year': random.randint(1, 9),
+                        'breakthrough_type': random.choice(['career', 'spiritual', 'personal']),
+                        'description': 'A year of major breakthroughs and transformations',
+                        'preparation': 'Focus on personal growth and opportunities',
+                    },
+                    'confidence_score': 75,
                 }
             )
-        
-        # Crisis Year
         for user in users[:3]:
             year = date.today().year + random.randint(1, 3)
-            CrisisYear.objects.get_or_create(
+            PredictiveCycle.objects.get_or_create(
                 user=user,
+                cycle_type='crisis',
                 year=year,
                 defaults={
-                    'personal_year': random.randint(1, 9),
-                    'crisis_type': random.choice(['financial', 'relationship', 'health']),
-                    'description': 'A challenging period that requires careful navigation and support.',
+                    'cycle_data': {
+                        'personal_year': random.randint(1, 9),
+                        'crisis_type': random.choice(['financial', 'relationship', 'health']),
+                        'description': 'A challenging period that requires careful navigation and support.',
+                        'guidance': 'Focus on stability and seek support during challenging times.',
+                        'preparation_steps': ['Build emergency fund', 'Strengthen support network', 'Practice self-care'],
+                    },
                     'severity_level': random.choice(['low', 'medium', 'high']),
-                    'guidance': 'Focus on stability and seek support during challenging times.',
-                    'preparation_steps': ['Build emergency fund', 'Strengthen support network', 'Practice self-care'],
                 }
             )
-        
+
         # Life Milestone
         for user in users[:3]:
             milestone_type = random.choice(['career', 'relationship', 'spiritual'])
@@ -1525,23 +1511,8 @@ class Command(BaseCommand):
                 }
             )
         
-        # Family Unit Profile
-        if persons.count() >= 2:
-            person_ids = sorted([str(p.id) for p in persons[:2]])
-            family_hash = hashlib.sha256(''.join(person_ids).encode()).hexdigest()
-            FamilyUnitProfile.objects.get_or_create(
-                user=users[0],
-                family_unit_hash=family_hash,
-                defaults={
-                    'member_count': persons.count(),
-                    'family_life_path': random.randint(1, 9),
-                    'family_destiny': random.randint(1, 9),
-                    'generational_number': random.randint(1, 9),
-                    'compatibility_score': random.randint(70, 100),
-                    'dynamics': {'harmony': 'high', 'communication': 'strong'},
-                }
-            )
-        
+        # FamilyUnitProfile deprecated; use GenerationalAnalysis for family unit analysis
+
         # Karmic Contract
         if persons.count() >= 2:
             KarmicContract.objects.get_or_create(
@@ -1662,27 +1633,8 @@ class Command(BaseCommand):
                 }
             )
         
-        # Emotional Cycle
-        for user in users[:3]:
-            start_date = date.today() - timedelta(days=random.randint(1, 30))
-            end_date = start_date + timedelta(days=random.randint(7, 28))
-            EmotionalCycle.objects.get_or_create(
-                user=user,
-                cycle_type=random.choice(['daily', 'weekly', 'monthly', 'yearly']),
-                start_date=start_date,
-                defaults={
-                    'end_date': end_date,
-                    'predicted_mood': random.choice(['positive', 'balanced', 'reflective', 'energetic']),
-                    'mood_score_range': [random.randint(50, 70), random.randint(70, 90)],
-                    'energy_level': random.choice(['low', 'low-moderate', 'moderate', 'moderate-high', 'high']),
-                    'recommendations': [
-                        'Practice mindfulness',
-                        'Engage in creative activities',
-                        'Maintain social connections',
-                    ],
-                }
-            )
-    
+        # EmotionalCycle deprecated; no active feature uses it
+
     def _seed_accounts_additional_data(self, users):
         """Seed additional accounts models."""
         # OTP Codes

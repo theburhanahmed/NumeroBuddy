@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useIsMobile } from '../hooks/useMediaQuery';
+import { useIsMobile } from '@/hooks/use-media-query';
 interface TouchOptimizedButtonProps {
   children: React.ReactNode;
   onClick?: () => void;

@@ -26,6 +26,8 @@ interface FeatureAccess {
 
 interface SubscriptionContextType {
   tier: SubscriptionTier;
+  /** Alias for tier for components that use subscriptionPlan. */
+  subscriptionPlan: SubscriptionTier;
   setTier: (tier: SubscriptionTier) => void;
   hasAccess: (feature: string) => boolean;
   usageLimits: UsageLimits;
@@ -65,12 +67,13 @@ const featureTierMap: Record<string, SubscriptionTier> = {
 };
 
 // Map backend subscription plans to frontend tiers
+// Backend uses: free, premium, elite. Frontend display: free, premium, enterprise
 function mapBackendTierToFrontend(backendTier: string | undefined | null): SubscriptionTier {
   if (!backendTier) return 'free';
   
   const tierMap: Record<string, SubscriptionTier> = {
     'free': 'free',
-    'basic': 'premium',
+    'basic': 'premium', // deprecated: map basic to premium
     'premium': 'premium',
     'elite': 'enterprise',
     'enterprise': 'enterprise',
@@ -218,6 +221,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     <SubscriptionContext.Provider
       value={{
         tier,
+        subscriptionPlan: tier,
         setTier,
         hasAccess,
         usageLimits,

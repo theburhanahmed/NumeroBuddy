@@ -1,5 +1,5 @@
 import React from 'react';
-import { AccessibleSpaceBackground } from '@/components/space/accessible-space-background';
+import { GlassBackground } from '@/components/glass/glass-background';
 
 /**
  * Layout for authentication pages (login, register, etc.)
@@ -11,8 +11,8 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative min-h-screen">
-      <AccessibleSpaceBackground />
+    <div className="relative min-h-screen bg-[#0a1628] overflow-hidden">
+      <GlassBackground starCount={80} />
       <div className="relative z-10">
         {children}
       </div>

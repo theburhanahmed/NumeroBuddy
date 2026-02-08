@@ -1,8 +1,8 @@
 /**
  * Onboarding Flow Page
- * 
+ *
  * Multi-step onboarding wizard for first-time users.
- * Guides users through profile completion and feature discovery.
+ * Pre-populates from signup data; only collects missing optional fields.
  */
 
 'use client'
@@ -20,6 +20,7 @@ import {
   ArrowLeftIcon,
   XIcon,
 } from "lucide-react"
+import { GlassBackground } from "@/components/glass/glass-background"
 import { BaseButton } from "@/components/base/BaseButton"
 import { BaseCard } from "@/components/base/BaseCard"
 import { BaseInput } from "@/components/base/BaseInput"
@@ -28,7 +29,6 @@ import { useOnboarding } from "@/contexts/OnboardingContext"
 import { userAPI } from "@/lib/api-client"
 import { numerologyAPI } from "@/lib/numerology-api"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
 
 interface OnboardingStep {
   id: string
@@ -38,17 +38,70 @@ interface OnboardingStep {
   component: React.ReactNode
 }
 
+function formatDateForInput(isoDate?: string | null): string {
+  if (!isoDate) return ''
+  try {
+    const d = new Date(isoDate)
+    return d.toISOString().split('T')[0]
+  } catch {
+    return ''
+  }
+}
+
 export default function OnboardingPage() {
   const router = useRouter()
-  const { user } = useAuth()
-  const { completeOnboarding } = useOnboarding()
+  const { user, loading: authLoading } = useAuth()
+  const { completeOnboarding, refreshOnboardingStatus } = useOnboarding()
+
+  React.useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace(`/login?redirect=${encodeURIComponent('/onboarding')}`)
+    }
+  }, [authLoading, user, router])
   const [currentStep, setCurrentStep] = React.useState(0)
   const [loading, setLoading] = React.useState(false)
+  const [profileLoaded, setProfileLoaded] = React.useState(false)
   const [formData, setFormData] = React.useState({
-    fullName: user?.full_name || '',
+    fullName: '',
     dateOfBirth: '',
     gender: '',
+    timezone: 'Asia/Kolkata',
+    location: '',
   })
+
+  React.useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return
+      try {
+        const res = await userAPI.getProfile()
+        const data = res.data?.user || res.data
+        if (data) {
+          setFormData(prev => ({
+            ...prev,
+            fullName: data.full_name || user.full_name || prev.fullName,
+            dateOfBirth: formatDateForInput(data.date_of_birth) || prev.dateOfBirth,
+            gender: data.gender || prev.gender,
+            timezone: data.timezone || prev.timezone,
+            location: data.location || prev.location,
+          }))
+          if (data.profile_completed_at && data.date_of_birth) {
+            router.replace('/dashboard')
+            return
+          }
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            fullName: user.full_name || prev.fullName,
+          }))
+        }
+      } catch {
+        setFormData(prev => ({ ...prev, fullName: user.full_name || prev.fullName }))
+      } finally {
+        setProfileLoaded(true)
+      }
+    }
+    loadProfile()
+  }, [user, router])
 
   const steps: OnboardingStep[] = [
     {
@@ -93,7 +146,6 @@ export default function OnboardingPage() {
       return
     }
 
-    // Validate current step
     if (currentStep === 1) {
       if (!formData.fullName || !formData.dateOfBirth) {
         toast.error('Please fill in all required fields')
@@ -104,6 +156,8 @@ export default function OnboardingPage() {
     setCurrentStep((prev) => prev + 1)
   }
 
+  const isProfileComplete = Boolean(formData.fullName && formData.dateOfBirth)
+
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1)
@@ -113,28 +167,29 @@ export default function OnboardingPage() {
   const handleComplete = async () => {
     setLoading(true)
     try {
-      // Update profile if needed
-      if (formData.fullName || formData.dateOfBirth) {
+      if (formData.fullName || formData.dateOfBirth || formData.gender || formData.timezone || formData.location) {
         await userAPI.updateProfile({
           full_name: formData.fullName || undefined,
           date_of_birth: formData.dateOfBirth || undefined,
           gender: formData.gender || undefined,
+          timezone: formData.timezone || undefined,
+          location: formData.location || undefined,
         })
       }
 
-      // Calculate numerology profile if date of birth is available
       if (formData.dateOfBirth) {
         try {
-          await numerologyAPI.calculateProfile({ system: 'pythagorean' })
+          await numerologyAPI.calculateProfile('pythagorean')
         } catch (error) {
           console.error('Failed to calculate profile:', error)
         }
       }
 
+      await refreshOnboardingStatus()
       completeOnboarding()
       toast.success('Welcome to NumerAI!')
       router.push('/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Onboarding completion failed:', error)
       toast.error('Failed to complete onboarding. Please try again.')
     } finally {
@@ -142,7 +197,24 @@ export default function OnboardingPage() {
     }
   }
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    if (isProfileComplete) {
+      try {
+        await userAPI.updateProfile({
+          full_name: formData.fullName || undefined,
+          date_of_birth: formData.dateOfBirth || undefined,
+          gender: formData.gender || undefined,
+          timezone: formData.timezone || undefined,
+          location: formData.location || undefined,
+        })
+        if (formData.dateOfBirth) {
+          await numerologyAPI.calculateProfile('pythagorean')
+        }
+        await refreshOnboardingStatus()
+      } catch (e) {
+        console.error('Skip save failed:', e)
+      }
+    }
     completeOnboarding()
     router.push('/dashboard')
   }
@@ -150,11 +222,12 @@ export default function OnboardingPage() {
   const progress = ((currentStep + 1) / steps.length) * 100
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-space-navy via-space-blue to-space-black flex items-center justify-center p-4">
+    <div className="relative min-h-screen bg-[#0a1628] flex items-center justify-center p-4">
+      <GlassBackground starCount={80} />
       <BaseCard
         variant="space"
         padding="xl"
-        className="w-full max-w-2xl relative overflow-hidden"
+        className="w-full max-w-2xl relative z-10 overflow-hidden"
       >
         {/* Close button */}
         <button
@@ -273,16 +346,25 @@ interface ProfileStepProps {
     fullName: string
     dateOfBirth: string
     gender: string
+    timezone: string
+    location: string
   }
   setFormData: React.Dispatch<React.SetStateAction<{
     fullName: string
     dateOfBirth: string
     gender: string
+    timezone: string
+    location: string
   }>>
   loading: boolean
 }
 
 function ProfileStep({ formData, setFormData, loading }: ProfileStepProps) {
+  const hasNameFromSignup = Boolean(formData.fullName)
+  const hasDobFromSignup = Boolean(formData.dateOfBirth)
+  const nameRequired = !hasNameFromSignup
+  const dobRequired = !hasDobFromSignup
+
   return (
     <div className="space-y-4">
       <BaseInput
@@ -292,8 +374,8 @@ function ProfileStep({ formData, setFormData, loading }: ProfileStepProps) {
         onChange={(e) =>
           setFormData((prev) => ({ ...prev, fullName: e.target.value }))
         }
-        disabled={loading}
-        required
+        disabled={loading || hasNameFromSignup}
+        required={nameRequired}
       />
 
       <BaseInput
@@ -303,8 +385,8 @@ function ProfileStep({ formData, setFormData, loading }: ProfileStepProps) {
         onChange={(e) =>
           setFormData((prev) => ({ ...prev, dateOfBirth: e.target.value }))
         }
-        disabled={loading}
-        required
+        disabled={loading || hasDobFromSignup}
+        required={dobRequired}
       />
 
       <div>
@@ -323,6 +405,26 @@ function ProfileStep({ formData, setFormData, loading }: ProfileStepProps) {
           <option value="other">Other</option>
         </select>
       </div>
+
+      <BaseInput
+        label="Timezone (Optional)"
+        placeholder="e.g. Asia/Kolkata"
+        value={formData.timezone}
+        onChange={(e) =>
+          setFormData((prev) => ({ ...prev, timezone: e.target.value }))
+        }
+        disabled={loading}
+      />
+
+      <BaseInput
+        label="Location (Optional)"
+        placeholder="City, Country"
+        value={formData.location}
+        onChange={(e) =>
+          setFormData((prev) => ({ ...prev, location: e.target.value }))
+        }
+        disabled={loading}
+      />
     </div>
   )
 }

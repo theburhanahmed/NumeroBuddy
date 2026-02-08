@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { UserIcon, MessageSquareIcon, HeartIcon, BookOpenIcon, SparklesIcon, StarIcon, TrendingUpIcon, Users2Icon, CalendarIcon, ArrowRightIcon } from 'lucide-react';
-import { AccessibleSpaceBackground } from '@/components/space/accessible-space-background';
+import { GlassBackground } from '@/components/glass/glass-background';
 import { SpaceCard } from '@/components/space/space-card';
 import { SpaceButton } from '@/components/space/space-button';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
@@ -18,6 +18,7 @@ import { useIsMobile } from '@/hooks/use-media-query';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { useAIChat } from '@/contexts/ai-chat-context';
 import { OnboardingModal } from '@/components/OnboardingModal';
+import { SubscriptionGate } from '@/components/SubscriptionGate';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { useAuth } from '@/contexts/auth-context';
 import { numerologyAPI, ChaldeanAnalysis, ZodiacNumerologyProfile, DetailedLoShuGrid } from '@/lib/numerology-api';
@@ -38,9 +39,11 @@ interface UserProfile {
   full_name?: string;
   date_of_birth?: string;
   email?: string;
+  profile_completed_at?: string | null;
+  created_at?: string;
 }
 
-export default function Dashboard() {
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
@@ -97,13 +100,18 @@ export default function Dashboard() {
       try {
         setDataLoading(true);
         
-        // Fetch user profile
+        // Fetch user profile (404 = no profile yet, e.g. new user; treat as empty)
         try {
           const profileResponse = await userAPI.getProfile();
           const profileData = profileResponse.data?.user || profileResponse.data;
           setUserProfile(profileData || {});
-        } catch (error) {
-          console.error('Failed to fetch user profile:', error);
+        } catch (error: any) {
+          const status = error?.response?.status;
+          if (status === 404) {
+            setUserProfile({});
+          } else {
+            console.error('Failed to fetch user profile:', error);
+          }
         }
 
         // Fetch numerology profile
@@ -172,23 +180,20 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!isLoading && !dataLoading && !authLoading && user) {
-      // Check if onboarding should be triggered for new users
+      const isProfileComplete = Boolean(userProfile?.profile_completed_at || (userProfile?.date_of_birth && userProfile?.full_name));
+      const isProfileIncomplete = !userProfile?.date_of_birth;
+
+      if (isProfileIncomplete && !isProfileComplete) {
+        router.replace('/onboarding');
+        return;
+      }
+
       const onboardingParam = searchParams ? searchParams.get('onboarding') : null;
       const isNewUserFromParam = onboardingParam === 'true';
-      
-      // Check if user profile is incomplete (indicator of new user)
-      const isProfileIncomplete = !userProfile?.date_of_birth;
-      
-      // Check if user profile was recently created (within last 5 minutes)
-      // This helps catch users who just signed up but haven't completed profile
-      const isRecentlyCreated = userProfile?.created_at 
+      const isRecentlyCreated = userProfile?.created_at
         ? (Date.now() - new Date(userProfile.created_at).getTime()) < 5 * 60 * 1000
-        : !userProfile; // If no profile exists yet, user is definitely new
+        : !userProfile;
 
-      // Trigger onboarding if:
-      // 1. User explicitly came from sign-up flow (onboarding=true param), OR
-      // 2. User profile is incomplete (no date of birth) AND user was recently created
-      // AND onboarding hasn't been completed
       if (!isOnboardingComplete && (isNewUserFromParam || (isProfileIncomplete && isRecentlyCreated))) {
         triggerOnboarding();
       } else if (user && userProfile && !showOnboarding && !isNewUserFromParam) {
@@ -270,8 +275,16 @@ export default function Dashboard() {
       tooltip: 'Get personalized numerology guidance 24/7',
     },
     {
+      icon: <BookOpenIcon className="w-6 h-6" />,
+      title: 'Generate my report',
+      description: 'Create your personal numerology report',
+      action: () => router.push('/reports/generate?person=self'),
+      color: 'from-amber-500 to-orange-600',
+      tooltip: 'Generate your complete numerology report',
+    },
+    {
       icon: <CalendarIcon className="w-6 h-6" />,
-      title: 'Daily Reading',
+      title: 'Your Daily Reading',
       description: 'Your cosmic guidance for today',
       action: () => router.push('/daily-reading'),
       color: 'from-purple-500 to-pink-600',
@@ -280,14 +293,14 @@ export default function Dashboard() {
     {
       icon: <HeartIcon className="w-6 h-6" />,
       title: 'Compatibility',
-      description: 'Check relationship compatibility',
+      description: 'You vs Partner analysis',
       action: () => router.push('/compatibility'),
       color: 'from-pink-500 to-rose-600',
-      tooltip: 'Analyze cosmic connections with others',
+      tooltip: 'Compare you with partners, friends, and family',
     },
     {
       icon: <TrendingUpIcon className="w-6 h-6" />,
-      title: 'Life Path',
+      title: 'Your Life Path',
       description: 'Explore your life journey',
       action: () => router.push('/life-path'),
       color: 'from-green-500 to-emerald-600',
@@ -322,8 +335,8 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="relative min-h-screen">
-        <AccessibleSpaceBackground />
+      <div className="relative min-h-screen bg-[#0a1628] overflow-hidden">
+        <GlassBackground starCount={80} />
         <div className="flex items-center justify-center min-h-screen">
           <CosmicSkeletonLoader variant="card" />
         </div>
@@ -332,8 +345,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="relative min-h-screen">
-      <AccessibleSpaceBackground />
+    <div className="relative min-h-screen bg-[#0a1628] overflow-hidden">
+      <GlassBackground starCount={80} />
       {showOnboarding && <OnboardingModal />}
       {showTour && (
         <InteractiveTour
@@ -462,36 +475,37 @@ export default function Dashboard() {
           </SpaceCard>
         </motion.div>
 
-        {/* Featured: AI Chat */}
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 20,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            delay: 0.2,
-          }}
-          className="mb-8"
-        >
-          <FeatureHighlight
-            title="New: AI Numerologist Chat"
-            description="Get instant answers to your numerology questions"
-            badge="NEW"
+        <SubscriptionGate feature="ai-chat" requiredTier="premium">
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              delay: 0.2,
+            }}
+            className="mb-8"
           >
-            <TouchOptimizedButton
-              variant="primary"
-              onClick={openChat}
-              icon={<ArrowRightIcon className="w-5 h-5" />}
-              ariaLabel="Start AI chat"
+            <FeatureHighlight
+              title="New: AI Numerologist Chat"
+              description="Get instant answers to your numerology questions"
+              badge="NEW"
             >
-              Start Chatting
-            </TouchOptimizedButton>
-          </FeatureHighlight>
-        </motion.div>
+              <TouchOptimizedButton
+                variant="primary"
+                onClick={openChat}
+                icon={<ArrowRightIcon className="w-5 h-5" />}
+                ariaLabel="Start AI chat"
+              >
+                Start Chatting
+              </TouchOptimizedButton>
+            </FeatureHighlight>
+          </motion.div>
+        </SubscriptionGate>
 
         {/* Quick Actions */}
         <motion.div
@@ -576,7 +590,7 @@ export default function Dashboard() {
           <SpaceCard variant="premium" className="p-6 md:p-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <h3 className="text-xl md:text-2xl font-['Playfair_Display'] font-bold text-white">
-                Today&apos;s Reading
+                Your Daily Reading
               </h3>
               <motion.div
                 className="px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 backdrop-blur-xl rounded-full border border-cyan-500/30"
@@ -693,9 +707,10 @@ export default function Dashboard() {
           </SpaceCard>
         </motion.div>
 
-        {/* DivineAPI-Style Insights Section */}
-        {numerologyProfile && (chaldeanAnalysis || zodiacNumerology || detailedLoShuGrid) && (
-          <motion.div
+        <SubscriptionGate feature="advanced-numerology" requiredTier="premium" showPreview>
+          {/* DivineAPI-Style Insights Section */}
+          {numerologyProfile && (chaldeanAnalysis || zodiacNumerology || detailedLoShuGrid) && (
+            <motion.div
             initial={{
               opacity: 0,
               y: 20,
@@ -797,7 +812,22 @@ export default function Dashboard() {
             </motion.div>
           </motion.div>
         )}
+        </SubscriptionGate>
       </div>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <CosmicSkeletonLoader />
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

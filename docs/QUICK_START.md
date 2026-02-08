@@ -1,5 +1,26 @@
 # Quick Start Guide
 
+## Database (Required First)
+
+The backend requires PostgreSQL. If you get `Connection refused` on port 5432:
+
+**Option A – Docker (recommended):**
+```bash
+./scripts/start-database.sh
+# or: docker compose up -d postgres redis
+```
+
+**Option B – Homebrew (macOS):**
+```bash
+brew install postgresql
+brew services start postgresql
+# Then create DB: createdb numerai (or use setup-local.sh)
+```
+
+Then run migrations: `cd backend && python manage.py migrate`
+
+---
+
 ## Post-Implementation Setup
 
 After implementing all enhancements, follow these steps to get everything running:

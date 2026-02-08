@@ -10,7 +10,7 @@ import { inputVariants, type InputVariantProps } from "@/design-system/variants"
 import { cn } from "@/lib/utils"
 
 export interface BaseInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement>,
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
     InputVariantProps {
   error?: boolean
   errorMessage?: string
@@ -18,7 +18,7 @@ export interface BaseInputProps
 }
 
 const BaseInput = React.forwardRef<HTMLInputElement, BaseInputProps>(
-  ({ className, variant, size, type, error, errorMessage, label, id, ...props }, ref) => {
+  ({ className, variant, size: sizeVariant, type, error, errorMessage, label, id, ...props }, ref) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`
     
     return (
@@ -36,7 +36,7 @@ const BaseInput = React.forwardRef<HTMLInputElement, BaseInputProps>(
           type={type}
           id={inputId}
           className={cn(
-            inputVariants({ variant, size }),
+            inputVariants({ variant, size: sizeVariant }),
             error && "border-destructive focus-visible:ring-destructive",
             className
           )}

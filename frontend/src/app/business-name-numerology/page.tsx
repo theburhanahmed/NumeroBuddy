@@ -14,10 +14,21 @@ export default function BusinessNameNumerology() {
   const [businessName, setBusinessName] = useState('');
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [launchDate, setLaunchDate] = useState('');
+  const [analyzeAnother, setAnalyzeAnother] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [businessAnalysis, setBusinessAnalysis] = useState<any>(null);
+
+  const handleAnalyzeAnother = () => {
+    setAnalyzeAnother(true);
+    setBusinessName('');
+    setRegistrationNumber('');
+    setLaunchDate('');
+    setShowResults(false);
+    setBusinessAnalysis(null);
+    setError(null);
+  };
 
   const handleCalculate = async () => {
     if (!businessName.trim()) {
@@ -90,7 +101,7 @@ export default function BusinessNameNumerology() {
             <MagneticCard variant="liquid-premium" className="card-padding-lg">
               <div className="liquid-glass-content">
                 <h2 className="text-2xl font-bold text-white mb-4">
-                  Business Name Analysis
+                  {analyzeAnother ? 'Analyze a Different Business' : 'Your Business Name Analysis'}
                 </h2>
                 <p className="text-gray-700 dark:text-white/90 mb-6">
                   The vibration of your business name influences its energy,
@@ -100,15 +111,24 @@ export default function BusinessNameNumerology() {
                 <div className="space-y-4 mb-6">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                      Business Name *
+                      {analyzeAnother ? 'Business name to analyze' : 'Your Business Name'}
                     </label>
                     <input 
                       type="text" 
                       value={businessName} 
-                      onChange={e => setBusinessName(e.target.value)} 
-                      placeholder="Enter your business name" 
+                      onChange={(e) => setBusinessName(e.target.value)} 
+                      placeholder={analyzeAnother ? 'Enter business name to analyze' : 'Enter your business name'} 
                       className="w-full px-4 py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-gray-300 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-500" 
                     />
+                    {!analyzeAnother && (
+                      <button
+                        type="button"
+                        onClick={handleAnalyzeAnother}
+                        className="mt-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                      >
+                        Analyze a different business
+                      </button>
+                    )}
                   </div>
                   
                   <div>
@@ -150,7 +170,7 @@ export default function BusinessNameNumerology() {
                       Analyzing...
                     </>
                   ) : (
-                    'Analyze Business Name'
+                    analyzeAnother ? 'Analyze Business Name' : 'Analyze Your Business Name'
                   )}
                 </TouchOptimizedButton>
                 

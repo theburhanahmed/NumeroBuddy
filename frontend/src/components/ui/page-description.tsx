@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { InfoIcon } from 'lucide-react';
-import { GlassCard } from './glass-card';
+import { GlassCard } from '@/components/glassmorphism/glass-card';
 
 interface PageDescriptionProps {
   title: string;

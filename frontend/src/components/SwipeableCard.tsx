@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion';
-import { useIsMobile } from '../hooks/useMediaQuery';
+import { useIsMobile } from '@/hooks/use-media-query';
 interface SwipeableCardProps {
   children: React.ReactNode;
   onSwipeLeft?: () => void;

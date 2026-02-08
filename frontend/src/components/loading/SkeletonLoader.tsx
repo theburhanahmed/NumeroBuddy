@@ -70,7 +70,7 @@ export const CardSkeleton = React.forwardRef<HTMLDivElement, Omit<SkeletonLoader
 )
 CardSkeleton.displayName = "CardSkeleton"
 
-export const AvatarSkeleton = React.forwardRef<HTMLDivElement, SkeletonVariantProps>(
+export const AvatarSkeleton = React.forwardRef<HTMLDivElement, SkeletonVariantProps & React.HTMLAttributes<HTMLDivElement>>(
   ({ className, variant, size = "default", ...props }, ref) => (
     <SkeletonLoader
       ref={ref}

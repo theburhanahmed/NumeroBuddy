@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckIcon, SparklesIcon, CrownIcon, ZapIcon, XIcon } from 'lucide-react';
 import { MagneticCard } from './MagneticCard';
-import { GlassButton } from './GlassButton';
+import { GlassButton } from '@/components/glassmorphism/glass-button';
 import { SubscriptionTier } from '../contexts/SubscriptionContext';
 interface PricingTier {
   id: SubscriptionTier;

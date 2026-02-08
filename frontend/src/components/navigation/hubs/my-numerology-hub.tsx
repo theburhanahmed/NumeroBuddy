@@ -8,12 +8,12 @@ import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 
 const tabs: HubTab[] = [
-  { id: 'life-path', label: 'Life Path', path: '/life-path', icon: TrendingUpIcon },
-  { id: 'birth-chart', label: 'Birth Chart', path: '/birth-chart', icon: StarIcon },
-  { id: 'all-numbers', label: 'All Numbers', path: '/my-numerology/all-numbers', icon: HashIcon },
-  { id: 'pinnacles', label: 'Pinnacles & Challenges', path: '/my-numerology/pinnacles', icon: MountainIcon },
-  { id: 'lo-shu', label: 'Lo Shu Grid', path: '/lo-shu-grid', icon: Grid3x3Icon },
-  { id: 'karmic', label: 'Karmic Analysis', path: '/my-numerology/karmic', icon: SparklesIcon },
+  { id: 'life-path', label: 'Your Life Path', path: '/life-path', icon: TrendingUpIcon },
+  { id: 'birth-chart', label: 'Your Birth Chart', path: '/birth-chart', icon: StarIcon },
+  { id: 'all-numbers', label: 'Your Numbers', path: '/my-numerology/all-numbers', icon: HashIcon },
+  { id: 'pinnacles', label: 'Your Pinnacles & Challenges', path: '/my-numerology/pinnacles', icon: MountainIcon },
+  { id: 'lo-shu', label: 'Your Lo Shu Grid', path: '/lo-shu-grid', icon: Grid3x3Icon },
+  { id: 'karmic', label: 'Your Karmic Analysis', path: '/my-numerology/karmic', icon: SparklesIcon },
 ];
 
 export function MyNumerologyHub({ children }: { children?: React.ReactNode }) {

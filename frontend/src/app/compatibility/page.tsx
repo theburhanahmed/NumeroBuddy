@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HeartIcon, SparklesIcon, CheckCircleIcon, AlertCircleIcon, UsersIcon } from 'lucide-react';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
@@ -10,26 +11,62 @@ import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-butto
 import { CrystalNumerologyCube } from '@/components/3d/crystal-numerology-cube';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useAuth } from '@/contexts/auth-context';
 import { numerologyAPI } from '@/lib/numerology-api';
+import { userAPI } from '@/lib/api-client';
 import { toast } from 'sonner';
 
+function formatDateForInput(isoDate?: string | null): string {
+  if (!isoDate) return '';
+  try {
+    const d = new Date(isoDate);
+    return d.toISOString().split('T')[0];
+  } catch {
+    return '';
+  }
+}
+
 export default function CompatibilityChecker() {
+  const router = useRouter();
+  const { user } = useAuth();
   const { tier } = useSubscription();
-  const [person1, setPerson1] = useState({
-    name: '',
-    birthDate: ''
-  });
-  const [person2, setPerson2] = useState({
-    name: '',
-    birthDate: ''
-  });
+  const [userProfile, setUserProfile] = useState<{ full_name?: string; date_of_birth?: string } | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [partner, setPartner] = useState({ name: '', birthDate: '' });
   const [result, setResult] = useState<any>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const userFullName = userProfile?.full_name || user?.full_name || '';
+  const userBirthDate = userProfile?.date_of_birth ? formatDateForInput(userProfile.date_of_birth) : '';
+  const isProfileComplete = Boolean(userFullName && userBirthDate);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) {
+        setProfileLoading(false);
+        return;
+      }
+      try {
+        const res = await userAPI.getProfile();
+        const data = res.data?.user || res.data;
+        setUserProfile(data || null);
+      } catch {
+        setUserProfile(null);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    loadProfile();
+  }, [user]);
+
   const calculateCompatibility = async () => {
-    if (!person1.name || !person1.birthDate || !person2.name || !person2.birthDate) {
-      toast.error('Please fill in all fields');
+    if (!partner.name || !partner.birthDate) {
+      toast.error('Please enter partner name and birth date');
+      return;
+    }
+    if (!isProfileComplete) {
+      toast.error('Please complete your profile first');
       return;
     }
 
@@ -38,18 +75,15 @@ export default function CompatibilityChecker() {
       setError(null);
       setResult(null);
 
-      // Format birth date to YYYY-MM-DD if needed
       const formatDate = (dateStr: string) => {
-        if (dateStr.includes('T')) {
-          return dateStr.split('T')[0];
-        }
+        if (dateStr.includes('T')) return dateStr.split('T')[0];
         return dateStr;
       };
 
       const response = await numerologyAPI.checkCompatibility({
-        partner_name: person2.name.trim(),
-        partner_birth_date: formatDate(person2.birthDate),
-        relationship_type: 'romantic' // Default to romantic, could be made configurable
+        partner_name: partner.name.trim(),
+        partner_birth_date: formatDate(partner.birthDate),
+        relationship_type: 'romantic',
       });
 
       setResult({
@@ -59,7 +93,7 @@ export default function CompatibilityChecker() {
         strengths: response.strengths || [],
         challenges: response.challenges || [],
         advice: response.advice || 'Compatibility analysis completed.',
-        relationship_type: response.relationship_type || 'romantic'
+        relationship_type: response.relationship_type || 'romantic',
       });
 
       toast.success('Compatibility calculated!');
@@ -94,7 +128,7 @@ export default function CompatibilityChecker() {
             <h1 className="text-4xl md:text-5xl font-['Playfair_Display'] font-bold text-white">
               Compatibility Checker
             </h1>
-            <p className="text-white/70">Discover your cosmic connection</p>
+            <p className="text-white/70">Compare you with partners, friends, and family</p>
           </div>
         </div>
       </motion.div>
@@ -116,76 +150,74 @@ export default function CompatibilityChecker() {
       >
         <SpaceCard variant="premium" className="p-6 md:p-8">
           <h2 className="text-2xl font-['Playfair_Display'] font-bold text-white mb-6">
-            Enter Life Path Numbers
+            You vs Partner Compatibility
           </h2>
 
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            {/* Person 1 */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-4">
-                Person 1 - Name
-              </label>
-              <input
-                type="text"
-                value={person1.name}
-                onChange={(e) =>
-                  setPerson1({ ...person1, name: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-white placeholder-white/50"
-                placeholder="Enter name"
-              />
-              <label className="block text-sm font-medium text-white mb-4 mt-4">
-                Birth Date
-              </label>
-              <input
-                type="date"
-                value={person1.birthDate}
-                onChange={(e) =>
-                  setPerson1({ ...person1, birthDate: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-white"
-              />
+          {profileLoading ? (
+            <div className="py-8 text-center text-white/70">Loading your profile...</div>
+          ) : !isProfileComplete ? (
+            <div className="py-8 text-center">
+              <p className="text-white/80 mb-4">Complete your profile with your full name and birth date to check compatibility.</p>
+              <TouchOptimizedButton
+                variant="primary"
+                onClick={() => router.push('/onboarding')}
+                ariaLabel="Complete profile"
+              >
+                Complete Your Profile
+              </TouchOptimizedButton>
             </div>
+          ) : (
+            <>
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                {/* You (read-only) */}
+                <div>
+                  <label className="block text-sm font-medium text-white mb-4">
+                    You
+                  </label>
+                  <div className="px-4 py-3 bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white/90">
+                    <p className="font-medium">{userFullName}</p>
+                    <p className="text-sm text-white/70 mt-1">{userBirthDate ? new Date(userBirthDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}</p>
+                  </div>
+                  <p className="text-xs text-white/50 mt-2">From your profile</p>
+                </div>
 
-            {/* Person 2 */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-4">
-                Person 2 - Name
-              </label>
-              <input
-                type="text"
-                value={person2.name}
-                onChange={(e) =>
-                  setPerson2({ ...person2, name: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-white placeholder-white/50"
-                placeholder="Enter name"
-              />
-              <label className="block text-sm font-medium text-white mb-4 mt-4">
-                Birth Date
-              </label>
-              <input
-                type="date"
-                value={person2.birthDate}
-                onChange={(e) =>
-                  setPerson2({ ...person2, birthDate: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-white"
-              />
-            </div>
-          </div>
+                {/* Partner (editable) */}
+                <div>
+                  <label className="block text-sm font-medium text-white mb-4">
+                    Partner
+                  </label>
+                  <input
+                    type="text"
+                    value={partner.name}
+                    onChange={(e) => setPartner({ ...partner, name: e.target.value })}
+                    className="w-full px-4 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-white placeholder-white/50"
+                    placeholder="Enter partner name"
+                  />
+                  <label className="block text-sm font-medium text-white mb-4 mt-4">
+                    Partner Birth Date
+                  </label>
+                  <input
+                    type="date"
+                    value={partner.birthDate}
+                    onChange={(e) => setPartner({ ...partner, birthDate: e.target.value })}
+                    className="w-full px-4 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-white"
+                  />
+                </div>
+              </div>
 
-          <TouchOptimizedButton
-            variant="primary"
-            size="lg"
-            onClick={calculateCompatibility}
-            className="w-full"
-            icon={<SparklesIcon className="w-5 h-5" />}
-            ariaLabel="Check compatibility"
-            disabled={isCalculating || !person1.name || !person1.birthDate || !person2.name || !person2.birthDate}
-          >
-            {isCalculating ? 'Calculating...' : 'Calculate Compatibility'}
-          </TouchOptimizedButton>
+              <TouchOptimizedButton
+                variant="primary"
+                size="lg"
+                onClick={calculateCompatibility}
+                className="w-full"
+                icon={<SparklesIcon className="w-5 h-5" />}
+                ariaLabel="Check compatibility"
+                disabled={isCalculating || !partner.name || !partner.birthDate}
+              >
+                {isCalculating ? 'Calculating...' : 'Calculate Compatibility'}
+              </TouchOptimizedButton>
+            </>
+          )}
 
           {error && (
             <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
@@ -252,7 +284,7 @@ export default function CompatibilityChecker() {
                   </div>
                 </motion.div>
                 <p className="text-white/70 max-w-2xl mx-auto leading-relaxed">
-                  {person1.name} & {person2.name} - Life Path {result.lifePath1}{' '}
+                  {userFullName} & {partner.name} - Life Path {result.lifePath1}{' '}
                   + Life Path {result.lifePath2}
                 </p>
               </SpaceCard>

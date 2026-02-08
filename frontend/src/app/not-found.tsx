@@ -2,25 +2,17 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
+import { GlassBackground } from '@/components/glass/glass-background'
 import { SpaceCard } from '@/components/space/space-card'
 import { SpaceButton } from '@/components/space/space-button'
-import { SpacePlanet } from '@/components/space/space-planet'
 import { HomeIcon } from 'lucide-react'
 
 export default function NotFound() {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#0B0F19] relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4">
-          <SpacePlanet type="earth" size="lg" />
-        </div>
-        <div className="absolute bottom-1/4 right-1/4">
-          <SpacePlanet type="gas-giant" size="md" />
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#0a1628] relative overflow-hidden">
+      <GlassBackground starCount={80} />
 
       <SpaceCard variant="premium" className="p-12 max-w-lg text-center relative z-10">
         <div className="mb-8">

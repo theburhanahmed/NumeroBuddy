@@ -16,6 +16,8 @@ export interface NumerologyProfile {
   calculation_system: 'pythagorean' | 'chaldean';
   calculated_at: string;
   updated_at: string;
+  birth_date?: string;
+  full_name?: string;
 }
 
 export interface NumberInterpretation {
@@ -125,6 +127,8 @@ export interface CompatibilityCheck {
   partner_birth_date: string;
   relationship_type: 'romantic' | 'business' | 'friendship' | 'family';
   compatibility_score: number;
+  user_life_path?: number;
+  partner_life_path?: number;
   strengths: string[];
   challenges: string[];
   advice: string;

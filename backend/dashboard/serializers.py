@@ -2,7 +2,7 @@
 Serializers for dashboard app.
 """
 from rest_framework import serializers
-from .models import DashboardWidget, UserActivity, QuickInsight
+from .models import DashboardWidget, QuickInsight
 
 
 class DashboardWidgetSerializer(serializers.ModelSerializer):
@@ -19,18 +19,36 @@ class DashboardWidgetSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
-class UserActivitySerializer(serializers.ModelSerializer):
-    """Serializer for user activities."""
-    
-    activity_type_display = serializers.CharField(source='get_activity_type_display', read_only=True)
-    
-    class Meta:
-        model = UserActivity
-        fields = [
-            'id', 'activity_type', 'activity_type_display',
-            'metadata', 'created_at'
-        ]
-        read_only_fields = ['id', 'created_at']
+# Activity types display labels (aligned with former dashboard UserActivity.ACTIVITY_TYPES)
+ACTIVITY_TYPE_LABELS = {
+    'birth_chart_viewed': 'Birth Chart Viewed',
+    'daily_reading_viewed': 'Daily Reading Viewed',
+    'compatibility_checked': 'Compatibility Checked',
+    'remedy_tracked': 'Remedy Tracked',
+    'ai_chat_used': 'AI Chat Used',
+    'report_generated': 'Report Generated',
+    'profile_updated': 'Profile Updated',
+    'person_added': 'Person Added',
+    'consultation_booked': 'Consultation Booked',
+}
+
+
+class UserActivitySerializer(serializers.Serializer):
+    """
+    Serializer for activity feed items from analytics.UserActivityLog.
+    Exposes activity_data as metadata for API compatibility.
+    """
+    id = serializers.UUIDField(read_only=True)
+    activity_type = serializers.CharField(read_only=True)
+    activity_type_display = serializers.SerializerMethodField()
+    metadata = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField(read_only=True)
+
+    def get_activity_type_display(self, obj):
+        return ACTIVITY_TYPE_LABELS.get(obj.activity_type, obj.activity_type.replace('_', ' ').title())
+
+    def get_metadata(self, obj):
+        return getattr(obj, 'activity_data', {})
 
 
 class QuickInsightSerializer(serializers.ModelSerializer):

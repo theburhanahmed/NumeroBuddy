@@ -1,11 +1,13 @@
+'use client';
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { SparklesIcon, ArrowRightIcon } from 'lucide-react';
 import { SpaceCard } from './SpaceCard';
 import { TouchOptimizedButton } from './TouchOptimizedButton';
 export function InteractiveDemo() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [birthDate, setBirthDate] = useState('');
   const [lifePathNumber, setLifePathNumber] = useState<number | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -233,7 +235,7 @@ export function InteractiveDemo() {
             }} transition={{
               delay: 0.6
             }} className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <TouchOptimizedButton variant="primary" size="lg" onClick={() => navigate('/signup')} icon={<ArrowRightIcon className="w-5 h-5" />} ariaLabel="Get your full reading">
+                  <TouchOptimizedButton variant="primary" size="lg" onClick={() => router.push('/signup')} icon={<ArrowRightIcon className="w-5 h-5" />} ariaLabel="Get your full reading">
                     Get Full Reading
                   </TouchOptimizedButton>
 

@@ -230,8 +230,8 @@ export function Numerology3DVisualization({ data }: Numerology3DVisualizationPro
         {/* Alternative: Use existing 3D component */}
         <div className="absolute inset-0 flex items-center justify-center">
           <CrystalNumerologyCube
-            numbers={visualizationData.nodes.map(n => n.number)}
-            size={200}
+            number={visualizationData.nodes[0]?.number ?? 0}
+            size="lg"
           />
         </div>
       </div>

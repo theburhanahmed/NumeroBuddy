@@ -38,15 +38,15 @@ export function dynamicLoad<T extends ComponentType<any>>(
  */
 export const Lazy3DComponents = {
   CrystalNumerologyCube: dynamicLoad(
-    () => import('@/components/3d/crystal-numerology-cube'),
+    () => import('@/components/3d/crystal-numerology-cube').then((m) => ({ default: m.CrystalNumerologyCube })),
     { ssr: false }
   ),
   Premium3DPlanet: dynamicLoad(
-    () => import('@/components/3d/premium-3d-planet'),
+    () => import('@/components/3d/premium-3d-planet').then((m) => ({ default: m.Premium3DPlanet })),
     { ssr: false }
   ),
   OptimizedPremium3DPlanet: dynamicLoad(
-    () => import('@/components/3d/optimized-premium-3d-planet'),
+    () => import('@/components/3d/optimized-premium-3d-planet').then((m) => ({ default: m.OptimizedPremium3DPlanet })),
     { ssr: false }
   ),
 }

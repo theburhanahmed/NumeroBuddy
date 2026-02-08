@@ -8,6 +8,7 @@ from typing import Dict, Optional
 from django.conf import settings
 from accounts.models import User
 from numerology.models import NumerologyProfile, DetailedReading
+from numerology.profile_utils import get_numerology_profile
 from numerology.interpretations import get_interpretation
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ def generate_detailed_reading(
         # Get or fetch numerology profile
         if not numerology_profile:
             try:
-                numerology_profile = NumerologyProfile.objects.get(user=user)
+                numerology_profile = get_numerology_profile(user)
             except NumerologyProfile.DoesNotExist:
                 logger.error(f"Numerology profile not found for user {user.id}")
                 return None
@@ -166,7 +167,7 @@ def generate_all_detailed_readings(user: User) -> Dict[str, Optional[DetailedRea
         Dictionary mapping reading types to DetailedReading instances
     """
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
     except NumerologyProfile.DoesNotExist:
         logger.error(f"Numerology profile not found for user {user.id}")
         return {}

@@ -34,7 +34,7 @@ export function ScheduledReports({ onCreateSchedule }: ScheduledReportsProps) {
   const fetchScheduledReports = async () => {
     try {
       setLoading(true);
-      const response = await reportAPI.listScheduledReports();
+      const response = await reportAPI.getScheduledReports();
       setScheduledReports(Array.isArray(response) ? response : []);
     } catch (error) {
       console.error('Failed to fetch scheduled reports:', error);

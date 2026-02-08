@@ -1,8 +1,9 @@
 """
 Admin configuration for dashboard app.
+Activity feed is consolidated in analytics.UserActivityLog (see analytics admin).
 """
 from django.contrib import admin
-from .models import DashboardWidget, UserActivity, QuickInsight
+from .models import DashboardWidget, QuickInsight
 
 
 @admin.register(DashboardWidget)
@@ -11,15 +12,6 @@ class DashboardWidgetAdmin(admin.ModelAdmin):
     list_filter = ['widget_type', 'is_visible', 'created_at']
     search_fields = ['user__email', 'user__phone', 'widget_type']
     ordering = ['user', 'position']
-
-
-@admin.register(UserActivity)
-class UserActivityAdmin(admin.ModelAdmin):
-    list_display = ['user', 'activity_type', 'created_at']
-    list_filter = ['activity_type', 'created_at']
-    search_fields = ['user__email', 'user__phone', 'activity_type']
-    ordering = ['-created_at']
-    readonly_fields = ['created_at']
 
 
 @admin.register(QuickInsight)

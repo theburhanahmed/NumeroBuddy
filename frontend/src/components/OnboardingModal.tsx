@@ -58,7 +58,7 @@ export function OnboardingModal() {
 
             {/* Decorative Planet */}
             <div className="absolute top-0 right-0 opacity-20 pointer-events-none">
-              <SpacePlanet type="earth" size="md" />
+              <SpacePlanet type="earth" size="medium" />
             </div>
 
             {/* Content */}

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { MenuIcon, XIcon, HomeIcon, MessageSquareIcon, BookOpenIcon, SettingsIcon, LogOutIcon } from 'lucide-react';
-import { GlassButton } from './GlassButton';
+import { GlassButton } from '@/components/glassmorphism/glass-button';
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -102,7 +102,7 @@ export function MobileNav() {
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <GlassButton variant="secondary" className="w-full" icon={<LogOutIcon className="w-5 h-5" />} onClick={() => {
                 setIsOpen(false);
-                navigate('/');
+                router.push('/');
               }}>
                     Sign Out
                   </GlassButton>

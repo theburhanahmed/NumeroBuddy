@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { HubLayout, HubTab } from './hub-layout';
-import { FileTextIcon, PhoneIcon, BriefcaseIcon, CarIcon } from 'lucide-react';
+import { FileTextIcon, PhoneIcon, BriefcaseIcon, CarIcon, CalculatorIcon } from 'lucide-react';
 import { SpaceCard } from '@/components/space/space-card';
 
 const tabs: HubTab[] = [
@@ -11,6 +11,7 @@ const tabs: HubTab[] = [
   { id: 'phone-analysis', label: 'Phone Analysis', path: '/phone-numerology', icon: PhoneIcon },
   { id: 'business-analysis', label: 'Business Analysis', path: '/business-name-numerology', icon: BriefcaseIcon },
   { id: 'asset-analysis', label: 'Asset Analysis', path: '/tools/assets', icon: CarIcon },
+  { id: 'numerobuddy-engines', label: 'Numerobuddy Engines', path: '/numerobuddy-engines', icon: CalculatorIcon },
 ];
 
 export function ToolsHub({ children }: { children?: React.ReactNode }) {
@@ -20,7 +21,7 @@ export function ToolsHub({ children }: { children?: React.ReactNode }) {
     return (
       <HubLayout
         title="Tools"
-        description="Analyze names, numbers, and assets through numerology"
+        description="Tools default to your data; analyze names, numbers, and assets"
         tabs={tabs}
       >
         {children}
@@ -58,6 +59,7 @@ export function ToolsHub({ children }: { children?: React.ReactNode }) {
                 {tab.id === 'phone-analysis' && 'Check your phone number vibration'}
                 {tab.id === 'business-analysis' && 'Optimize business names and timing'}
                 {tab.id === 'asset-analysis' && 'Analyze vehicles, properties, and assets'}
+                {tab.id === 'numerobuddy-engines' && 'Rule-based engines with conflict resolution'}
               </p>
             </SpaceCard>
           );

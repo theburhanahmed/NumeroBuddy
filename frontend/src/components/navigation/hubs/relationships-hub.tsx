@@ -7,7 +7,7 @@ import { HeartIcon, UsersIcon, Users2Icon } from 'lucide-react';
 import { SpaceCard } from '@/components/space/space-card';
 
 const tabs: HubTab[] = [
-  { id: 'compatibility', label: 'Compatibility', path: '/compatibility', icon: HeartIcon },
+  { id: 'compatibility', label: 'Compatibility (You vs Partner)', path: '/compatibility', icon: HeartIcon },
   { id: 'compare', label: 'Compare People', path: '/relationships/compare', icon: UsersIcon },
   { id: 'family', label: 'Family Numerology', path: '/generational-numerology', icon: Users2Icon },
 ];
@@ -19,7 +19,7 @@ export function RelationshipsHub({ children }: { children?: React.ReactNode }) {
     return (
       <HubLayout
         title="Relationships"
-        description="Analyze compatibility and relationships through numerology"
+        description="Compare you with partners, friends, and family"
         tabs={tabs}
       >
         {children}
@@ -30,7 +30,7 @@ export function RelationshipsHub({ children }: { children?: React.ReactNode }) {
   return (
     <HubLayout
       title="Relationships"
-      description="Analyze compatibility and relationships through numerology"
+      description="Compare you with partners, friends, and family"
       tabs={tabs}
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

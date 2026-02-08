@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
   FileText, 
+  User,
   Users,
   FileStack,
+  Plus,
   CheckCircle,
   AlertCircle,
   ChevronLeft
@@ -14,6 +17,7 @@ import {
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 import { useAuth } from '@/contexts/auth-context';
 import { peopleAPI, reportAPI } from '@/lib/numerology-api';
 import { Person, ReportTemplate } from '@/types';
@@ -29,6 +33,12 @@ export default function BulkGenerateReportsPage() {
   const [generating, setGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [generationMessage, setGenerationMessage] = useState('');
+
+  const selfPerson = people.find(p => p.relationship === 'self');
+  const otherPeople = people.filter(p => p.relationship !== 'self');
+  const sortedPeople = selfPerson
+    ? [selfPerson, ...otherPeople]
+    : otherPeople;
 
   useEffect(() => {
     fetchPeople();
@@ -205,69 +215,114 @@ export default function BulkGenerateReportsPage() {
 
               {loading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <SpaceCard key={i} variant="premium" className="p-6 h-24 animate-pulse" glow>
-                      <div className="h-6 bg-[#1a2942]/40 rounded w-1/3 mb-3"></div>
-                      <div className="h-4 bg-[#1a2942]/40 rounded w-1/2"></div>
-                    </SpaceCard>
-                  ))}
+                  <CosmicSkeletonLoader variant="card" count={3} className="h-24" />
                 </div>
-              ) : people.length === 0 ? (
+              ) : sortedPeople.length === 0 ? (
                 <SpaceCard variant="premium" className="p-12 text-center" glow>
-                  <Users className="w-12 h-12 text-white/50 mx-auto mb-4" />
+                  <User className="w-12 h-12 text-white/50 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-white mb-2">
-                    No People Found
+                    Complete your profile
                   </h3>
-                  <p className="text-white/70">
-                    Add people to generate reports for them
+                  <p className="text-white/70 mb-6">
+                    Complete your profile to generate your report
                   </p>
+                  <Link href="/onboarding">
+                    <TouchOptimizedButton variant="primary" icon={<User className="w-5 h-5" />}>
+                      Complete profile
+                    </TouchOptimizedButton>
+                  </Link>
                 </SpaceCard>
               ) : (
                 <div className="space-y-4">
-                  {Array.isArray(people) && people.map((person) => (
-                    <motion.div
-                      key={person.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                    >
+                  {selfPerson && (
+                    <div className="mb-2">
+                      <h3 className="text-sm font-semibold text-cyan-300 mb-2 flex items-center gap-1">
+                        <User className="w-4 h-4" /> Your Report
+                      </h3>
                       <SpaceCard 
                         variant="premium"
-                        className={`p-6 cursor-pointer transition-all duration-200 ${
-                          selectedPeople.includes(person.id) 
-                            ? 'ring-2 ring-purple-500 bg-purple-500/20' 
-                            : ''
+                        className={`p-6 cursor-pointer transition-all duration-200 ring-2 ring-cyan-500/50 ${
+                          selectedPeople.includes(selfPerson.id) ? 'ring-cyan-500 bg-cyan-500/10' : ''
                         }`}
-                        glow={selectedPeople.includes(person.id)}
-                        onClick={() => handleSelectPerson(person.id)}
+                        glow={selectedPeople.includes(selfPerson.id)}
+                        onClick={() => handleSelectPerson(selfPerson.id)}
                       >
                         <div className="flex items-center gap-4">
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            selectedPeople.includes(person.id)
-                              ? 'bg-purple-500 border-purple-500'
-                              : 'border-cyan-500/30'
+                            selectedPeople.includes(selfPerson.id) ? 'bg-cyan-500 border-cyan-500' : 'border-cyan-500/30'
                           }`}>
-                            {selectedPeople.includes(person.id) && (
-                              <CheckCircle className="w-4 h-4 text-white" />
-                            )}
+                            {selectedPeople.includes(selfPerson.id) && <CheckCircle className="w-4 h-4 text-white" />}
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-white">
-                              {person.name}
-                            </h3>
-                            <div className="flex items-center gap-4 mt-1">
-                              <p className="text-white/70 text-sm">
-                                {new Date(person.birth_date).toLocaleDateString()}
-                              </p>
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                                {person.relationship}
-                              </span>
-                            </div>
+                            <h3 className="text-lg font-semibold text-white">{selfPerson.name}</h3>
+                            <p className="text-white/70 text-sm">
+                              {new Date(selfPerson.birth_date).toLocaleDateString()} · Me
+                            </p>
                           </div>
                         </div>
                       </SpaceCard>
-                    </motion.div>
-                  ))}
+                    </div>
+                  )}
+                  {otherPeople.length > 0 && (
+                    <>
+                      <h3 className="text-sm font-semibold text-white/90 mt-4 mb-2">Other people</h3>
+                      {otherPeople.map((person) => (
+                        <motion.div
+                          key={person.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                        >
+                          <SpaceCard 
+                            variant="premium"
+                            className={`p-6 cursor-pointer transition-all duration-200 ${
+                              selectedPeople.includes(person.id) ? 'ring-2 ring-purple-500 bg-purple-500/20' : ''
+                            }`}
+                            glow={selectedPeople.includes(person.id)}
+                            onClick={() => handleSelectPerson(person.id)}
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                selectedPeople.includes(person.id) ? 'bg-purple-500 border-purple-500' : 'border-cyan-500/30'
+                              }`}>
+                                {selectedPeople.includes(person.id) && <CheckCircle className="w-4 h-4 text-white" />}
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-white">{person.name}</h3>
+                                <div className="flex items-center gap-4 mt-1">
+                                  <p className="text-white/70 text-sm">
+                                    {new Date(person.birth_date).toLocaleDateString()}
+                                  </p>
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                                    {person.relationship}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </SpaceCard>
+                        </motion.div>
+                      ))}
+                      <TouchOptimizedButton
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => router.push('/people/add')}
+                        icon={<Plus className="w-4 h-4" />}
+                        className="mt-2"
+                      >
+                        Add person
+                      </TouchOptimizedButton>
+                    </>
+                  )}
+                  {selfPerson && otherPeople.length === 0 && (
+                    <TouchOptimizedButton
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => router.push('/people/add')}
+                      icon={<Plus className="w-4 h-4" />}
+                    >
+                      Add person for reports
+                    </TouchOptimizedButton>
+                  )}
                 </div>
               )}
             </div>
@@ -290,12 +345,7 @@ export default function BulkGenerateReportsPage() {
 
               {loading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <SpaceCard key={i} variant="premium" className="p-6 h-24 animate-pulse" glow>
-                      <div className="h-6 bg-[#1a2942]/40 rounded w-1/3 mb-3"></div>
-                      <div className="h-4 bg-[#1a2942]/40 rounded w-1/2"></div>
-                    </SpaceCard>
-                  ))}
+                  <CosmicSkeletonLoader variant="card" count={3} className="h-24" />
                 </div>
               ) : (
                 <div className="space-y-4">

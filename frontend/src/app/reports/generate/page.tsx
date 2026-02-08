@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
@@ -15,75 +16,78 @@ import {
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 import { useAuth } from '@/contexts/auth-context';
 import { peopleAPI, reportAPI } from '@/lib/numerology-api';
 import { Person, ReportTemplate } from '@/types';
 import { Suspense } from 'react';
 
+type PersonWithSelection = Person & { selected: boolean };
+type TemplateWithSelection = ReportTemplate & { selected: boolean };
+
 function GenerateReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  const [people, setPeople] = useState<(Person & { selected: boolean })[]>([]);
-  const [templates, setTemplates] = useState<(ReportTemplate & { selected: boolean })[]>([]);
+  const [people, setPeople] = useState<PersonWithSelection[]>([]);
+  const [templates, setTemplates] = useState<TemplateWithSelection[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [generationMessage, setGenerationMessage] = useState('');
 
+  const selfPerson = people.find(p => p.relationship === 'self');
+  const otherPeople = people.filter(p => p.relationship !== 'self');
+
   const fetchPeople = useCallback(async () => {
     try {
       const data = await peopleAPI.getPeople();
       const peopleArray = Array.isArray(data) ? data : [];
-      const peopleWithSelection = peopleArray.map(person => ({
-        ...person,
-        selected: false
-      }));
+      const personIdParam = searchParams?.get('person');
+      const templateIdParam = searchParams?.get('template');
+      const isSelfRequested = personIdParam === 'self';
+      const selfP = peopleArray.find((p: Person) => p.relationship === 'self');
+      const sorted = [
+        ...peopleArray.filter((p: Person) => p.relationship === 'self'),
+        ...peopleArray.filter((p: Person) => p.relationship !== 'self'),
+      ];
+      const peopleWithSelection = sorted.map((person: Person) => {
+        let selected = false;
+        if (personIdParam) {
+          selected = isSelfRequested
+            ? person.relationship === 'self'
+            : person.id === personIdParam;
+        }
+        return { ...person, selected };
+      });
       setPeople(peopleWithSelection);
     } catch (error) {
       console.error('Failed to fetch people:', error);
       setPeople([]);
     }
-  }, []);
+  }, [searchParams]);
 
   const fetchTemplates = useCallback(async () => {
     try {
       const data = await reportAPI.getReportTemplates();
       const templatesArray = Array.isArray(data) ? data : [];
-      const templatesWithSelection = templatesArray.map(template => ({
+      const templateIdParam = searchParams?.get('template');
+      const templatesWithSelection = templatesArray.map((template: ReportTemplate) => ({
         ...template,
-        selected: false
+        selected: templateIdParam ? template.id === templateIdParam : false
       }));
       setTemplates(templatesWithSelection);
     } catch (error) {
       console.error('Failed to fetch templates:', error);
       setTemplates([]);
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     Promise.all([fetchPeople(), fetchTemplates()]).finally(() => {
       setLoading(false);
     });
-    
-    // Check if there are pre-selected people or templates from URL params
-    if (typeof window !== 'undefined' && searchParams) {
-      const personId = searchParams.get('person');
-      const templateId = searchParams.get('template');
-      
-      if (personId) {
-        setPeople(prev => Array.isArray(prev) ? prev.map(p => 
-          p.id === personId ? { ...p, selected: true } : p
-        ) : []);
-      }
-      
-      if (templateId) {
-        setTemplates(prev => Array.isArray(prev) ? prev.map(t => 
-          t.id === templateId ? { ...t, selected: true } : t
-        ) : []);
-      }
-    }
-  }, [searchParams, fetchPeople, fetchTemplates]);
+  }, [fetchPeople, fetchTemplates]);
 
   const togglePersonSelection = (personId: string) => {
     setPeople(prev => Array.isArray(prev) ? prev.map(person => 
@@ -169,6 +173,39 @@ function GenerateReportContent() {
     router.push('/templates');
   };
 
+  const handleGenerateMyReport = async () => {
+    if (!selfPerson) return;
+    const defaultTemplate = templates.find(t => !t.is_premium) || templates[0];
+    if (!defaultTemplate) {
+      setGenerationStatus('error');
+      setGenerationMessage('Please add at least one template first');
+      return;
+    }
+    setGenerating(true);
+    setGenerationStatus('idle');
+    setGenerationMessage('');
+    try {
+      const result = await reportAPI.bulkGenerateReports({
+        person_ids: [selfPerson.id],
+        template_ids: [defaultTemplate.id]
+      });
+      if (result.errors && result.errors.length > 0) {
+        setGenerationStatus('error');
+        setGenerationMessage(`Generated ${result.reports?.length ?? 0} reports with ${result.errors.length} errors`);
+      } else {
+        setGenerationStatus('success');
+        setGenerationMessage(`Successfully generated your report`);
+      }
+      setTimeout(() => router.push('/reports'), 2000);
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+      setGenerationStatus('error');
+      setGenerationMessage('Failed to generate your report');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const selectedPeopleCount = Array.isArray(people) ? people.filter(p => p.selected).length : 0;
   const selectedTemplatesCount = Array.isArray(templates) ? templates.filter(t => t.selected).length : 0;
   const totalReportsToGenerate = selectedPeopleCount * selectedTemplatesCount;
@@ -227,89 +264,137 @@ function GenerateReportContent() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* People Selection */}
             <div>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Select People</h2>
-                <TouchOptimizedButton 
-                  variant="secondary" 
-                  size="sm"
-                  onClick={toggleAllPeople}
-                >
-                  {people.length > 0 && people.every(p => p.selected) ? 'Deselect All' : 'Select All'}
-                </TouchOptimizedButton>
-              </div>
+              <h2 className="text-2xl font-bold text-white mb-6">Select People</h2>
 
-              {loading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <SpaceCard key={i} variant="premium" className="p-6 h-24 animate-pulse" glow>
-                      <div className="h-6 bg-[#1a2942]/40 rounded w-1/3 mb-3"></div>
-                      <div className="h-4 bg-[#1a2942]/40 rounded w-1/2"></div>
-                    </SpaceCard>
-                  ))}
+              {/* Me / Your Report Section */}
+              {!loading && selfPerson && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-cyan-300 mb-3 flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Your Report
+                  </h3>
+                  <SpaceCard 
+                    variant="premium"
+                    className={`p-6 cursor-pointer transition-all duration-200 mb-4 ring-2 ring-cyan-500/50 ${
+                      selfPerson.selected ? 'ring-cyan-500 bg-cyan-500/10' : ''
+                    }`}
+                    glow={selfPerson.selected}
+                    onClick={() => togglePersonSelection(selfPerson.id)}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                          selfPerson.selected ? 'bg-cyan-500 border-cyan-500' : 'border-cyan-500/30'
+                        }`}>
+                          {selfPerson.selected && <CheckCircle className="w-4 h-4 text-white" />}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-white">{selfPerson.name}</h3>
+                          <p className="text-white/70 text-sm">
+                            {new Date(selfPerson.birth_date).toLocaleDateString()} · Me
+                          </p>
+                        </div>
+                      </div>
+                      <TouchOptimizedButton
+                        variant="primary"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleGenerateMyReport(); }}
+                        disabled={generating}
+                        loading={generating}
+                      >
+                        Generate my report
+                      </TouchOptimizedButton>
+                    </div>
+                  </SpaceCard>
                 </div>
-              ) : people.length === 0 ? (
-                <SpaceCard variant="premium" className="p-12 text-center" glow>
-                  <Users className="w-12 h-12 text-white/50 mx-auto mb-4" />
+              )}
+
+              {/* Complete profile prompt when no self Person */}
+              {!loading && !selfPerson && people.length === 0 && (
+                <SpaceCard variant="premium" className="p-12 text-center mb-6" glow>
+                  <User className="w-12 h-12 text-white/50 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-white mb-2">
-                    No People Found
+                    Complete your profile
                   </h3>
                   <p className="text-white/70 mb-6">
-                    Add people to generate reports for them
+                    Complete your profile to generate your report
                   </p>
-                  <TouchOptimizedButton 
-                    variant="primary" 
-                    onClick={handleAddPerson}
-                    icon={<Plus className="w-5 h-5" />}
-                  >
-                    Add Person
-                  </TouchOptimizedButton>
+                  <Link href="/onboarding">
+                    <TouchOptimizedButton variant="primary" icon={<User className="w-5 h-5" />}>
+                      Complete profile
+                    </TouchOptimizedButton>
+                  </Link>
                 </SpaceCard>
-              ) : (
-                <div className="space-y-4">
-                  {Array.isArray(people) && people.map((person) => (
-                    <motion.div
-                      key={person.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      <SpaceCard 
-                        variant="premium"
-                        className={`p-6 cursor-pointer transition-all duration-200 ${
-                          person.selected 
-                            ? 'ring-2 ring-purple-500 bg-purple-500/20' 
-                            : ''
-                        }`}
-                        glow={person.selected}
-                        onClick={() => togglePersonSelection(person.id)}
+              )}
+
+              {/* Other people section */}
+              {!loading && otherPeople.length > 0 && (
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-semibold text-white/90">Other people</h3>
+                    <TouchOptimizedButton variant="secondary" size="sm" onClick={toggleAllPeople}>
+                      {otherPeople.every(p => p.selected) ? 'Deselect All' : 'Select All'}
+                    </TouchOptimizedButton>
+                  </div>
+                  <div className="space-y-4">
+                    {otherPeople.map((person) => (
+                      <motion.div
+                        key={person.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            person.selected
-                              ? 'bg-purple-500 border-purple-500'
-                              : 'border-cyan-500/30'
-                          }`}>
-                            {person.selected && (
-                              <CheckCircle className="w-4 h-4 text-white" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-white">
-                              {person.name}
-                            </h3>
-                            <div className="flex items-center gap-4 mt-1">
-                              <p className="text-white/70 text-sm">
-                                {new Date(person.birth_date).toLocaleDateString()}
-                              </p>
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                                {person.relationship}
-                              </span>
+                        <SpaceCard 
+                          variant="premium"
+                          className={`p-6 cursor-pointer transition-all duration-200 ${
+                            person.selected ? 'ring-2 ring-purple-500 bg-purple-500/20' : ''
+                          }`}
+                          glow={person.selected}
+                          onClick={() => togglePersonSelection(person.id)}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                              person.selected ? 'bg-purple-500 border-purple-500' : 'border-cyan-500/30'
+                            }`}>
+                              {person.selected && <CheckCircle className="w-4 h-4 text-white" />}
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-white">{person.name}</h3>
+                              <div className="flex items-center gap-4 mt-1">
+                                <p className="text-white/70 text-sm">
+                                  {new Date(person.birth_date).toLocaleDateString()}
+                                </p>
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                                  {person.relationship}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </SpaceCard>
-                    </motion.div>
-                  ))}
+                        </SpaceCard>
+                      </motion.div>
+                    ))}
+                  </div>
+                  <div className="mt-4">
+                    <TouchOptimizedButton variant="secondary" onClick={handleAddPerson} icon={<Plus className="w-4 h-4" />}>
+                      Add person
+                    </TouchOptimizedButton>
+                  </div>
+                </div>
+              )}
+
+              {/* Add person when we only have self */}
+              {!loading && selfPerson && otherPeople.length === 0 && (
+                <div className="mt-4">
+                  <TouchOptimizedButton variant="secondary" onClick={handleAddPerson} icon={<Plus className="w-4 h-4" />}>
+                    Add person for reports
+                  </TouchOptimizedButton>
+                </div>
+              )}
+
+              {/* No people at all */}
+              {loading && (
+                <div className="space-y-4">
+                  <CosmicSkeletonLoader variant="card" count={3} className="h-24" />
                 </div>
               )}
             </div>
@@ -329,12 +414,7 @@ function GenerateReportContent() {
 
               {loading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <SpaceCard key={i} variant="premium" className="p-6 h-24 animate-pulse" glow>
-                      <div className="h-6 bg-[#1a2942]/40 rounded w-1/3 mb-3"></div>
-                      <div className="h-4 bg-[#1a2942]/40 rounded w-1/2"></div>
-                    </SpaceCard>
-                  ))}
+                  <CosmicSkeletonLoader variant="card" count={3} className="h-24" />
                 </div>
               ) : (
                 <div className="space-y-4">

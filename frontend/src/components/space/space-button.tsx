@@ -6,7 +6,7 @@ import { BaseButton, type BaseButtonProps } from '@/components/base/BaseButton'
 import { cn } from '@/lib/utils'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
 
-interface SpaceButtonProps extends Omit<BaseButtonProps, 'variant'> {
+interface SpaceButtonProps extends Omit<BaseButtonProps, 'variant' | 'size'> {
   children: React.ReactNode
   variant?: 'primary' | 'secondary' | 'ghost'
   size?: 'sm' | 'md' | 'lg'

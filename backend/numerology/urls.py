@@ -22,7 +22,7 @@ urlpatterns = [
     
     # Numerology endpoints
     path('numerology/calculate/', views.calculate_numerology_profile, name='calculate-numerology'),
-    path('numerology/profile/', views.get_numerology_profile, name='numerology-profile'),
+    path('numerology/profile/', views.numerology_profile_view, name='numerology-profile'),
     path('numerology/birth-chart/', views.get_birth_chart, name='birth-chart'),
     path('numerology/birth-chart/pdf/', views.export_birth_chart_pdf, name='birth-chart-pdf'),
     path('numerology/daily-reading/', views.get_daily_reading, name='daily-reading'),

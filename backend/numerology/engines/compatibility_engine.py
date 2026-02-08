@@ -19,6 +19,14 @@ class CompatibilityEngine(NumerologyBaseEngine):
         # Lucky/Unlucky classification from Eklavya
         lucky_data = next((item for item in self.rules_lucky['outputs'][1]['table'] if item['number'] == psychic1), {})
         
+        # Conflict resolution: Check for opposite number conflict
+        conflict_warnings = []
+        opposite_warning = self.conflict_resolver.validate_opposite_numbers(psychic1, destiny1)
+        if opposite_warning:
+            conflict_warnings.append(opposite_warning)
+            # Override rating if opposite conflict exists
+            rating = f"{rating} (OVERRIDDEN: Internal conflict detected)"
+        
         result = {
             "internal_rating": rating,
             "punch_line": punch_line,
@@ -26,6 +34,7 @@ class CompatibilityEngine(NumerologyBaseEngine):
             "lucky_numbers": lucky_data.get('lucky', []),
             "neutral_numbers": lucky_data.get('neutral', []),
             "enemy_numbers": lucky_data.get('enemy', []),
+            "warnings": conflict_warnings,
             "mark": "deterministic"
         }
 
@@ -40,9 +49,24 @@ class CompatibilityEngine(NumerologyBaseEngine):
             elif psychic2 in lucky_data.get('enemy', []):
                 relation = "enemy"
             
+            # Conflict resolution: Check for enemy number override
+            enemy_warning = self.conflict_resolver.validate_enemy_numbers(psychic1, psychic2)
+            if enemy_warning:
+                conflict_warnings.append(enemy_warning)
+                # Override relation if enemy detected
+                relation = "enemy (OVERRIDDEN: Enemy number conflict)"
+            
+            partner_key = f"{psychic1}-{psychic2}"
+            partner_rating = self.rules_81['outputs'][0]['ratings'].get(partner_key, "No rating found")
+            
             result["partner_compatibility"] = {
                 "relation": relation,
-                "note": f"Psychic {psychic2} is {relation} for Psychic {psychic1}"
+                "rating": partner_rating,
+                "note": f"Psychic {psychic2} is {relation} for Psychic {psychic1}",
+                "overridden": enemy_warning is not None
             }
+            
+            # Update warnings list
+            result["warnings"] = conflict_warnings
 
         return result

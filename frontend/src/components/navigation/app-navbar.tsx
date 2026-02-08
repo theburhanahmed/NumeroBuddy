@@ -67,7 +67,7 @@ export function AppNavbar() {
     },
     {
       icon: <BookOpenIcon className="w-4 h-4" />,
-      label: 'Reports',
+      label: 'My Reports',
       path: '/reports',
       action: () => router.push('/reports')
     },
@@ -79,40 +79,60 @@ export function AppNavbar() {
     }
   ];
 
-  const toolsMenuItems = [
-    // Core Numerology Tools
-    { icon: <CompassIcon className="w-5 h-5" />, label: 'Life Path', description: 'Discover your life purpose and journey', path: '/life-path' },
-    { icon: <CalendarIcon className="w-5 h-5" />, label: 'Daily Readings', description: "Get today's personalized numerology insights", path: '/daily-reading' },
-    { icon: <TrendingUpIcon className="w-5 h-5" />, label: 'Forecasts', description: 'Weekly, monthly, and yearly predictions', path: '/weekly-report' },
-    { icon: <LineChartIcon className="w-5 h-5" />, label: 'Birth Chart', description: 'Complete visual numerology analysis', path: '/birth-chart' },
-    { icon: <GridIcon className="w-5 h-5" />, label: 'Lo Shu Grid', description: 'Chinese numerology magic square', path: '/lo-shu-grid' },
-    
-    // Advanced Numerology
-    { icon: <AlertCircleIcon className="w-5 h-5" />, label: 'Karmic Lessons', description: 'Identify missing numbers and lessons', path: '/advanced-numerology' },
-    { icon: <TrendingUpIcon className="w-5 h-5" />, label: 'Pinnacle & Challenge', description: 'Understand your life cycles', path: '/advanced-numerology' },
-    { icon: <CalendarIcon className="w-5 h-5" />, label: 'Personal Year', description: 'Your current year energy and themes', path: '/yearly-report' },
-    { icon: <StarIcon className="w-5 h-5" />, label: 'Auspicious Dates', description: 'Find perfect timing for important events', path: '/auspicious-dates' },
-    
-    // Name & Number Analysis
-    { icon: <TypeIcon className="w-5 h-5" />, label: 'Name Numerology', description: 'Analyze name vibrations and meanings', path: '/name-numerology' },
-    { icon: <BriefcaseIcon className="w-5 h-5" />, label: 'Business Name', description: 'Numerology for entrepreneurs and businesses', path: '/business-name-numerology' },
-    { icon: <PhoneIcon className="w-5 h-5" />, label: 'Phone Number', description: 'Understand your phone number energy', path: '/phone-numerology' },
-    
-    // Relationships & Decisions
-    { icon: <HeartIcon className="w-5 h-5" />, label: 'Compatibility', description: 'Analyze relationships and partnerships', path: '/compatibility' },
-    { icon: <Users2Icon className="w-5 h-5" />, label: 'My People', description: 'Manage and analyze people in your life', path: '/people' },
-    { icon: <CompassIcon className="w-5 h-5" />, label: 'Decision Engine', description: 'Make better decisions with numerology guidance', path: '/decisions' },
-    
-    // Remedies & Guidance
-    { icon: <ShieldIcon className="w-5 h-5" />, label: 'Remedies', description: 'Personalized guidance and recommendations', path: '/remedies' },
-    
-    // Services & Community
-    { icon: <VideoIcon className="w-5 h-5" />, label: 'Consultations', description: 'Book sessions with expert numerologists', path: '/consultations' },
-    { icon: <MessageCircleIcon className="w-5 h-5" />, label: 'Community', description: 'Join forum discussions and connect', path: '/forum' },
-    { icon: <TrophyIcon className="w-5 h-5" />, label: 'Rewards', description: 'View achievements and rewards', path: '/rewards' },
-    { icon: <GraduationCapIcon className="w-5 h-5" />, label: 'Learning Hub', description: 'Educational articles and videos', path: '/content-hub' },
-    { icon: <BarChart3Icon className="w-5 h-5" />, label: 'Your Analytics', description: 'Track your progress and insights', path: '/user-analytics' }
+  const toolsMenuSections = [
+    {
+      title: 'Your Numerology',
+      items: [
+        { icon: <CompassIcon className="w-5 h-5" />, label: 'Your Life Path', description: 'Discover your life purpose and journey', path: '/life-path' },
+        { icon: <CalendarIcon className="w-5 h-5" />, label: 'Your Daily Reading', description: "Today's personalized numerology insights", path: '/daily-reading' },
+        { icon: <LineChartIcon className="w-5 h-5" />, label: 'Your Birth Chart', description: 'Complete visual numerology analysis', path: '/birth-chart' },
+        { icon: <GridIcon className="w-5 h-5" />, label: 'Your Lo Shu Grid', description: 'Chinese numerology magic square', path: '/lo-shu-grid' },
+        { icon: <TrendingUpIcon className="w-5 h-5" />, label: 'Pinnacles & Challenges', description: 'Understand your life cycles', path: '/advanced-numerology' },
+        { icon: <BookOpenIcon className="w-5 h-5" />, label: 'My Reports', description: 'Generate and view your reports', path: '/reports' },
+      ],
+    },
+    {
+      title: 'Tools',
+      description: 'Analyze names and numbers (uses your data by default)',
+      items: [
+        { icon: <TypeIcon className="w-5 h-5" />, label: 'Name Numerology', description: 'Your name analysis or analyze another', path: '/name-numerology' },
+        { icon: <PhoneIcon className="w-5 h-5" />, label: 'Phone Numerology', description: 'Your phone energy or analyze another', path: '/phone-numerology' },
+        { icon: <BriefcaseIcon className="w-5 h-5" />, label: 'Business Name', description: 'Numerology for your business', path: '/business-name-numerology' },
+        { icon: <BarChart3Icon className="w-5 h-5" />, label: 'Numerobuddy Engines', description: 'Rule-based engines with conflict resolution', path: '/numerobuddy-engines' },
+      ],
+    },
+    {
+      title: 'Relationships',
+      description: 'Compare you with partners, friends, family',
+      items: [
+        { icon: <HeartIcon className="w-5 h-5" />, label: 'Compatibility (You vs Partner)', description: 'Analyze relationships and partnerships', path: '/compatibility' },
+        { icon: <Users2Icon className="w-5 h-5" />, label: 'My People', description: 'Manage people in your life', path: '/people' },
+      ],
+    },
+    {
+      title: 'Forecasts & Timing',
+      items: [
+        { icon: <TrendingUpIcon className="w-5 h-5" />, label: 'Forecasts', description: 'Weekly, monthly, yearly predictions', path: '/weekly-report' },
+        { icon: <CalendarIcon className="w-5 h-5" />, label: 'Personal Year', description: 'Your current year energy', path: '/yearly-report' },
+        { icon: <StarIcon className="w-5 h-5" />, label: 'Auspicious Dates', description: 'Find perfect timing for events', path: '/auspicious-dates' },
+      ],
+    },
+    {
+      title: 'More',
+      items: [
+        { icon: <AlertCircleIcon className="w-5 h-5" />, label: 'Karmic Lessons', description: 'Identify missing numbers and lessons', path: '/advanced-numerology' },
+        { icon: <CompassIcon className="w-5 h-5" />, label: 'Decision Engine', description: 'Numerology guidance for decisions', path: '/decisions' },
+        { icon: <ShieldIcon className="w-5 h-5" />, label: 'Remedies', description: 'Personalized guidance', path: '/remedies' },
+        { icon: <VideoIcon className="w-5 h-5" />, label: 'Consultations', description: 'Book expert numerologists', path: '/consultations' },
+        { icon: <MessageCircleIcon className="w-5 h-5" />, label: 'Community', description: 'Forum discussions', path: '/forum' },
+        { icon: <TrophyIcon className="w-5 h-5" />, label: 'Rewards', description: 'Achievements and rewards', path: '/rewards' },
+        { icon: <GraduationCapIcon className="w-5 h-5" />, label: 'Learning Hub', description: 'Educational content', path: '/content-hub' },
+        { icon: <BarChart3Icon className="w-5 h-5" />, label: 'Your Analytics', description: 'Track your progress', path: '/user-analytics' },
+      ],
+    },
   ];
+
+  const toolsMenuItems = toolsMenuSections.flatMap(s => s.items);
 
   const isActivePath = (path: string) => pathname === path;
 
@@ -198,31 +218,43 @@ export function AppNavbar() {
                       className="absolute top-full mt-2 right-0 w-80 max-h-[80vh] overflow-y-auto backdrop-blur-2xl bg-white/95 dark:bg-gray-900/95 border border-white/20 dark:border-gray-700/30 rounded-2xl shadow-2xl"
                     >
                       <div className="p-2">
-                        {toolsMenuItems.map((item, index) => (
-                          <motion.button
-                            key={item.label}
-                            onClick={() => {
-                              router.push(item.path);
-                              setToolsMenuOpen(false);
-                            }}
-                            className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-purple-500/10 transition-all text-left group"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.03 }}
-                            whileHover={{ x: 4 }}
-                          >
-                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform">
-                              {item.icon}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
-                                {item.label}
+                        {toolsMenuSections.map((section, sectionIndex) => (
+                          <div key={section.title} className={sectionIndex > 0 ? 'mt-3 pt-3 border-t border-gray-200 dark:border-gray-700' : ''}>
+                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-2 mb-1.5 uppercase tracking-wider">
+                              {section.title}
+                            </p>
+                            {section.description && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 px-2 mb-2">
+                                {section.description}
                               </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                                {item.description}
-                              </p>
-                            </div>
-                          </motion.button>
+                            )}
+                            {section.items.map((item, index) => (
+                              <motion.button
+                                key={item.label}
+                                onClick={() => {
+                                  router.push(item.path);
+                                  setToolsMenuOpen(false);
+                                }}
+                                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-purple-500/10 transition-all text-left group"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: (sectionIndex * 5 + index) * 0.02 }}
+                                whileHover={{ x: 4 }}
+                              >
+                                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform">
+                                  {item.icon}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                                    {item.label}
+                                  </p>
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                                    {item.description}
+                                  </p>
+                                </div>
+                              </motion.button>
+                            ))}
+                          </div>
                         ))}
                       </div>
                     </motion.div>
@@ -319,32 +351,36 @@ export function AppNavbar() {
                 ))}
               </div>
               <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mb-3 max-h-96 overflow-y-auto">
-                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 mb-2">
-                  MORE TOOLS
-                </p>
-                {toolsMenuItems.map(item => (
-                  <motion.button
-                    key={item.label}
-                    onClick={() => {
-                      router.push(item.path);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-purple-500/10 transition-all text-left"
-                    whileHover={{ x: 4 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="w-9 h-9 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white flex-shrink-0">
-                      {item.icon}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">
-                        {item.label}
-                      </p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        {item.description}
-                      </p>
-                    </div>
-                  </motion.button>
+                {toolsMenuSections.map((section) => (
+                  <div key={section.title} className="mb-3">
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 mb-1.5 uppercase tracking-wider">
+                      {section.title}
+                    </p>
+                    {section.items.map(item => (
+                      <motion.button
+                        key={item.label}
+                        onClick={() => {
+                          router.push(item.path);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-purple-500/10 transition-all text-left"
+                        whileHover={{ x: 4 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <div className="w-9 h-9 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                          {item.icon}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-gray-900 dark:text-white">
+                            {item.label}
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            {item.description}
+                          </p>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
                 ))}
               </div>
               <div className="flex gap-2 border-t border-gray-200 dark:border-gray-700 pt-3">

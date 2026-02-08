@@ -16,6 +16,7 @@ import {
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 import { useAuth } from '@/contexts/auth-context';
 import { peopleAPI, reportAPI } from '@/lib/numerology-api';
 import { Person, ReportTemplate } from '@/types';
@@ -195,12 +196,7 @@ export default function CombineReportsPage() {
 
               {loading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <SpaceCard key={i} variant="premium" className="p-6 h-24 animate-pulse" glow>
-                      <div className="h-6 bg-[#1a2942]/40 rounded w-1/3 mb-3"></div>
-                      <div className="h-4 bg-[#1a2942]/40 rounded w-1/2"></div>
-                    </SpaceCard>
-                  ))}
+                  <CosmicSkeletonLoader variant="card" count={3} className="h-24" />
                 </div>
               ) : people.length === 0 ? (
                 <SpaceCard variant="premium" className="p-12 text-center" glow>
@@ -277,12 +273,7 @@ export default function CombineReportsPage() {
 
               {loading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <SpaceCard key={i} variant="premium" className="p-6 h-24 animate-pulse" glow>
-                      <div className="h-6 bg-[#1a2942]/40 rounded w-1/3 mb-3"></div>
-                      <div className="h-4 bg-[#1a2942]/40 rounded w-1/2"></div>
-                    </SpaceCard>
-                  ))}
+                  <CosmicSkeletonLoader variant="card" count={3} className="h-24" />
                 </div>
               ) : (
                 <div className="space-y-4">

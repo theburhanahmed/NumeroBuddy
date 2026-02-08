@@ -163,6 +163,7 @@ function CheckoutForm({ plan, onSuccess, onError }: StripeFormProps) {
 export default function StripeForm({ plan, onSuccess, onError }: StripeFormProps) {
   const options: StripeElementsOptions = {
     mode: 'subscription',
+    amount: 0,
     currency: 'usd',
   };
 

@@ -126,7 +126,8 @@ class DecisionEngineService:
         today = date.today()
         try:
             from numerology.models import NumerologyProfile
-            profile = NumerologyProfile.objects.get(user=user)
+            from numerology.profile_utils import get_numerology_profile
+            profile = get_numerology_profile(user)
             if user.profile.date_of_birth:
                 from numerology.numerology import NumerologyCalculator
                 calculator = NumerologyCalculator()

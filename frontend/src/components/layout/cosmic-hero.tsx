@@ -1,12 +1,17 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { SpaceButton } from '@/components/space/space-button'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
-import { Hero3DScene } from '@/components/3d/hero/hero-3d-scene'
 import { use3DPerformance } from '@/hooks/use-3d-performance'
+
+// Dynamic import to avoid loading @react-three/fiber at module eval (prevents ReactCurrentOwner error)
+type Hero3DSceneComponent = React.ComponentType<{
+  lifePathNumber?: number
+  className?: string
+}>
 
 interface CosmicHeroProps {
   badge?: string
@@ -47,6 +52,15 @@ export function CosmicHero({
   const prefersReducedMotion = useReducedMotion()
   const { shouldRender3D, capabilities } = use3DPerformance()
   const useWebGL = enableWebGL && shouldRender3D && capabilities.hasWebGL
+  const [Hero3DSceneComponent, setHero3DSceneComponent] =
+    useState<Hero3DSceneComponent | null>(null)
+
+  useEffect(() => {
+    if (!useWebGL) return
+    import('@/components/3d/hero/hero-3d-scene').then((m) =>
+      setHero3DSceneComponent(() => m.Hero3DScene)
+    )
+  }, [useWebGL])
 
   return (
     <section className="relative min-h-screen flex items-center px-4 sm:px-6 pt-24 overflow-hidden">
@@ -169,12 +183,16 @@ export function CosmicHero({
             transition={{ duration: 1, delay: 0.3 }}
             className="relative h-[600px] flex items-center justify-center"
           >
-            {/* WebGL Version (if enabled and available) */}
-            {useWebGL ? (
-              <Hero3DScene
+            {/* WebGL Version (loaded only on client to avoid ReactCurrentOwner) */}
+            {useWebGL && Hero3DSceneComponent ? (
+              <Hero3DSceneComponent
                 lifePathNumber={lifePathNumber}
                 className="w-full h-full"
               />
+            ) : useWebGL ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
+              </div>
             ) : (
               /* CSS Fallback - Main Planet */
               <>

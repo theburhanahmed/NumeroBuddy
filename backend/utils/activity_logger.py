@@ -1,9 +1,9 @@
 """
 Utility for logging user activities.
+Uses analytics.UserActivityLog as the single source of truth for activity tracking.
 """
 from functools import wraps
 from django.utils import timezone
-from dashboard.models import UserActivity
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,21 +11,22 @@ logger = logging.getLogger(__name__)
 
 def log_user_activity(user, activity_type, metadata=None):
     """
-    Log a user activity.
-    
+    Log a user activity (dashboard feed and analytics).
+
     Args:
         user: User instance
-        activity_type: Type of activity (must be in UserActivity.ACTIVITY_TYPES)
-        metadata: Optional dict with additional activity data
+        activity_type: Type of activity (e.g. birth_chart_viewed, report_generated)
+        metadata: Optional dict with additional activity data (stored as activity_data)
     """
     if not user or not user.is_authenticated:
         return
-    
+
     try:
-        UserActivity.objects.create(
+        from analytics.models import UserActivityLog
+        UserActivityLog.objects.create(
             user=user,
             activity_type=activity_type,
-            metadata=metadata or {}
+            activity_data=metadata or {},
         )
     except Exception as e:
         logger.error(f'Failed to log user activity: {str(e)}', exc_info=True)

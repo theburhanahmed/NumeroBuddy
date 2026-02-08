@@ -1,28 +1,11 @@
 'use client'
 
-import React from 'react'
-import { SpaceBackground } from './space-background'
-import { useReducedMotion } from '@/hooks/use-reduced-motion'
+import { GlassBackground } from '@/components/glass/glass-background'
 
 /**
- * Accessible wrapper for SpaceBackground that respects motion preferences
+ * @deprecated Use GlassBackground from @/components/glass/glass-background instead.
+ * This component is kept for backward compatibility.
  */
 export function AccessibleSpaceBackground() {
-  const prefersReducedMotion = useReducedMotion()
-
-  if (prefersReducedMotion) {
-    // Static background for users who prefer reduced motion
-    return (
-      <div
-        className="fixed inset-0 z-0"
-        style={{
-          background: 'linear-gradient(to bottom, #0B0F19 0%, #1a2942 100%)',
-        }}
-        aria-hidden="true"
-      />
-    )
-  }
-
-  return <SpaceBackground />
+  return <GlassBackground starCount={80} />
 }
-

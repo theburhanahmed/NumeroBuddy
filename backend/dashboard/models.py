@@ -46,40 +46,8 @@ class DashboardWidget(models.Model):
         return f"{self.get_widget_type_display()} for {self.user}"
 
 
-class UserActivity(models.Model):
-    """Track user activities for analytics and dashboard."""
-    
-    ACTIVITY_TYPES = [
-        ('birth_chart_viewed', 'Birth Chart Viewed'),
-        ('daily_reading_viewed', 'Daily Reading Viewed'),
-        ('compatibility_checked', 'Compatibility Checked'),
-        ('remedy_tracked', 'Remedy Tracked'),
-        ('ai_chat_used', 'AI Chat Used'),
-        ('report_generated', 'Report Generated'),
-        ('profile_updated', 'Profile Updated'),
-        ('person_added', 'Person Added'),
-        ('consultation_booked', 'Consultation Booked'),
-    ]
-    
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='activities')
-    activity_type = models.CharField(max_length=50, choices=ACTIVITY_TYPES)
-    metadata = models.JSONField(default=dict, blank=True)  # Additional activity data
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    
-    class Meta:
-        db_table = 'user_activities'
-        verbose_name = 'User Activity'
-        verbose_name_plural = 'User Activities'
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['user', 'created_at']),
-            models.Index(fields=['user', 'activity_type']),
-            models.Index(fields=['activity_type', 'created_at']),
-        ]
-    
-    def __str__(self):
-        return f"{self.get_activity_type_display()} by {self.user} at {self.created_at}"
+# UserActivity deprecated: activity tracking consolidated in analytics.UserActivityLog.
+# See dashboard/serializers.ACTIVITY_TYPE_LABELS for feed display labels.
 
 
 class QuickInsight(models.Model):

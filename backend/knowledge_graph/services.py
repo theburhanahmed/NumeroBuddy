@@ -4,6 +4,7 @@ Knowledge Graph services for pattern discovery and relationship analysis.
 from typing import List, Dict, Optional
 from django.db import models
 from numerology.models import NumerologyProfile, DailyReading
+from numerology.profile_utils import get_numerology_profile
 from .models import NumberRelationship, NumerologyPattern, NumerologyRule
 
 
@@ -15,7 +16,7 @@ class KnowledgeGraphService:
         patterns = []
         
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
             
             # Pattern 1: Check for repeating numbers
             numbers = [
@@ -102,7 +103,7 @@ class KnowledgeGraphService:
         insights = []
         
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
             
             # Insight 1: Number relationships
             life_path_connections = self.find_number_connections(profile.life_path_number)

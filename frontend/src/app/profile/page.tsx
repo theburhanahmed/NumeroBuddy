@@ -17,6 +17,7 @@ import {
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 import { useAuth } from '@/contexts/auth-context';
 import { userAPI, accountAPI } from '@/lib/api-client';
 import { useToast } from '@/components/ui/use-toast';
@@ -242,15 +243,13 @@ export default function ProfilePage() {
     return (
       <CosmicPageLayout>
         <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-12 bg-[#1a2942]/40 rounded w-1/3 mb-8"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-1">
-                <div className="h-96 bg-[#1a2942]/40 rounded-2xl"></div>
-              </div>
-              <div className="lg:col-span-2">
-                <div className="h-96 bg-[#1a2942]/40 rounded-2xl"></div>
-              </div>
+          <CosmicSkeletonLoader variant="text" className="mb-8" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <CosmicSkeletonLoader variant="card" className="h-96" />
+            </div>
+            <div className="lg:col-span-2">
+              <CosmicSkeletonLoader variant="card" className="h-96" />
             </div>
           </div>
         </div>

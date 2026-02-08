@@ -3,10 +3,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUpIcon, TargetIcon, AwardIcon, ClockIcon, BarChart3Icon, CalendarIcon, CheckCircleIcon, StarIcon, ZapIcon, TrophyIcon, SparklesIcon } from 'lucide-react';
+import { LandingNav } from '@/components/landing/landing-nav';
+import { LandingFooter } from '@/components/landing/landing-footer';
+import { GlassBackground } from '@/components/glass/glass-background';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
-import { FloatingOrbs } from '@/components/ui/floating-orbs';
-import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { MagneticCard } from '@/components/magnetic/magnetic-card';
 import { AnimatedNumber } from '@/components/ui/animated-number';
 interface Goal {
@@ -124,10 +125,10 @@ export default function UserAnalytics() {
     streakRank: 'Top 15%',
     engagementLevel: 'High'
   };
-  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 flex flex-col relative overflow-hidden">
-      <AmbientParticles />
-      <FloatingOrbs />
-      <main className="flex-1 section-spacing px-4 md:px-6 relative z-10">
+  return <div className="w-full min-h-screen bg-[#0a1628] flex flex-col relative overflow-hidden">
+      <GlassBackground starCount={80} />
+      <LandingNav />
+      <main className="flex-1 section-spacing px-4 md:px-6 relative z-10 pt-28">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <motion.div initial={{
@@ -484,5 +485,6 @@ export default function UserAnalytics() {
           </motion.div>
         </div>
       </main>
+      <LandingFooter />
     </div>;
 }

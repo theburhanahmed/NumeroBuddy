@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
-import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
-import { useReducedMotion } from '../hooks/useReducedMotion';
-import { CosmicSkeletonLoader } from './CosmicSkeletonLoader';
+import { useIntersectionObserver } from '@/hooks/use-intersection-observer';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 // Lazy load the heavy 3D component
 const Premium3DPlanet = lazy(() => import('./Premium3DPlanet').then(module => ({
   default: module.Premium3DPlanet

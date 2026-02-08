@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { numerologyAPI } from '@/lib/numerology-api';
-import { PageLayout } from '@/components/ui/page-layout';
+import { PageLayout } from '@/components/layout/page-layout';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { LoadingSpinner } from '@/components/loading/loading-spinner';
 import { useAuth } from '@/contexts/auth-context';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
@@ -140,7 +140,7 @@ export default function AuspiciousDatesPage() {
 
   return (
     <SubscriptionGate feature="auspicious-dates" requiredTier="premium">
-      <PageLayout>
+      <PageLayout showNav={false}>
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
           {/* Header */}
           <motion.div

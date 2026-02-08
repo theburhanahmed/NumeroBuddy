@@ -22,6 +22,7 @@ import {
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 import { PageDescription } from '@/components/ui/page-description';
 import { useAuth } from '@/contexts/auth-context';
 import { reportAPI, peopleAPI } from '@/lib/numerology-api';
@@ -87,15 +88,13 @@ export default function ReportsPage() {
     }
   };
 
-  const handleGenerateReport = () => {
-    router.push('/reports/generate');
-  };
-
   const handleViewReport = (reportId: string) => {
+    if (!reportId || reportId === 'undefined') return;
     router.push(`/reports/${reportId}`);
   };
 
   const handleDownloadReport = async (reportId: string) => {
+    if (!reportId || reportId === 'undefined') return;
     try {
       // Create a link to the PDF endpoint
       const token = localStorage.getItem('access_token');
@@ -147,19 +146,19 @@ export default function ReportsPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                Reports
+                Your Reports
               </h1>
               <p className="text-white/70 mt-2">
-                View and manage your generated numerology reports
+                View and manage your numerology reports
               </p>
             </div>
             
             <TouchOptimizedButton 
               variant="primary" 
-              onClick={handleGenerateReport}
+              onClick={() => router.push('/reports/generate?person=self')}
               icon={<Plus className="w-5 h-5" />}
             >
-              Generate Report
+              Generate my report
             </TouchOptimizedButton>
           </div>
 
@@ -358,22 +357,17 @@ export default function ReportsPage() {
 
           {/* Reports List */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-6 text-white">Generated Reports</h2>
+            <h2 className="text-2xl font-bold mb-6 text-white">Your Generated Reports</h2>
             
             {loading ? (
               <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <SpaceCard key={i} variant="premium" className="p-6 h-24 animate-pulse" glow>
-                    <div className="h-6 bg-[#1a2942]/40 rounded w-1/3 mb-3"></div>
-                    <div className="h-4 bg-[#1a2942]/40 rounded w-1/2"></div>
-                  </SpaceCard>
-                ))}
+                <CosmicSkeletonLoader variant="card" count={3} className="h-24" />
               </div>
             ) : filteredReports.length === 0 ? (
               <SpaceCard variant="premium" className="p-12 text-center" glow>
                 <FileText className="w-12 h-12 text-white/50 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  No Reports Found
+                  {searchTerm || filterPerson || filterTemplate ? 'No Reports Found' : 'No reports yet'}
                 </h3>
                 <p className="text-white/70 mb-6">
                   {searchTerm || filterPerson || filterTemplate 
@@ -382,10 +376,10 @@ export default function ReportsPage() {
                 </p>
                 <TouchOptimizedButton 
                   variant="primary" 
-                  onClick={handleGenerateReport}
+                  onClick={() => router.push('/reports/generate?person=self')}
                   icon={<Plus className="w-5 h-5" />}
                 >
-                  Generate Report
+                  Generate your first report
                 </TouchOptimizedButton>
               </SpaceCard>
             ) : (

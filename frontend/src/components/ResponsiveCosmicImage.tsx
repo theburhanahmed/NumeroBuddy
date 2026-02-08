@@ -1,5 +1,5 @@
 import React, { lazy } from 'react';
-import { useIsMobile, useIsTablet } from '../hooks/useMediaQuery';
+import { useIsMobile, useIsTablet } from '@/hooks/use-media-query';
 interface ResponsiveCosmicImageProps {
   src: string;
   alt: string;

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileText } from 'lucide-react';
+import { GlassBackground } from '@/components/glass/glass-background';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
 import { expertAPI } from '@/lib/expert-api';
@@ -57,8 +58,9 @@ export default function ApplyAsExpertPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 p-8">
-      <div className="max-w-3xl mx-auto">
+    <div className="relative min-h-screen bg-[#0a1628] p-8">
+      <GlassBackground starCount={80} />
+      <div className="relative z-10 max-w-3xl mx-auto">
         <GlassCard className="p-8">
           <h1 className="text-3xl font-bold mb-6">Apply as Expert</h1>
 

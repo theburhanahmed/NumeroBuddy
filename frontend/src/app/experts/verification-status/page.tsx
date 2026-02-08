@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, Clock, FileText, Upload } from 'lucide-react';
+import { GlassBackground } from '@/components/glass/glass-background';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
 import { expertAPI, type VerificationStatus } from '@/lib/expert-api';
@@ -76,15 +77,17 @@ export default function VerificationStatusPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div className="relative min-h-screen bg-[#0a1628] flex items-center justify-center">
+        <GlassBackground starCount={80} />
+        <div className="relative z-10 animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 p-8">
-      <div className="max-w-3xl mx-auto">
+    <div className="relative min-h-screen bg-[#0a1628] p-8">
+      <GlassBackground starCount={80} />
+      <div className="relative z-10 max-w-3xl mx-auto">
         <GlassCard className="p-8">
           <div className="text-center mb-8">
             {getStatusIcon()}

@@ -37,7 +37,7 @@ export function PersonalizedRemedies({ onRemedySelect }: PersonalizedRemediesPro
     try {
       setLoading(true);
       const response = await numerologyAPI.getPersonalizedRemedies();
-      setRemedies(Array.isArray(response) ? response : []);
+      setRemedies((Array.isArray(response) ? response : []) as unknown as PersonalizedRemedy[]);
     } catch (error) {
       console.error('Failed to fetch personalized remedies:', error);
     } finally {

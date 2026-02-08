@@ -43,7 +43,7 @@ export function RemedyReminders({ remedyId }: RemedyRemindersProps) {
   const fetchRemedyReminders = async (id: string) => {
     try {
       setLoading(true);
-      const response = await numerologyAPI.getRemedyReminders({ remedy_id: id });
+      const response = await numerologyAPI.getRemedyReminders(id ? { remedy_id: id } : undefined);
       setReminders(Array.isArray(response) ? response : []);
     } catch (error) {
       console.error('Failed to fetch reminders:', error);
@@ -67,7 +67,7 @@ export function RemedyReminders({ remedyId }: RemedyRemindersProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await numerologyAPI.scheduleRemedyReminder({
+      await numerologyAPI.createRemedyReminder({
         remedy_id: formData.remedy_id,
         frequency: formData.frequency,
         reminder_time: formData.reminder_time,

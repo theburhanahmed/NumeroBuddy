@@ -19,15 +19,16 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=UserProfile)
 def create_numerology_profile_and_self_person(sender, instance, created, **kwargs):
-    """Create numerology profile and self Person record when user profile is completed."""
+    """Create numerology profile and self Person record when user profile is completed.
+    Runs automatically when UserProfile is saved with full_name + date_of_birth (e.g. at registration).
+    """
     # Only proceed if profile has required data
     if not instance.date_of_birth or not instance.user.full_name:
         return
     
     user = instance.user
     
-    # Check if numerology profile already exists
-    from numerology.models import NumerologyProfile, Person
+    from numerology.models import NumerologyProfile, Person, PersonNumerologyProfile
     from numerology.numerology import NumerologyCalculator, validate_name, validate_birth_date
     
     try:
@@ -36,19 +37,34 @@ def create_numerology_profile_and_self_person(sender, instance, created, **kwarg
             logger.warning(f'Invalid name or birth date for user {user.id}, skipping numerology profile creation')
             return
         
-        # Create numerology profile if it doesn't exist
+        calculator = NumerologyCalculator(system='pythagorean')
+        numbers = calculator.calculate_all(user.full_name, instance.date_of_birth)
+        lo_shu_grid = calculator.calculate_lo_shu_grid(user.full_name, instance.date_of_birth)
+
+        # Build defaults for create (all required fields must be set)
+        profile_defaults = {
+            'life_path_number': numbers['life_path_number'],
+            'destiny_number': numbers['destiny_number'],
+            'soul_urge_number': numbers['soul_urge_number'],
+            'personality_number': numbers['personality_number'],
+            'attitude_number': numbers['attitude_number'],
+            'maturity_number': numbers['maturity_number'],
+            'balance_number': numbers['balance_number'],
+            'personal_year_number': numbers['personal_year_number'],
+            'personal_month_number': numbers['personal_month_number'],
+            'karmic_debt_number': numbers.get('karmic_debt_number'),
+            'hidden_passion_number': numbers.get('hidden_passion_number'),
+            'subconscious_self_number': numbers.get('subconscious_self_number'),
+            'lo_shu_grid': lo_shu_grid,
+            'calculation_system': 'pythagorean',
+        }
+
         numerology_profile, profile_created = NumerologyProfile.objects.get_or_create(
             user=user,
-            defaults={}
+            defaults=profile_defaults
         )
-        
-        if profile_created or not numerology_profile.calculated_at:
-            # Calculate numerology numbers
-            calculator = NumerologyCalculator(system='pythagorean')
-            numbers = calculator.calculate_all(user.full_name, instance.date_of_birth)
-            lo_shu_grid = calculator.calculate_lo_shu_grid(user.full_name, instance.date_of_birth)
-            
-            # Update profile with calculated numbers
+
+        if not profile_created and not numerology_profile.calculated_at:
             numerology_profile.life_path_number = numbers['life_path_number']
             numerology_profile.destiny_number = numbers['destiny_number']
             numerology_profile.soul_urge_number = numbers['soul_urge_number']
@@ -64,8 +80,9 @@ def create_numerology_profile_and_self_person(sender, instance, created, **kwarg
             numerology_profile.lo_shu_grid = lo_shu_grid
             numerology_profile.calculation_system = 'pythagorean'
             numerology_profile.save()
-            
-            logger.info(f'Created/updated numerology profile for user {user.id}')
+            logger.info(f'Updated numerology profile for user {user.id}')
+        elif profile_created:
+            logger.info(f'Created numerology profile for user {user.id}')
         
         # Create "self" Person record if it doesn't exist
         self_person, person_created = Person.objects.get_or_create(
@@ -79,22 +96,18 @@ def create_numerology_profile_and_self_person(sender, instance, created, **kwarg
         )
         
         if person_created:
-            # Calculate numerology for the self person
-            from numerology.models import PersonNumerologyProfile
-            person_numbers = calculator.calculate_all(user.full_name, instance.date_of_birth)
-            
             PersonNumerologyProfile.objects.get_or_create(
                 person=self_person,
                 defaults={
-                    'life_path_number': person_numbers['life_path_number'],
-                    'destiny_number': person_numbers['destiny_number'],
-                    'soul_urge_number': person_numbers['soul_urge_number'],
-                    'personality_number': person_numbers['personality_number'],
-                    'attitude_number': person_numbers['attitude_number'],
-                    'maturity_number': person_numbers['maturity_number'],
-                    'balance_number': person_numbers['balance_number'],
-                    'personal_year_number': person_numbers['personal_year_number'],
-                    'personal_month_number': person_numbers['personal_month_number'],
+                    'life_path_number': numbers['life_path_number'],
+                    'destiny_number': numbers['destiny_number'],
+                    'soul_urge_number': numbers['soul_urge_number'],
+                    'personality_number': numbers['personality_number'],
+                    'attitude_number': numbers['attitude_number'],
+                    'maturity_number': numbers['maturity_number'],
+                    'balance_number': numbers['balance_number'],
+                    'personal_year_number': numbers['personal_year_number'],
+                    'personal_month_number': numbers['personal_month_number'],
                     'calculation_system': 'pythagorean'
                 }
             )

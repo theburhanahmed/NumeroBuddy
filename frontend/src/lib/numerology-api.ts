@@ -2,6 +2,39 @@
  * Numerology API client for NumerAI frontend.
  */
 import apiClient from './api-client';
+import type {
+  EnginesCoreNumbersResult,
+  EnginesPersonalYearParams,
+  EnginesPersonalYearResult,
+  EnginesCompatibility81Params,
+  EnginesCompatibility81Result,
+  EnginesLoShuParams,
+  EnginesLoShuResult,
+  EnginesCompoundParams,
+  EnginesCompoundResult,
+  EnginesBusinessParams,
+  EnginesBusinessResult,
+  EnginesKuaResult,
+  EnginesHealthKabalaResult,
+} from '@/types/numerobuddy-engines';
+
+export type {
+  EngineWarning,
+  ValidationReport,
+  EnginesCoreNumbersResult,
+  EnginesPersonalYearParams,
+  EnginesPersonalYearResult,
+  EnginesCompatibility81Params,
+  EnginesCompatibility81Result,
+  EnginesLoShuParams,
+  EnginesLoShuResult,
+  EnginesCompoundParams,
+  EnginesCompoundResult,
+  EnginesBusinessParams,
+  EnginesBusinessResult,
+  EnginesKuaResult,
+  EnginesHealthKabalaResult,
+} from '@/types/numerobuddy-engines';
 
 // Type definitions
 export interface NumerologyProfile {
@@ -18,6 +51,8 @@ export interface NumerologyProfile {
   calculation_system: 'pythagorean' | 'chaldean';
   calculated_at: string;
   updated_at: string;
+  birth_date?: string;
+  full_name?: string;
 }
 
 export interface NumberInterpretation {
@@ -335,6 +370,8 @@ export interface CompatibilityCheck {
   partner_birth_date: string;
   relationship_type: 'romantic' | 'business' | 'friendship' | 'family';
   compatibility_score: number;
+  user_life_path?: number;
+  partner_life_path?: number;
   strengths: string[];
   challenges: string[];
   advice: string;
@@ -571,6 +608,8 @@ export interface ReportTemplate {
   report_type: string;
   is_premium: boolean;
   is_active: boolean;
+  is_custom?: boolean;
+  owner?: string;
   created_at: string;
   updated_at: string;
 }
@@ -582,6 +621,7 @@ export interface GeneratedReport {
   template: string;
   title: string;
   content: any;
+  report_type?: string;
   generated_at: string;
   expires_at: string | null;
 }
@@ -1494,7 +1534,124 @@ export const numerologyAPI = {
   async analyzeEngineHealthKabala(name: string): Promise<any> {
     const response = await apiClient.post('/api/v1/numerology/engines/health/kabala-analysis/', { name });
     return response.data;
-  }
+  },
+
+  /** Dashboard: get insights */
+  getDashboardInsights: async () => {
+    const response = await apiClient.get('/api/v1/numerology/dashboard/insights/');
+    return response.data;
+  },
+  /** Dashboard: get activity */
+  getDashboardActivity: async (params?: { limit?: number; types?: string[] }) => {
+    const response = await apiClient.get('/api/v1/numerology/dashboard/activity/', { params });
+    return response.data;
+  },
+  /** Dashboard: get recommendations */
+  getDashboardRecommendations: async () => {
+    const response = await apiClient.get('/api/v1/numerology/dashboard/recommendations/');
+    return response.data;
+  },
+
+  // ============================================================================
+  // Numerobuddy Engines API (rule-based, conflict resolution)
+  // ============================================================================
+  async enginesCoreNumbers(params: { day: number; month: number; year: number; enable_validation?: boolean }): Promise<EnginesCoreNumbersResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/core-numbers/', params);
+    return response.data;
+  },
+  async enginesPersonalYear(params: EnginesPersonalYearParams): Promise<EnginesPersonalYearResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/predictive/yearly/', params);
+    return response.data;
+  },
+  async enginesCompatibility81(params: EnginesCompatibility81Params): Promise<EnginesCompatibility81Result> {
+    const response = await apiClient.post('/api/v1/numerology/engines/compatibility/check-81/', params);
+    return response.data;
+  },
+  async enginesLoShuAnalyze(params: EnginesLoShuParams): Promise<EnginesLoShuResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/lo-shu/analyze/', params);
+    return response.data;
+  },
+  async enginesCompoundNumber(params: EnginesCompoundParams): Promise<EnginesCompoundResult> {
+    const { number, ...body } = params;
+    const response = await apiClient.post(`/api/v1/numerology/engines/compound/${number}/`, body);
+    return response.data;
+  },
+  async enginesBusinessAnalyze(params: EnginesBusinessParams): Promise<EnginesBusinessResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/business/analyze/', params);
+    return response.data;
+  },
+  async enginesFengShuiKua(params: { birth_year: number; gender: string; enable_validation?: boolean }): Promise<EnginesKuaResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/feng-shui/kua/', params);
+    return response.data;
+  },
+  async enginesHealthKabala(params: { name: string; birth_number?: number; enable_validation?: boolean }): Promise<EnginesHealthKabalaResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/health/kabala-analysis/', params);
+    return response.data;
+  },
+
+  // Visualization endpoints
+  async get3DNumerologyVisualization() {
+    const response = await apiClient.get('/api/v1/numerology/visualizations/3d/');
+    return response.data;
+  },
+  async getNumerologyWheel() {
+    const response = await apiClient.get('/api/v1/numerology/visualizations/wheel/');
+    return response.data;
+  },
+  async getNumerologyTimeline(params?: { years_ahead?: number }) {
+    const response = await apiClient.get('/api/v1/numerology/visualizations/timeline/', { params });
+    return response.data;
+  },
+  async getNumerologyComparisonCharts(data: { person_ids: string[] }) {
+    const response = await apiClient.post('/api/v1/numerology/visualizations/comparison/', data);
+    return response.data;
+  },
+  async getNumerologyHeatmap() {
+    const response = await apiClient.get('/api/v1/numerology/visualizations/heatmap/');
+    return response.data;
+  },
+
+  // Remedy endpoints
+  async getRemedyEffectiveness(params?: { remedy_id?: string; period_days?: number }) {
+    const response = await apiClient.get('/api/v1/numerology/remedies/effectiveness/', { params });
+    return response.data;
+  },
+  async getRemedyCombinations(params?: { remedy_id?: string }) {
+    const response = await apiClient.get('/api/v1/numerology/remedies/combinations/', { params });
+    return response.data;
+  },
+  async getRemedyReminders(params?: { remedy_id?: string }) {
+    const response = await apiClient.get('/api/v1/numerology/remedies/reminders/list/', { params });
+    return response.data;
+  },
+  async createRemedyReminder(data: {
+    remedy_id: string;
+    frequency: string;
+    reminder_time: string;
+    days_of_week?: number[];
+  }) {
+    const response = await apiClient.post('/api/v1/numerology/remedies/reminders/', data);
+    return response.data;
+  },
+  async deleteRemedyReminder(reminderId: string) {
+    await apiClient.delete(`/api/v1/numerology/remedies/reminders/${reminderId}/`);
+  },
+  async getRemedyTrackings(params?: { remedy_id?: string }) {
+    const response = await apiClient.get('/api/v1/numerology/remedies/trackings/', { params });
+    return response.data;
+  },
+  async trackRemedyProgress(data: {
+    remedy_id: string;
+    date?: string;
+    is_completed?: boolean;
+    notes?: string;
+    effectiveness_rating?: number;
+    mood_before?: string;
+    mood_after?: string;
+  }) {
+    const response = await apiClient.post('/api/v1/numerology/remedies/track/', data);
+    return response.data;
+  },
 };
 
 // Name Numerology API types and methods
@@ -1972,10 +2129,20 @@ export const reportAPI = {
   // Enhanced Reports endpoints
   async generateCustomReport(data: {
     person_id: string;
-    sections: string[];
+    sections?: string[];
     custom_config?: Record<string, any>;
+    template_config?: Record<string, any>;
+    title?: string;
   }): Promise<GeneratedReport> {
-    const response = await apiClient.post('/api/v1/reports/custom/', data);
+    const payload = {
+      person_id: data.person_id,
+      sections: data.sections ?? (data.template_config && 'sections' in data.template_config
+        ? (data.template_config as { sections: string[] }).sections
+        : []),
+      custom_config: data.custom_config ?? data.template_config,
+      title: data.title,
+    };
+    const response = await apiClient.post('/api/v1/reports/custom/', payload);
     return response.data;
   },
 
@@ -2018,6 +2185,10 @@ export const reportAPI = {
 
   async cancelScheduledReport(scheduledId: string): Promise<void> {
     await apiClient.delete(`/api/v1/reports/scheduled/${scheduledId}/`);
+  },
+
+  async deleteReportTemplate(templateId: string): Promise<void> {
+    await apiClient.delete(`/api/v1/reports/templates/${templateId}/`);
   },
 
   async compareReports(data: {
@@ -3145,15 +3316,16 @@ export const fengShuiHybridAPI = {
   },
 
   /**
-   * Optimize space layout
+   * Optimize space layout (room_data) or goals (optimization_goals).
    */
   optimizeSpace: async (data: {
     analysis_id: string;
-    room_data: {
+    room_data?: {
       room_name: string;
       room_number?: string;
       direction?: string;
     };
+    optimization_goals?: string[];
   }) => {
     const response = await apiClient.post('/api/v1/numerology/feng-shui/optimize-space/', data);
     return response.data;
@@ -3192,17 +3364,6 @@ export const fengShuiHybridAPI = {
     const response = await apiClient.post('/api/v1/numerology/feng-shui/directions/', { direction });
     return response.data;
   },
-
-  /**
-   * Optimize space
-   */
-  optimizeSpace: async (data: {
-    analysis_id: string;
-    optimization_goals?: string[];
-  }) => {
-    const response = await apiClient.post('/api/v1/numerology/feng-shui/optimize-space/', data);
-    return response.data;
-  },
 };
 
 export const mentalStateAIAPI = {
@@ -3225,41 +3386,6 @@ export const mentalStateAIAPI = {
    */
   getMentalStateHistory: async (params?: { start_date?: string; end_date?: string; limit?: number }) => {
     const response = await apiClient.get('/api/v1/numerology/mental-state/history/', { params });
-    return response.data;
-  },
-
-  /**
-   * Analyze mental state
-   */
-  analyzeMentalState: async (data: {
-    period_start?: string;
-    period_end?: string;
-  }) => {
-    const response = await apiClient.post('/api/v1/numerology/mental-state/analyze/', data);
-    return response.data;
-  },
-
-  /**
-   * Get stress patterns
-   */
-  getStressPatterns: async () => {
-    const response = await apiClient.get('/api/v1/numerology/mental-state/stress-patterns/');
-    return response.data;
-  },
-
-  /**
-   * Get wellbeing recommendations
-   */
-  getWellbeingRecommendations: async () => {
-    const response = await apiClient.get('/api/v1/numerology/mental-state/wellbeing-recommendations/');
-    return response.data;
-  },
-
-  /**
-   * Get mood predictions
-   */
-  getMoodPredictions: async () => {
-    const response = await apiClient.get('/api/v1/numerology/mental-state/mood-predictions/');
     return response.data;
   },
 
@@ -3555,7 +3681,7 @@ export const featureFlagsAPI = {
    * Get feature flag details
    */
   getFlag: async (name: string) => {
-    const response = await apiClient.get(`/feature-flags/${name}/`);
+    const response = await apiClient.get(`/api/v1/feature-flags/${name}/`);
     return response.data;
   },
 
@@ -3811,5 +3937,74 @@ export const knowledgeGraphAPI = {
       const response = await apiClient.get('/api/v1/numerology/generational/cycles/');
       return response.data;
     }
+  },
+
+  // ============================================================================
+  // Numerobuddy Engines API (rule-based, conflict resolution)
+  // ============================================================================
+
+  /**
+   * Core Numbers (Birth & Destiny) with conflict resolution.
+   */
+  async enginesCoreNumbers(params: { day: number; month: number; year: number; enable_validation?: boolean }): Promise<EnginesCoreNumbersResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/core-numbers/', params);
+    return response.data;
+  },
+
+  /**
+   * Personal Year & Eventful Year with conflict resolution.
+   */
+  async enginesPersonalYear(params: EnginesPersonalYearParams): Promise<EnginesPersonalYearResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/predictive/yearly/', params);
+    return response.data;
+  },
+
+  /**
+   * Compatibility (81-combination) with conflict resolution.
+   */
+  async enginesCompatibility81(params: EnginesCompatibility81Params): Promise<EnginesCompatibility81Result> {
+    const response = await apiClient.post('/api/v1/numerology/engines/compatibility/check-81/', params);
+    return response.data;
+  },
+
+  /**
+   * Lo Shu Grid & Missing Numbers with conflict resolution.
+   */
+  async enginesLoShuAnalyze(params: EnginesLoShuParams): Promise<EnginesLoShuResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/lo-shu/analyze/', params);
+    return response.data;
+  },
+
+  /**
+   * Compound Number interpretation with conflict resolution.
+   */
+  async enginesCompoundNumber(params: EnginesCompoundParams): Promise<EnginesCompoundResult> {
+    const { number, ...body } = params;
+    const response = await apiClient.post(`/api/v1/numerology/engines/compound/${number}/`, body);
+    return response.data;
+  },
+
+  /**
+   * Business Numerology (name + mobile) with conflict resolution.
+   */
+  async enginesBusinessAnalyze(params: EnginesBusinessParams): Promise<EnginesBusinessResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/business/analyze/', params);
+    return response.data;
+  },
+
+  /**
+   * Kua / Feng Shui directions with conflict resolution.
+   */
+  async enginesFengShuiKua(params: { birth_year: number; gender: string; enable_validation?: boolean }): Promise<EnginesKuaResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/feng-shui/kua/', params);
+    return response.data;
+  },
+
+  /**
+   * Health & Kabala name analysis with conflict resolution.
+   */
+  async enginesHealthKabala(params: { name: string; birth_number?: number; enable_validation?: boolean }): Promise<EnginesHealthKabalaResult> {
+    const response = await apiClient.post('/api/v1/numerology/engines/health/kabala-analysis/', params);
+    return response.data;
   }
 };

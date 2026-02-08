@@ -7,7 +7,7 @@ import { useIsMobile } from '@/hooks/use-media-query'
 interface TouchOptimizedButtonProps {
   children: React.ReactNode
   onClick?: () => void
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success' | 'liquid'
   size?: 'sm' | 'md' | 'lg'
   icon?: React.ReactNode
   iconPosition?: 'left' | 'right'
@@ -47,7 +47,7 @@ export function TouchOptimizedButton({
     lg: isMobile ? 'px-9 py-5 text-lg min-h-[52px]' : 'px-8 py-4 text-lg',
   }
 
-  const variantStyles = {
+  const variantStyles: Record<NonNullable<TouchOptimizedButtonProps['variant']>, string> = {
     primary:
       'bg-gradient-to-r from-cyan-500 to-blue-600 text-white border border-cyan-400/50 shadow-lg shadow-cyan-500/30',
     secondary:
@@ -58,6 +58,8 @@ export function TouchOptimizedButton({
       'bg-gradient-to-r from-red-500 to-rose-600 text-white border border-red-400/50 shadow-lg shadow-red-500/30',
     success:
       'bg-gradient-to-r from-green-500 to-emerald-600 text-white border border-green-400/50 shadow-lg shadow-green-500/30',
+    liquid:
+      'bg-gradient-to-r from-cyan-500/80 to-blue-600/80 backdrop-blur-xl text-white border border-cyan-400/50 shadow-lg shadow-cyan-500/20',
   }
 
   const handleClick = () => {

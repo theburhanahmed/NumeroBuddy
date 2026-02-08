@@ -1,6 +1,8 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { useAuth } from '@/contexts/auth-context'
+import { userAPI } from '@/lib/api-client'
 
 interface OnboardingContextType {
   isOnboardingComplete: boolean
@@ -8,24 +10,44 @@ interface OnboardingContextType {
   completeOnboarding: () => void
   dismissOnboarding: () => void
   triggerOnboarding: () => void
+  refreshOnboardingStatus: () => Promise<void>
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined)
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
-  useEffect(() => {
-    // Check localStorage for onboarding status on mount
-    // Only check completion status, don't auto-show onboarding
-    if (typeof window !== 'undefined') {
-      const completed = localStorage.getItem('onboarding_complete') === 'true'
+  const refreshOnboardingStatus = useCallback(async () => {
+    if (!user || typeof window === 'undefined') return
+    try {
+      const response = await userAPI.getProfile()
+      const profileData = response.data?.user || response.data
+      // Primary: use profile_completed_at from API (server-side source of truth)
+      const serverComplete = Boolean(profileData?.profile_completed_at)
+      const hasRequiredFields = Boolean(profileData?.date_of_birth && (profileData?.full_name || user?.full_name))
+      const completed = serverComplete || hasRequiredFields
       setIsOnboardingComplete(completed)
-      // Don't automatically show onboarding - it must be explicitly triggered
-      // This prevents onboarding from appearing on landing page or other non-dashboard pages
+      if (completed) {
+        localStorage.setItem('onboarding_complete', 'true')
+      }
+    } catch {
+      // Fallback: localStorage for backward compatibility when API fails
+      const localComplete = localStorage.getItem('onboarding_complete') === 'true'
+      setIsOnboardingComplete(localComplete)
     }
-  }, [])
+  }, [user])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && user) {
+      refreshOnboardingStatus()
+    } else if (typeof window !== 'undefined') {
+      const localComplete = localStorage.getItem('onboarding_complete') === 'true'
+      setIsOnboardingComplete(localComplete)
+    }
+  }, [user, refreshOnboardingStatus])
 
   const triggerOnboarding = () => {
     // Only trigger onboarding if not already completed and not dismissed
@@ -63,6 +85,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         completeOnboarding,
         dismissOnboarding,
         triggerOnboarding,
+        refreshOnboardingStatus,
       }}
     >
       {children}

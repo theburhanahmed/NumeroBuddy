@@ -13,6 +13,7 @@ import {
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 import { useAuth } from '@/contexts/auth-context';
 import { reportAPI } from '@/lib/numerology-api';
 import { ReportTemplate } from '@/types';
@@ -126,15 +127,7 @@ export default function TemplatesPage() {
           <div className="mb-8">
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <SpaceCard key={i} variant="elevated" className="p-6 h-64 animate-pulse">
-                    <div className="h-6 bg-white/10 rounded w-2/3 mb-4"></div>
-                    <div className="h-4 bg-white/10 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-white/10 rounded w-4/5 mb-2"></div>
-                    <div className="h-4 bg-white/10 rounded w-3/4 mb-6"></div>
-                    <div className="h-10 bg-white/10 rounded-2xl"></div>
-                  </SpaceCard>
-                ))}
+                <CosmicSkeletonLoader variant="card" count={3} className="h-64" />
               </div>
             ) : filteredTemplates.length === 0 ? (
               <SpaceCard variant="elevated" className="p-12 text-center">
