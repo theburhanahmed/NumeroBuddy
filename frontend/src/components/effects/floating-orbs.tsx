@@ -2,8 +2,15 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 
 export function FloatingOrbs() {
+  const prefersReducedMotion = useReducedMotion()
+
+  if (prefersReducedMotion) {
+    return null
+  }
+
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
       {/* Primary orb */}

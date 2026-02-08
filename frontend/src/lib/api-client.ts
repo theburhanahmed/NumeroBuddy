@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { API_URL } from './api-config';
+import { cachedFetch, cacheKeys, cache } from './api-cache';
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -186,16 +187,35 @@ export const authAPI = {
     apiClient.post('/api/v1/auth/social/google/', { access_token: accessToken }),
 };
 
+const PROFILE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export const userAPI = {
-  getProfile: () => apiClient.get('/api/v1/users/profile/'),
-  updateProfile: (data: {
+  getProfile: () =>
+    cachedFetch(cacheKeys.userProfile(), async () => {
+      try {
+        return await apiClient.get('/api/v1/users/profile/');
+      } catch (err: any) {
+        if (err?.response?.status === 404) {
+          return { data: {} };
+        }
+        throw err;
+      }
+    }, {
+      ttl: PROFILE_CACHE_TTL,
+      staleWhileRevalidate: true,
+    }),
+  updateProfile: async (data: {
     full_name?: string;
     date_of_birth?: string;
     gender?: string;
     timezone?: string;
     location?: string;
     bio?: string;
-  }) => apiClient.patch('/api/v1/users/profile/', data),
+  }) => {
+    const response = await apiClient.patch('/api/v1/users/profile/', data);
+    cache.invalidate(cacheKeys.userProfile());
+    return response;
+  },
 };
 
 export const paymentsAPI = {

@@ -6,10 +6,9 @@ import { motion } from 'framer-motion';
 import { BookOpenIcon, ClockIcon, ArrowRightIcon } from 'lucide-react';
 import { LandingNav } from '@/components/landing/landing-nav';
 import { LandingFooter } from '@/components/landing/landing-footer';
+import { GlassBackground } from '@/components/glass/glass-background';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { LiquidGlassHero } from '@/components/ui/liquid-glass-hero';
-import { FloatingOrbs } from '@/components/ui/floating-orbs';
-import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { MagneticCard } from '@/components/magnetic/magnetic-card';
 export default function Blog() {
   const posts = [{
@@ -55,9 +54,8 @@ export default function Blog() {
     category: 'Names',
     image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&h=400&fit=crop'
   }];
-  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 relative overflow-hidden">
-      <AmbientParticles />
-      <FloatingOrbs />
+  return <div className="w-full min-h-screen bg-[#0a1628] relative overflow-hidden">
+      <GlassBackground starCount={80} />
       <LandingNav />
 
       {/* Hero Section */}

@@ -1092,6 +1092,7 @@ def export_data(request):
     from django.http import HttpResponse
     from accounts.models import UserProfile
     from numerology.models import NumerologyProfile, PersonNumerologyProfile, DailyReading, CompatibilityCheck, Remedy
+    from numerology.profile_utils import get_numerology_profile
     from reports.models import GeneratedReport
     from consultations.models import Consultation
     from payments.models import Payment, BillingHistory, Subscription
@@ -1143,7 +1144,7 @@ def export_data(request):
         
         # Numerology data
         try:
-            numerology_profile = NumerologyProfile.objects.get(user=user)
+            numerology_profile = get_numerology_profile(user)
             user_data['numerology'] = {
                 'life_path_number': numerology_profile.life_path_number,
                 'expression_number': numerology_profile.expression_number,
@@ -1167,14 +1168,14 @@ def export_data(request):
             for r in daily_readings
         ]
         
-        # Reports
-        reports = GeneratedReport.objects.filter(user=user).order_by('-created_at')
+        # Reports (template-based generated reports)
+        reports = GeneratedReport.objects.filter(user=user).select_related('template').order_by('-generated_at')
         user_data['reports'] = [
             {
                 'id': str(r.id),
-                'report_type': r.report_type,
+                'report_type': r.template.report_type if r.template_id else None,
                 'title': r.title,
-                'created_at': r.created_at.isoformat() if r.created_at else None,
+                'generated_at': r.generated_at.isoformat() if r.generated_at else None,
             }
             for r in reports
         ]

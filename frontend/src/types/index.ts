@@ -3,6 +3,9 @@ export interface User {
   email?: string;
   phone?: string;
   full_name: string;
+  date_of_birth?: string;
+  first_name?: string;
+  last_name?: string;
   is_verified: boolean;
   is_premium: boolean;
   subscription_plan: 'free' | 'basic' | 'premium' | 'elite';

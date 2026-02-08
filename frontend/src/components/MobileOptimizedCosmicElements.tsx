@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useIsMobile } from '../hooks/useMediaQuery';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useIsMobile } from '@/hooks/use-media-query';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 /**
  * Mobile-optimized versions of cosmic elements
  * Reduces particle count and complexity on small screens

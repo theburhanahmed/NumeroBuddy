@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { GlassBackground } from '@/components/glass/glass-background'
 import { SpaceCard } from '@/components/space/space-card'
 import { SpaceButton } from '@/components/space/space-button'
 
@@ -12,8 +13,9 @@ export default function Error({
   reset: () => void
 }) {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#0B0F19]">
-      <SpaceCard variant="premium" className="p-8 max-w-md text-center">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#0a1628] relative overflow-hidden">
+      <GlassBackground starCount={80} />
+      <SpaceCard variant="premium" className="p-8 max-w-md text-center relative z-10">
         <div className="mb-6">
           <div className="w-20 h-20 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-500/30">
             <svg

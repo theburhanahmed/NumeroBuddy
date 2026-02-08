@@ -9,8 +9,8 @@ export function Navigation() {
   const pathname = usePathname();
   const { user } = useAuth();
   
-  // Use LandingNav for landing page, CosmicNavbar for authenticated pages
-  const isLandingPage = pathname === '/';
+  // Use LandingNav for landing and marketing pages, CosmicNavbar for authenticated pages
+  const isLandingPage = pathname === '/' || /^\/(en|hi|ta|te)$/.test(pathname);
   
   if (isLandingPage) {
     return <LandingNav />;

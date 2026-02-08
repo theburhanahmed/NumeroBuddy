@@ -1,5 +1,8 @@
 """
 Subscription feature constants for numerology reports.
+
+Canonical tiers: free, premium, elite.
+'basic' is deprecated; map to 'premium' for backward compatibility.
 """
 SUBSCRIPTION_FEATURES = {
     'free': {

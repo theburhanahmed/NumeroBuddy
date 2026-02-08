@@ -5,6 +5,7 @@ from typing import List, Dict, Optional
 from django.utils import timezone
 from datetime import date, timedelta
 from numerology.models import NumerologyProfile, DailyReading
+from numerology.profile_utils import get_numerology_profile
 from numerology.numerology import NumerologyCalculator
 from dashboard.models import QuickInsight
 from knowledge_graph.services import KnowledgeGraphService
@@ -22,7 +23,7 @@ class CoPilotService:
         suggestions = []
         
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
             today = date.today()
             
             # Suggestion 1: Daily reading reminder
@@ -121,7 +122,7 @@ class CoPilotService:
             decision_date = date.today()
         
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
             
             if not user.profile.date_of_birth:
                 return {
@@ -204,7 +205,7 @@ class CoPilotService:
         insights = []
         
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
             
             # Insight 1: Life Path focus
             insights.append({

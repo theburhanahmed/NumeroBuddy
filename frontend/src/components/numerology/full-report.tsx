@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { GlassBackground } from '@/components/glass/glass-background';
 import { 
   Lock, 
   Unlock, 
@@ -135,8 +136,9 @@ export function FullReport({ onUpgrade }: FullReportProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="relative min-h-screen bg-[#0a1628] p-4 sm:p-8">
+        <GlassBackground starCount={80} />
+        <div className="relative z-10 max-w-7xl mx-auto">
           <GlassCard className="p-8">
             <div className="animate-pulse space-y-4">
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
@@ -151,8 +153,9 @@ export function FullReport({ onUpgrade }: FullReportProps) {
 
   if (error || !report) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="relative min-h-screen bg-[#0a1628] p-4 sm:p-8">
+        <GlassBackground starCount={80} />
+        <div className="relative z-10 max-w-7xl mx-auto">
           <GlassCard className="p-8">
             <div className="text-center">
               <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
@@ -167,8 +170,9 @@ export function FullReport({ onUpgrade }: FullReportProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="relative min-h-screen bg-[#0a1628] p-4 sm:p-8">
+      <GlassBackground starCount={80} />
+      <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

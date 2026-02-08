@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { validateField, ValidationRules } from '@/lib/form-validation';
+import { validateField, ValidationRules, type ValidationResult } from '@/lib/form-validation';
 
 interface UseFormOptions {
   initialValues: Record<string, string>;
@@ -86,9 +86,9 @@ export function useForm({
       if (touched[name]) {
         const rules = validationRules[name];
         if (rules) {
-          const result = validateField(value, rules);
+          const result: ValidationResult = validateField(value, rules);
           // CRITICAL: Extract error as string BEFORE storing - don't pass result object
-          const errorString = typeof result.error === 'string' ? result.error : (result.error?.error || '') || '';
+          const errorString = typeof result.error === 'string' ? result.error : '';
           // Use normalized setter - this will normalize everything including prev values
           setErrorsNormalized(prev => {
             const updated = { ...prev };
@@ -106,7 +106,7 @@ export function useForm({
       setTouched(prev => ({ ...prev, [name]: true }));
       const rules = validationRules[name];
       if (rules) {
-        const result = validateField(values[name], rules);
+        const result: ValidationResult = validateField(values[name], rules);
         // CRITICAL: Extract error as string immediately - use normalizeError for safety
         const errorString = normalizeError(result.error);
         // Use normalized setter - this will normalize everything including prev values
@@ -141,10 +141,10 @@ export function useForm({
       Object.keys(validationRules).forEach(key => {
         const rules = validationRules[key];
         if (rules) {
-          const result = validateField(values[key] || '', rules);
+          const result: ValidationResult = validateField(values[key] || '', rules);
           if (!result.isValid) {
             // CRITICAL: Extract error as string BEFORE storing
-            const errorString = typeof result.error === 'string' ? result.error : (result.error?.error || '') || '';
+            const errorString = typeof result.error === 'string' ? result.error : '';
             newErrors[key] = errorString;
             hasErrors = true;
           }

@@ -3,9 +3,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SparklesIcon, SendIcon, BotIcon, UserIcon, MessageSquareIcon, XIcon, MinusIcon, MaximizeIcon } from 'lucide-react';
-import { GlassCard } from './GlassCard';
-import { GlassButton } from './GlassButton';
-import { MagneticCard } from './MagneticCard';
+import { GlassCard } from '@/components/glassmorphism/glass-card';
+import { GlassButton } from '@/components/glassmorphism/glass-button';
+import { MagneticCard } from '@/components/magnetic/magnetic-card';
 import { useAIChat } from '@/contexts/ai-chat-context';
 import { numerologyAPI } from '@/lib/numerology-api';
 import { toast } from 'sonner';

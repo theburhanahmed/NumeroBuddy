@@ -11,9 +11,7 @@ import { ThemeProvider } from "@/contexts/theme-context";
 import { AIChatProvider } from "@/contexts/ai-chat-context";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
-import { FloatingChatWidget } from "@/components/ai-chat/floating-chat-widget";
-import { FloatingChatButton } from "@/components/ai-chat/floating-chat-button";
-import { AIChatModal } from "@/components/ai-chat/ai-chat-modal";
+import { DashboardAIChatOnly } from "@/components/ai-chat/dashboard-ai-chat-only";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { SkipToContent } from "@/components/accessibility/skip-to-content";
 import { FocusVisibleStyles } from "@/components/accessibility/focus-visible-styles";
@@ -91,10 +89,8 @@ export default function RootLayout({
 
                     {children}
 
-                    {/* Global UI Elements */}
-                    <FloatingChatWidget />
-                    <FloatingChatButton />
-                    <AIChatModal />
+                    {/* Global UI Elements - AI chat only on dashboard for logged-in subscribers */}
+                    <DashboardAIChatOnly />
                     <BackToTop />
                     <ContextualHelp />
                     <InstallPrompt />

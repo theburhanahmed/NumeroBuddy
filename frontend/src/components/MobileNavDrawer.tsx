@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, MenuIcon } from 'lucide-react';
-import { useIsMobile } from '../hooks/useMediaQuery';
+import { useIsMobile } from '@/hooks/use-media-query';
 interface MobileNavDrawerProps {
   children: React.ReactNode;
   trigger?: React.ReactNode;

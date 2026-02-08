@@ -6,7 +6,7 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion'
 
 interface MagneticCardProps {
   children: React.ReactNode
-  variant?: 'default' | 'elevated' | 'subtle' | 'liquid' | 'liquid-premium' | 'cosmic'
+  variant?: 'default' | 'elevated' | 'subtle' | 'liquid' | 'liquid-premium' | 'cosmic' | 'primary'
   className?: string
   strength?: number
 }
@@ -61,7 +61,7 @@ export function MagneticCard({
 
   const baseStyles = 'rounded-3xl transition-all duration-300'
 
-  const variantStyles = {
+  const variantStyles: Record<NonNullable<MagneticCardProps['variant']>, string> = {
     default:
       'bg-white/70 dark:bg-gray-800/40 backdrop-blur-xl border border-gray-200 dark:border-gray-700/30',
     elevated:
@@ -74,12 +74,14 @@ export function MagneticCard({
       'liquid-glass liquid-glass-premium border border-gray-300 dark:border-gray-700/40 shadow-[0px_8px_32px_-8px_rgba(0,0,0,0.15)]',
     cosmic:
       'bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 shadow-lg shadow-cyan-500/10',
+    primary:
+      'bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 shadow-lg shadow-cyan-500/10',
   }
 
   if (prefersReducedMotion) {
     return (
       <div className={`${baseStyles} ${variantStyles[variant]} ${className}`}>
-        <div className={variant.includes('liquid') ? 'liquid-glass-content' : ''}>
+        <div className={variant && variant.includes('liquid') ? 'liquid-glass-content' : ''}>
           {children}
         </div>
       </div>
@@ -108,7 +110,7 @@ export function MagneticCard({
         ease: [0.4, 0, 0.2, 1],
       }}
     >
-      <div className={variant.includes('liquid') ? 'liquid-glass-content' : ''}>
+      <div className={variant && variant.includes('liquid') ? 'liquid-glass-content' : ''}>
         {children}
       </div>
     </motion.div>

@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { SparklesIcon } from 'lucide-react';
-import { SpaceCard } from '@/components/space/space-card';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 import OTPForm from './otp-form';
 
 function VerifyOTPContent() {
@@ -39,21 +39,7 @@ export default function VerifyOTPPage() {
         
         <Suspense 
           fallback={
-            <SpaceCard variant="premium" className="p-8" glow>
-              <div className="space-y-6">
-                <div className="h-6 bg-[#1a2942]/40 rounded animate-pulse"></div>
-                <div className="h-4 bg-[#1a2942]/40 rounded animate-pulse"></div>
-                <div className="space-y-4">
-                  <div className="h-4 bg-[#1a2942]/40 rounded animate-pulse"></div>
-                  <div className="h-12 bg-[#1a2942]/40 rounded animate-pulse"></div>
-                  <div className="h-4 bg-[#1a2942]/40 rounded animate-pulse"></div>
-                </div>
-                <div className="space-y-4">
-                  <div className="h-12 bg-[#1a2942]/40 rounded animate-pulse"></div>
-                  <div className="h-12 bg-[#1a2942]/40 rounded animate-pulse"></div>
-                </div>
-              </div>
-            </SpaceCard>
+            <CosmicSkeletonLoader variant="card" className="min-h-[280px]" />
           }
         >
           <VerifyOTPContent />

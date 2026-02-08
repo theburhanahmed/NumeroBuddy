@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import { authAPI } from '@/lib/api-client';
+import { authAPI, userAPI } from '@/lib/api-client';
 import { motion } from 'framer-motion';
 import { 
   MailIcon,
@@ -27,10 +27,15 @@ export default function OTPForm({ email, phone }: OTPFormProps) {
   const [resending, setResending] = useState(false);
   const [otp, setOtp] = useState('');
 
-  // Redirect authenticated users
   useEffect(() => {
     if (!authLoading && user) {
-      router.push('/dashboard');
+      userAPI.getProfile()
+        .then((res) => {
+          const data = res.data?.user || res.data;
+          const hasCompleteProfile = Boolean(data?.profile_completed_at && data?.date_of_birth);
+          router.push(hasCompleteProfile ? '/dashboard' : '/onboarding');
+        })
+        .catch(() => router.push('/onboarding'));
     }
   }, [user, authLoading, router]);
 
@@ -56,12 +61,15 @@ export default function OTPForm({ email, phone }: OTPFormProps) {
         title: 'Success',
         description: 'Account verified successfully!',
       });
-      // Redirect to dashboard with onboarding flag for new users
-      router.push('/dashboard?onboarding=true');
-    } catch (error: any) {
+      const res = await userAPI.getProfile();
+      const data = res.data?.user || res.data;
+      const hasCompleteProfile = Boolean(data?.profile_completed_at && data?.date_of_birth);
+      router.push(hasCompleteProfile ? '/dashboard' : '/onboarding');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'OTP verification failed. Please try again.';
       toast({
         title: 'Error',
-        description: error.message || 'OTP verification failed. Please try again.',
+        description: message,
         variant: 'destructive',
       });
     } finally {

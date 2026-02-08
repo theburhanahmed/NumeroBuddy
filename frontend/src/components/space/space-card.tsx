@@ -8,7 +8,7 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion'
 
 interface SpaceCardProps extends Omit<BaseCardProps, 'variant'> {
   children: React.ReactNode
-  variant?: 'default' | 'premium' | 'interactive' | 'glass' | 'neon'
+  variant?: 'default' | 'premium' | 'interactive' | 'glass' | 'neon' | 'elevated' | 'outlined'
   onClick?: () => void
   glow?: boolean
   as?: 'div' | 'article' | 'section'
@@ -37,15 +37,17 @@ export function SpaceCard({
 }: SpaceCardProps) {
   const prefersReducedMotion = useReducedMotion()
   
-  // Map variant to BaseCard variant
-  const baseVariant = variant === 'glass' ? 'glass' : variant === 'premium' ? 'glassPremium' : 'space'
+  // Map variant to BaseCard variant (elevated/outlined map to premium/glass for visual)
+  const baseVariant = variant === 'glass' || variant === 'outlined' ? 'glass' : variant === 'premium' || variant === 'elevated' ? 'glassPremium' : 'space'
   
-  const variantStyles = {
+  const variantStyles: Record<NonNullable<SpaceCardProps['variant']>, string> = {
     default: '',
     premium: 'shadow-cyan-500/10',
     interactive: '',
     glass: '',
     neon: 'border-cyan-400 shadow-cyan-500/30',
+    elevated: 'shadow-cyan-500/10',
+    outlined: 'border-cyan-500/30',
   }
   
   const glowStyles = glow

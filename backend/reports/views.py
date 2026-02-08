@@ -13,7 +13,14 @@ from .models import ReportTemplate, GeneratedReport, ScheduledReport, ReportComp
 from .serializers import (
     ReportTemplateSerializer, GeneratedReportSerializer, ScheduledReportSerializer, ReportComparisonSerializer
 )
-from numerology.models import Person, PersonNumerologyProfile
+from numerology.models import (
+    Person,
+    PersonNumerologyProfile,
+    WeeklyReport,
+    YearlyReport,
+    NameReport,
+    PhoneReport,
+)
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
@@ -223,10 +230,96 @@ def bulk_generate_reports(request):
     return Response(response_data, status=status.HTTP_200_OK if not errors else status.HTTP_207_MULTI_STATUS)
 
 
+def _unified_report_list(user, limit=50):
+    """
+    Build a unified list of report-like items from template reports and numerology reports.
+    Each item has: id, source, report_type, title, generated_at, detail_url.
+    """
+    from django.urls import reverse
+    items = []
+    # Template-based reports (reports app)
+    for r in GeneratedReport.objects.filter(user=user).select_related('template', 'person').order_by('-generated_at')[:limit]:
+        items.append({
+            'id': str(r.id),
+            'source': 'template',
+            'report_type': r.template.report_type if r.template_id else 'basic',
+            'title': r.title,
+            'generated_at': r.generated_at.isoformat() if r.generated_at else None,
+            'detail_url': f'/api/v1/reports/reports/{r.id}/',
+            'person_name': r.person.name if r.person_id else None,
+        })
+    # Numerology reports: weekly
+    for r in WeeklyReport.objects.filter(user=user).select_related('person').order_by('-week_start_date')[:10]:
+        title = f"Weekly Report — Week {r.week_number}, {r.year}"
+        if r.person_id:
+            title = f"{r.person.name} — {title}"
+        items.append({
+            'id': str(r.id),
+            'source': 'numerology',
+            'report_type': 'weekly',
+            'title': title,
+            'generated_at': r.generated_at.isoformat() if r.generated_at else None,
+            'detail_url': f'/api/v1/numerology/weekly-report/?week_start={r.week_start_date}&year={r.year}',
+        })
+    # Numerology reports: yearly
+    for r in YearlyReport.objects.filter(user=user).select_related('person').order_by('-year')[:10]:
+        title = f"Yearly Report — {r.year}"
+        if r.person_id:
+            title = f"{r.person.name} — {title}"
+        items.append({
+            'id': str(r.id),
+            'source': 'numerology',
+            'report_type': 'yearly',
+            'title': title,
+            'generated_at': r.generated_at.isoformat() if r.generated_at else None,
+            'detail_url': f'/api/v1/numerology/yearly-report/{r.year}/',
+        })
+    # Name reports (latest per user)
+    for r in NameReport.objects.filter(user=user).order_by('-computed_at')[:10]:
+        items.append({
+            'id': str(r.id),
+            'source': 'numerology',
+            'report_type': 'name',
+            'title': f"Name Report — {r.name} ({r.get_name_type_display()}, {r.system})",
+            'generated_at': r.computed_at.isoformat() if r.computed_at else None,
+            'detail_url': f'/api/v1/numerology/name-reports/{r.id}/',
+        })
+    # Phone reports (latest per user)
+    for r in PhoneReport.objects.filter(user=user).order_by('-computed_at')[:10]:
+        items.append({
+            'id': str(r.id),
+            'source': 'numerology',
+            'report_type': 'phone',
+            'title': f"Phone Report — {PhoneReport.mask_phone(r.phone_e164)} ({r.method})",
+            'generated_at': r.computed_at.isoformat() if r.computed_at else None,
+            'detail_url': f'/api/v1/numerology/phone-reports/{r.id}/',
+        })
+    # Sort all by generated_at descending
+    items.sort(key=lambda x: x['generated_at'] or '', reverse=True)
+    return items[:limit]
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def unified_report_list(request):
+    """
+    Unified list of report-like items: template reports and numerology reports.
+    Use source and report_type to distinguish; detail_url points to the detail endpoint.
+    """
+    user = request.user
+    limit = min(int(request.query_params.get('limit', 30)), 100)
+    items = _unified_report_list(user, limit=limit)
+    return Response({
+        'count': len(items),
+        'results': items,
+        'sources': {'template': 'Template-based reports', 'numerology': 'Numerology reports (weekly, yearly, name, phone)'},
+    }, status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_generated_reports(request):
-    """Get user's generated reports."""
+    """Get user's generated reports (template-based only)."""
     user = request.user
     
     # Get pagination params

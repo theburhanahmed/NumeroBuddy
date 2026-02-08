@@ -13,6 +13,7 @@ import {
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 import { useAuth } from '@/contexts/auth-context';
 import { peopleAPI } from '@/lib/numerology-api';
 import { Person } from '@/types';
@@ -97,10 +98,8 @@ export default function EditPersonPage() {
     return (
       <CosmicPageLayout>
         <div className="max-w-2xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-12 bg-[#1a2942]/40 rounded w-1/3 mb-8"></div>
-            <div className="h-96 bg-[#1a2942]/40 rounded-2xl"></div>
-          </div>
+          <CosmicSkeletonLoader variant="text" className="mb-8" />
+          <CosmicSkeletonLoader variant="card" className="h-96" />
         </div>
       </CosmicPageLayout>
     );

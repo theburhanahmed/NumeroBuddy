@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { TypeIcon, SparklesIcon, ChevronRightIcon, Loader2, AlertCircle } from 'lucide-react';
+import { TypeIcon, SparklesIcon, ChevronRightIcon, Loader2, AlertCircle, UserIcon } from 'lucide-react';
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
@@ -10,6 +10,7 @@ import { MagneticCard } from '@/components/magnetic/magnetic-card';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { nameNumerologyAPI, type NamePreview } from '@/lib/numerology-api';
+import { userAPI } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -17,10 +18,41 @@ export default function NameNumerology() {
   const { tier } = useSubscription();
   const { user } = useAuth();
   const [name, setName] = useState('');
+  const [analyzeAnother, setAnalyzeAnother] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nameAnalysis, setNameAnalysis] = useState<NamePreview | null>(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) {
+        setProfileLoading(false);
+        return;
+      }
+      try {
+        const res = await userAPI.getProfile();
+        const data = res.data?.user || res.data;
+        const fullName = data?.full_name || user?.full_name || '';
+        if (fullName && !analyzeAnother) {
+          setName(fullName);
+        }
+      } catch {
+        // Keep empty if fetch fails
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    loadProfile();
+  }, [user, analyzeAnother]);
+
+  const handleAnalyzeAnother = () => {
+    setAnalyzeAnother(true);
+    setName('');
+    setShowResults(false);
+    setNameAnalysis(null);
+  };
 
   const handleCalculate = async () => {
     if (!name.trim()) {
@@ -92,7 +124,7 @@ export default function NameNumerology() {
             <MagneticCard variant="liquid-premium" className="card-padding-lg">
               <div className="liquid-glass-content">
                 <h2 className="text-2xl font-bold text-white mb-4">
-                  Name Analysis Calculator
+                  {analyzeAnother ? 'Analyze Another Name' : 'Your Name Analysis'}
                 </h2>
                 <p className="text-white/80 mb-6">
                   Your name carries vibrational energy that influences your
@@ -101,9 +133,24 @@ export default function NameNumerology() {
 
                 <div className="mb-6">
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Full Name
+                    {analyzeAnother ? 'Name to analyze' : 'Your Full Name'}
                   </label>
-                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Enter your full name" className="w-full px-4 py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-gray-300 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-500" />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={analyzeAnother ? 'Enter name to analyze' : 'Enter your full name'}
+                    className="w-full px-4 py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-gray-300 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-500"
+                  />
+                  {!analyzeAnother && !profileLoading && (
+                    <button
+                      type="button"
+                      onClick={handleAnalyzeAnother}
+                      className="mt-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                    >
+                      Analyze another name
+                    </button>
+                  )}
                 </div>
 
                 <TouchOptimizedButton 
@@ -119,7 +166,7 @@ export default function NameNumerology() {
                       Analyzing...
                     </>
                   ) : (
-                    'Analyze Name'
+                    analyzeAnother ? 'Analyze Name' : 'Analyze Your Name'
                   )}
                 </TouchOptimizedButton>
                 

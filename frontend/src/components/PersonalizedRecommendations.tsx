@@ -1,6 +1,8 @@
+'use client';
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { SparklesIcon, HeartIcon, TrendingUpIcon, BookOpenIcon, ArrowRightIcon } from 'lucide-react';
 import { SpaceCard } from './SpaceCard';
 interface Recommendation {
@@ -56,7 +58,7 @@ const recommendations: Recommendation[] = [{
   priority: 'low'
 }];
 export function PersonalizedRecommendations() {
-  const navigate = useNavigate();
+  const router = useRouter();
   return <SpaceCard variant="premium" className="p-6">
       {/* Header */}
       <div className="mb-6">
@@ -78,7 +80,7 @@ export function PersonalizedRecommendations() {
         y: 0
       }} transition={{
         delay: index * 0.1
-      }} onClick={() => navigate(rec.route)} className="p-6 rounded-xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer group relative overflow-hidden">
+      }} onClick={() => router.push(rec.route)} className="p-6 rounded-xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer group relative overflow-hidden">
             {/* Priority Badge */}
             {rec.priority === 'high' && <div className="absolute top-4 right-4">
                 <span className="px-2 py-1 bg-cyan-500/20 border border-cyan-400/30 rounded-full text-cyan-400 text-xs font-semibold">

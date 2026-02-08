@@ -61,8 +61,9 @@ def generate_daily_readings():
             
             # Get user's numerology profile for personalized reading
             from .models import NumerologyProfile
+            from .profile_utils import get_numerology_profile
             try:
-                numerology_profile = NumerologyProfile.objects.get(user=user)
+                numerology_profile = get_numerology_profile(user)
                 user_profile = {
                     'life_path_number': numerology_profile.life_path_number,
                     'destiny_number': numerology_profile.destiny_number,
@@ -558,7 +559,8 @@ def generate_detailed_readings_for_profile(user_id):
     try:
         # Verify profile exists
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            from .profile_utils import get_numerology_profile
+            profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             logger.error(f'Numerology profile not found for user {user_id}')
             return {'error': 'Numerology profile not found'}

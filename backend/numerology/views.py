@@ -16,7 +16,7 @@ from .models import (
     WeeklyReport, YearlyReport, PhoneReport, HealthNumerologyProfile, NameCorrection,
     SpiritualNumerologyProfile, PredictiveCycle, GenerationalAnalysis, KarmicContract,
     FengShuiAnalysis, SpaceOptimization, MentalStateTracking, MentalStateAnalysis,
-    SoulContract, KarmicTimeline, RebirthCycle, BreakthroughYear, CrisisYear, LifeMilestone,
+    SoulContract, KarmicTimeline, RebirthCycle, PredictiveCycle, LifeMilestone,
     FamilyUnitProfile, RoomNumerology, EmotionalCycle
 )
 from .serializers import (
@@ -34,6 +34,8 @@ from .compatibility import CompatibilityAnalyzer
 from .interpretations import get_interpretation, get_all_interpretations
 from .reading_generator import DailyReadingGenerator
 from .cache import NumerologyCache
+from .profile_utils import get_numerology_profile, invalidate_profile_cache, ensure_numerology_profile_from_user_profile
+from .cache_decorators import cache_reading, cache_compatibility, cache_report
 from .name_numerology import compute_name_numbers
 from .tasks import generate_name_report, generate_phone_report
 from .phone_numerology import sanitize_and_validate_phone, compute_phone_numerology, compute_compatibility_score
@@ -160,6 +162,8 @@ def calculate_numerology_profile(request):
             }
         )
         
+        invalidate_profile_cache(user)
+        
         serializer = NumerologyProfileSerializer(profile)
         
         # Log activity
@@ -187,7 +191,7 @@ def calculate_numerology_profile(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_numerology_profile(request):
+def numerology_profile_view(request):
     """
     Get user's numerology profile.
     
@@ -222,21 +226,20 @@ def get_numerology_profile(request):
     if cached_profile:
         return Response(cached_profile, status=status.HTTP_200_OK)
     
-    # Get from database
+    # Get from database (or create from UserProfile if user has name + birth date)
     try:
-        profile = NumerologyProfile.objects.get(user=user)
-        serializer = NumerologyProfileSerializer(profile)
-        
-        # Cache the result
-        # Convert serializer data to dict to satisfy type checker
-        profile_data = dict(serializer.data) if not isinstance(serializer.data, dict) else serializer.data
-        NumerologyCache.set_profile(str(user.id), profile_data)
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        profile = get_numerology_profile(user)
     except NumerologyProfile.DoesNotExist:
-        return Response({
-            'error': 'Profile not found. Please calculate your profile first.'
-        }, status=status.HTTP_404_NOT_FOUND)
+        profile = ensure_numerology_profile_from_user_profile(user)
+        if not profile:
+            return Response({
+                'error': 'Profile not found. Please complete your profile with full name and birth date, or calculate your profile first.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = NumerologyProfileSerializer(profile)
+    profile_data = dict(serializer.data) if not isinstance(serializer.data, dict) else serializer.data
+    NumerologyCache.set_profile(str(user.id), profile_data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -246,7 +249,7 @@ def get_birth_chart(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get interpretations for all numbers
         interpretations = {}
@@ -299,7 +302,7 @@ def get_lo_shu_grid(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get user info
         user_full_name = None
@@ -378,7 +381,7 @@ def compare_lo_shu_grids(request):
     try:
         # Get person 1 (can be user or a Person)
         if person1_id == 'self':
-            profile1 = NumerologyProfile.objects.get(user=user)
+            profile1 = get_numerology_profile(user)
             person1_name = user.full_name or user.email
         else:
             person1 = Person.objects.get(id=person1_id, user=user, is_active=True)
@@ -387,7 +390,7 @@ def compare_lo_shu_grids(request):
         
         # Get person 2
         if person2_id == 'self':
-            profile2 = NumerologyProfile.objects.get(user=user)
+            profile2 = get_numerology_profile(user)
             person2_name = user.full_name or user.email
         else:
             person2 = Person.objects.get(id=person2_id, user=user, is_active=True)
@@ -478,7 +481,7 @@ def get_lo_shu_arrows(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         user_full_name = None
         if hasattr(user, 'full_name') and user.full_name:
@@ -523,7 +526,7 @@ def get_lo_shu_remedies(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         user_full_name = None
         if hasattr(user, 'full_name') and user.full_name:
@@ -575,7 +578,7 @@ def get_lo_shu_visualization(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         user_full_name = None
         if hasattr(user, 'full_name') and user.full_name:
@@ -628,7 +631,7 @@ def export_birth_chart_pdf(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
     except NumerologyProfile.DoesNotExist:
         return Response({
             'error': 'Profile not found. Please calculate your profile first.'
@@ -705,6 +708,7 @@ def export_birth_chart_pdf(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@cache_reading
 def get_daily_reading(request):
     """Get daily numerology reading for user."""
     user = request.user
@@ -753,7 +757,7 @@ def get_daily_reading(request):
             
             # Get user's numerology profile for personalization
             try:
-                numerology_profile = NumerologyProfile.objects.get(user=user)
+                numerology_profile = get_numerology_profile(user)
                 user_profile = {
                     'life_path_number': numerology_profile.life_path_number,
                     'destiny_number': numerology_profile.destiny_number,
@@ -853,7 +857,7 @@ def get_pinnacles_detailed(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = PinnaclesService(profile.calculation_system)
         
         pinnacle_ages = service.calculate_pinnacle_ages(user.profile.date_of_birth)
@@ -900,7 +904,7 @@ def get_pinnacles_timeline(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = PinnaclesService(profile.calculation_system)
         
         pinnacle_ages = service.calculate_pinnacle_ages(user.profile.date_of_birth)
@@ -964,7 +968,7 @@ def get_challenge_remedies(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = PinnaclesService(profile.calculation_system)
         
         challenges = service.calculator.calculate_challenges(user.profile.date_of_birth)
@@ -1027,7 +1031,7 @@ def get_life_path_analysis(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
     except NumerologyProfile.DoesNotExist:
         return Response({
             'error': 'Please calculate your numerology profile first.'
@@ -1056,6 +1060,7 @@ def get_life_path_analysis(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@cache_compatibility
 def check_compatibility(request):
     """Check compatibility between user and another person."""
     from .subscription_utils import can_access_feature
@@ -1094,7 +1099,7 @@ def check_compatibility(request):
     
     try:
         # Get user's numerology profile
-        user_profile = NumerologyProfile.objects.get(user=user)
+        user_profile = get_numerology_profile(user)
         
         # Calculate partner's numerology profile
         calculator = NumerologyCalculator()
@@ -1209,7 +1214,7 @@ def detailed_compatibility_breakdown(request):
         user_birth_date = datetime.strptime(user_birth_date_str, '%Y-%m-%d').date()
         partner_birth_date = datetime.strptime(partner_birth_date_str, '%Y-%m-%d').date()
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         calculator = NumerologyCalculator(profile.calculation_system)
         
         user_numbers = calculator.calculate_all(user_full_name, user_birth_date)
@@ -1256,7 +1261,7 @@ def relationship_timeline_predictions(request):
         partner_birth_date = datetime.strptime(partner_birth_date_str, '%Y-%m-%d').date()
         relationship_start_date = datetime.strptime(relationship_start_date_str, '%Y-%m-%d').date()
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         calculator = NumerologyCalculator(profile.calculation_system)
         
         user_numbers = calculator.calculate_all(user_full_name, user_birth_date)
@@ -1305,7 +1310,7 @@ def conflict_resolution_guidance(request):
         user_birth_date = datetime.strptime(user_birth_date_str, '%Y-%m-%d').date()
         partner_birth_date = datetime.strptime(partner_birth_date_str, '%Y-%m-%d').date()
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         calculator = NumerologyCalculator(profile.calculation_system)
         
         user_numbers = calculator.calculate_all(user_full_name, user_birth_date)
@@ -1349,7 +1354,7 @@ def communication_style_analysis(request):
         user_birth_date = datetime.strptime(user_birth_date_str, '%Y-%m-%d').date()
         partner_birth_date = datetime.strptime(partner_birth_date_str, '%Y-%m-%d').date()
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         calculator = NumerologyCalculator(profile.calculation_system)
         
         user_numbers = calculator.calculate_all(user_full_name, user_birth_date)
@@ -1410,7 +1415,7 @@ def get_personalized_remedies(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
     except NumerologyProfile.DoesNotExist:
         return Response({
             'error': 'Please calculate your numerology profile first.'
@@ -1645,6 +1650,7 @@ def track_remedy(request, remedy_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@cache_report
 def get_full_numerology_report(request):
     """Get comprehensive full numerology report combining birth date, name, and phone numerology."""
     from .subscription_utils import get_user_subscription_tier, get_available_features, can_access_feature
@@ -1654,7 +1660,7 @@ def get_full_numerology_report(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
     except NumerologyProfile.DoesNotExist:
         return Response({
             'error': 'Numerology profile not found. Please calculate your numerology profile first using the /api/v1/numerology/calculate/ endpoint.'
@@ -2053,7 +2059,7 @@ def export_full_numerology_report_pdf(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
     except NumerologyProfile.DoesNotExist:
         return Response({
             'error': 'Please calculate your numerology profile first.'
@@ -2317,7 +2323,7 @@ def get_raj_yog_detection(request, person_id=None):
             person_obj = person
         else:
             try:
-                profile = NumerologyProfile.objects.get(user=user)
+                profile = get_numerology_profile(user)
             except NumerologyProfile.DoesNotExist:
                 return Response({
                     'error': 'Numerology profile not found. Please calculate profile first.'
@@ -2403,7 +2409,7 @@ def generate_raj_yog_explanation(request, person_id=None):
                     'error': 'Raj Yog detection not found. Please detect Raj Yog first.'
                 }, status=status.HTTP_404_NOT_FOUND)
             
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
             numerology_profile = {
                 'life_path_number': profile.life_path_number,
                 'destiny_number': profile.destiny_number,
@@ -3635,7 +3641,7 @@ def optimize_business_name(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = AssetNumerologyService(profile.calculation_system)
         result = service.optimize_business_name(
             current_name,
@@ -3680,7 +3686,7 @@ def calculate_launch_dates(request):
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = AssetNumerologyService(profile.calculation_system)
         result = service.calculate_launch_date(
             owner_birth_date,
@@ -3722,7 +3728,7 @@ def analyze_business_cycles(request):
     try:
         launch_date = datetime.strptime(launch_date_str, '%Y-%m-%d').date()
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = AssetNumerologyService(profile.calculation_system)
         result = service.analyze_business_cycles(launch_date, int(years_ahead))
         return Response(result, status=status.HTTP_200_OK)
@@ -3762,7 +3768,7 @@ def calculate_financial_timing(request):
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = AssetNumerologyService(profile.calculation_system)
         result = service.calculate_financial_timing(
             owner_birth_date,
@@ -3812,7 +3818,7 @@ def analyze_team_compatibility(request):
                     'birth_date': birth_date
                 })
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = AssetNumerologyService(profile.calculation_system)
         result = service.analyze_team_compatibility(business_name, processed_members)
         return Response(result, status=status.HTTP_200_OK)
@@ -4160,7 +4166,7 @@ def analyze_global_influences(request):
         if year:
             year_int = int(year)
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = TimingNumerologyService(profile.calculation_system)
         result = service.analyze_global_influences(target_date, year_int)
         return Response(result, status=status.HTTP_200_OK)
@@ -4199,7 +4205,7 @@ def calculate_timing_compatibility(request):
         birth_date_2 = datetime.strptime(birth_date_2_str, '%Y-%m-%d').date()
         target_date = datetime.strptime(target_date_str, '%Y-%m-%d').date()
         
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         service = TimingNumerologyService(profile.calculation_system)
         result = service.calculate_timing_compatibility(birth_date_1, birth_date_2, target_date)
         return Response(result, status=status.HTTP_200_OK)
@@ -4376,7 +4382,7 @@ def get_health_analysis(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         user_full_name = None
         if hasattr(user, 'full_name') and user.full_name:
@@ -4451,7 +4457,7 @@ def get_health_risk_periods(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         user_full_name = None
         if hasattr(user, 'full_name') and user.full_name:
@@ -4506,7 +4512,7 @@ def analyze_health_compatibility(request):
     person2_birth_date_str = request.data.get('person2_birth_date')
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         user_full_name = None
         if hasattr(user, 'full_name') and user.full_name:
@@ -5020,7 +5026,7 @@ def feng_shui_analyze(request):
         
         # Get user's numerology profile
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return Response({
                 'error': 'Please calculate your numerology profile first'
@@ -5130,7 +5136,7 @@ def feng_shui_optimize_space(request):
         analysis = FengShuiAnalysis.objects.get(id=analysis_id, user=user)
         
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return Response({
                 'error': 'Please calculate your numerology profile first'
@@ -5193,7 +5199,7 @@ def get_energy_flow(request):
         analysis = FengShuiAnalysis.objects.get(id=analysis_id, user=user)
         
         try:
-            numerology_profile = NumerologyProfile.objects.get(user=user)
+            numerology_profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return Response({
                 'error': 'Numerology profile not found. Please calculate your profile first.'
@@ -5250,7 +5256,7 @@ def get_room_numerology(request):
         analysis = FengShuiAnalysis.objects.get(id=analysis_id, user=user)
         
         try:
-            numerology_profile = NumerologyProfile.objects.get(user=user)
+            numerology_profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return Response({
                 'error': 'Numerology profile not found.'
@@ -5325,7 +5331,7 @@ def check_direction_compatibility(request):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            numerology_profile = NumerologyProfile.objects.get(user=user)
+            numerology_profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return Response({
                 'error': 'Numerology profile not found.'
@@ -5484,7 +5490,7 @@ def mental_state_analyze(request):
         
         # Generate recommendations
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return Response({
                 'error': 'Please calculate your numerology profile first'
@@ -5579,7 +5585,7 @@ def get_wellbeing_recommendations(request):
     
     try:
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return Response({
                 'error': 'Please calculate your numerology profile first'
@@ -5621,7 +5627,7 @@ def get_mood_predictions(request):
     
     try:
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return Response({
                 'error': 'Please calculate your numerology profile first'
@@ -5721,7 +5727,7 @@ def get_health_numerology(request):
         )
         
         # Get numerology profile for calculation system
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         # Calculate health profile
@@ -5786,7 +5792,7 @@ def analyze_name_correction(request):
     
     try:
         # Get numerology profile for calculation system
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         # Analyze name
@@ -5854,7 +5860,7 @@ def get_spiritual_numerology(request):
         )
         
         # Get numerology profile for calculation system
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         # Calculate spiritual profile
@@ -5903,7 +5909,7 @@ def get_soul_contracts(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         user_full_name = None
@@ -5976,7 +5982,7 @@ def get_karmic_timeline(request):
                 'error': 'Birth date is required.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         forecast_years = int(request.query_params.get('forecast_years', 50))
@@ -6044,7 +6050,7 @@ def get_rebirth_cycles(request):
                 'error': 'Birth date is required.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         service = SpiritualNumerologyService(system=system)
@@ -6113,7 +6119,7 @@ def get_divine_gifts(request):
                 'error': 'Full name and birth date are required.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         service = SpiritualNumerologyService(system=system)
@@ -6159,7 +6165,7 @@ def get_meditation_timing(request):
                 'error': 'Birth date is required.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         # Get target date from query params or use today
@@ -6225,7 +6231,7 @@ def get_predictive_numerology(request):
         forecast_years = min(max(forecast_years, 5), 30)  # Limit between 5 and 30 years
         
         # Get numerology profile for calculation system
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         # Calculate predictive profile
@@ -6301,7 +6307,7 @@ def get_9_year_cycle(request):
                 'error': 'Birth date is required.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         forecast_years = int(request.query_params.get('forecast_years', 20))
@@ -6329,52 +6335,54 @@ def get_9_year_cycle(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_breakthrough_years(request):
-    """Get breakthrough year predictions."""
+    """Get breakthrough year predictions (stored in PredictiveCycle with cycle_type='breakthrough')."""
     from .subscription_utils import can_access_feature
-    from .models import BreakthroughYear
-    
+
     user = request.user
-    
+
     if not can_access_feature(user, 'numerology_predictive'):
         return Response({
             'error': 'Predictive Numerology is available for Elite plan subscribers.',
             'required_tier': 'elite',
             'feature': 'numerology_predictive'
         }, status=status.HTTP_403_FORBIDDEN)
-    
+
     try:
         if not user.profile.date_of_birth:
             return Response({
                 'error': 'Birth date is required.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         life_path = numerology_profile.life_path_number
-        
+
         forecast_years = int(request.query_params.get('forecast_years', 20))
         forecast_years = min(max(forecast_years, 5), 30)
-        
+
         service = PredictiveNumerologyService(system=system)
         breakthroughs = service._identify_breakthrough_years(
             user.profile.date_of_birth,
             life_path,
             forecast_years
         )
-        
-        # Save to database
-        BreakthroughYear.objects.filter(user=user).delete()
+
+        # Save to database (unified PredictiveCycle model)
+        PredictiveCycle.objects.filter(user=user, cycle_type='breakthrough').delete()
         for breakthrough in breakthroughs:
-            BreakthroughYear.objects.create(
+            PredictiveCycle.objects.create(
                 user=user,
+                cycle_type='breakthrough',
                 year=breakthrough['year'],
-                personal_year=breakthrough['personal_year'],
-                breakthrough_type=breakthrough['breakthrough_type'],
-                description=breakthrough['description'],
-                preparation=breakthrough['preparation'],
-                confidence_score=breakthrough.get('confidence_score', 75)
+                cycle_data={
+                    'personal_year': breakthrough['personal_year'],
+                    'breakthrough_type': breakthrough['breakthrough_type'],
+                    'description': breakthrough['description'],
+                    'preparation': breakthrough['preparation'],
+                },
+                confidence_score=breakthrough.get('confidence_score', 75),
             )
-        
+
         return Response({
             'success': True,
             'breakthrough_years': breakthroughs
@@ -6394,53 +6402,55 @@ def get_breakthrough_years(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_crisis_years(request):
-    """Get crisis year predictions."""
+    """Get crisis year predictions (stored in PredictiveCycle with cycle_type='crisis')."""
     from .subscription_utils import can_access_feature
-    from .models import CrisisYear
-    
+
     user = request.user
-    
+
     if not can_access_feature(user, 'numerology_predictive'):
         return Response({
             'error': 'Predictive Numerology is available for Elite plan subscribers.',
             'required_tier': 'elite',
             'feature': 'numerology_predictive'
         }, status=status.HTTP_403_FORBIDDEN)
-    
+
     try:
         if not user.profile.date_of_birth:
             return Response({
                 'error': 'Birth date is required.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         life_path = numerology_profile.life_path_number
-        
+
         forecast_years = int(request.query_params.get('forecast_years', 20))
         forecast_years = min(max(forecast_years, 5), 30)
-        
+
         service = PredictiveNumerologyService(system=system)
         crises = service._identify_crisis_years(
             user.profile.date_of_birth,
             life_path,
             forecast_years
         )
-        
-        # Save to database
-        CrisisYear.objects.filter(user=user).delete()
+
+        # Save to database (unified PredictiveCycle model)
+        PredictiveCycle.objects.filter(user=user, cycle_type='crisis').delete()
         for crisis in crises:
-            CrisisYear.objects.create(
+            PredictiveCycle.objects.create(
                 user=user,
+                cycle_type='crisis',
                 year=crisis['year'],
-                personal_year=crisis['personal_year'],
-                crisis_type=crisis['crisis_type'],
-                description=crisis['description'],
-                guidance=crisis['guidance'],
+                cycle_data={
+                    'personal_year': crisis['personal_year'],
+                    'crisis_type': crisis['crisis_type'],
+                    'description': crisis['description'],
+                    'guidance': crisis['guidance'],
+                    'preparation_steps': crisis.get('preparation_steps', []),
+                },
                 severity_level=crisis.get('severity_level', 'medium'),
-                preparation_steps=crisis.get('preparation_steps', [])
             )
-        
+
         return Response({
             'success': True,
             'crisis_years': crises
@@ -6478,7 +6488,7 @@ def get_opportunity_periods(request):
                 'error': 'Birth date is required.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         life_path = numerology_profile.life_path_number
         
@@ -6536,7 +6546,7 @@ def get_life_milestones(request):
                 'error': 'Full name and birth date are required.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         forecast_years = int(request.query_params.get('forecast_years', 50))
@@ -6606,7 +6616,7 @@ def get_yearly_forecast(request):
                 'error': 'Full name and birth date are required.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        numerology_profile = NumerologyProfile.objects.get(user=user)
+        numerology_profile = get_numerology_profile(user)
         system = numerology_profile.calculation_system
         
         # Get target year from query params or use current year
@@ -6677,7 +6687,7 @@ def get_chaldean_analysis(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get birth date
         try:
@@ -6808,7 +6818,7 @@ def get_detailed_lo_shu_grid(request):
     has_premium = can_access_feature(user, 'numerology_lo_shu_visualization')
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get user info
         user_full_name = None
@@ -6937,7 +6947,7 @@ def get_zodiac_numerology(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get birth date
         try:
@@ -7027,7 +7037,7 @@ def get_enhanced_attitude_number(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get birth date
         if not hasattr(user, 'profile') or not user.profile.date_of_birth:
@@ -7083,7 +7093,7 @@ def get_complete_core_numbers(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get birth date
         if not hasattr(user, 'profile') or not user.profile.date_of_birth:
@@ -7203,7 +7213,7 @@ def get_numerology_wheel(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get user info
         user_full_name = None
@@ -7255,7 +7265,7 @@ def get_numerology_timeline(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         if not user.profile.date_of_birth:
             return Response({
@@ -7303,7 +7313,7 @@ def get_numerology_comparison_charts(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         person_ids = request.data.get('person_ids', [])
         
         if not person_ids:
@@ -7375,7 +7385,7 @@ def get_numerology_heatmap(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get user info
         user_full_name = None
@@ -7427,7 +7437,7 @@ def get_3d_numerology_visualization(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         # Get user info
         user_full_name = None
@@ -7765,7 +7775,7 @@ def get_dashboard_insights(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         from .services.dashboard_service import DashboardService
         service = DashboardService()
@@ -7845,7 +7855,7 @@ def get_dashboard_recommendations(request):
     user = request.user
     
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         
         from .services.dashboard_service import DashboardService
         service = DashboardService()

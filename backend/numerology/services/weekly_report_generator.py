@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.core.cache import cache
 
 from ..models import DailyReading, NumerologyProfile, PersonNumerologyProfile, RajYogDetection
+from ..profile_utils import get_numerology_profile
 from ..numerology import NumerologyCalculator
 from ..interpretations import get_interpretation
 from .explanation_generator import get_explanation_generator
@@ -63,7 +64,7 @@ class WeeklyReportGenerator:
                     raise ValueError("Numerology profile not found for person")
             else:
                 try:
-                    profile = NumerologyProfile.objects.get(user=user)
+                    profile = get_numerology_profile(user)
                     numerology_profile = {
                         'life_path_number': profile.life_path_number,
                         'destiny_number': profile.destiny_number,

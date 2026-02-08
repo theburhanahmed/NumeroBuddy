@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
+import { useReducedMotion } from '@/hooks/use-reduced-motion'
 
 interface Particle {
   x: number
@@ -12,11 +13,13 @@ interface Particle {
 }
 
 export function AmbientParticles() {
+  const prefersReducedMotion = useReducedMotion()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const animationFrameRef = useRef<number>()
 
   useEffect(() => {
+    if (prefersReducedMotion) return
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -90,7 +93,9 @@ export function AmbientParticles() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [])
+  }, [prefersReducedMotion])
+
+  if (prefersReducedMotion) return null
 
   return (
     <canvas

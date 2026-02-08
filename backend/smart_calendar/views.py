@@ -14,6 +14,7 @@ from .serializers import (
 )
 from .services import CalendarService
 from numerology.models import NumerologyProfile
+from numerology.profile_utils import get_numerology_profile
 
 
 @api_view(['GET'])
@@ -70,7 +71,7 @@ def auspicious_dates(request):
     
     # Get user's birth date
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         if not user.profile.date_of_birth:
             return Response(
                 {'error': 'Birth date is required. Please update your profile.'},

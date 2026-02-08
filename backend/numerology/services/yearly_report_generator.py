@@ -7,6 +7,7 @@ from datetime import date, timedelta
 from django.utils import timezone
 
 from ..models import NumerologyProfile, PersonNumerologyProfile, RajYogDetection, WeeklyReport
+from ..profile_utils import get_numerology_profile
 from ..numerology import NumerologyCalculator
 from ..interpretations import get_interpretation
 from .explanation_generator import get_explanation_generator
@@ -65,7 +66,7 @@ class YearlyReportGenerator:
                     raise ValueError("Numerology profile not found for person. Please calculate the numerology profile first.")
             else:
                 try:
-                    profile = NumerologyProfile.objects.get(user=user)
+                    profile = get_numerology_profile(user)
                     numerology_profile = {
                         'life_path_number': profile.life_path_number,
                         'destiny_number': profile.destiny_number,

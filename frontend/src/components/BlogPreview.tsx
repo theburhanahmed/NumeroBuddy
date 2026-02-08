@@ -1,6 +1,8 @@
+'use client';
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { CalendarIcon, ClockIcon, ArrowRightIcon, TrendingUpIcon } from 'lucide-react';
 import { SpaceCard } from './SpaceCard';
 interface BlogPost {
@@ -48,7 +50,7 @@ const blogPosts: BlogPost[] = [{
   image: '💼'
 }];
 export function BlogPreview() {
-  const navigate = useNavigate();
+  const router = useRouter();
   return <section className="relative py-20 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -98,7 +100,7 @@ export function BlogPreview() {
           x: 0
         }} viewport={{
           once: true
-        }} onClick={() => navigate('/blog')} className="hidden md:flex items-center gap-2 px-6 py-3 bg#[#1a2942]/60 backdrop-blur-xl border border-cyan-500/30 rounded-xl text-white hover:border-cyan-400 transition-colors">
+        }} onClick={() => router.push('/blog')} className="hidden md:flex items-center gap-2 px-6 py-3 bg#[#1a2942]/60 backdrop-blur-xl border border-cyan-500/30 rounded-xl text-white hover:border-cyan-400 transition-colors">
             View All Posts
             <ArrowRightIcon className="w-4 h-4" />
           </motion.button>
@@ -114,7 +116,7 @@ export function BlogPreview() {
       }} viewport={{
         once: true
       }} className="mb-8">
-            <SpaceCard variant="premium" className="overflow-hidden cursor-pointer group" onClick={() => navigate(`/blog/${blogPosts[0].id}`)}>
+            <SpaceCard variant="premium" className="overflow-hidden cursor-pointer group" onClick={() => router.push(`/blog/${blogPosts[0].id}`)}>
               <div className="grid md:grid-cols-2 gap-8 p-8 md:p-12">
                 {/* Image */}
                 <div className="flex items-center justify-center text-9xl">
@@ -172,7 +174,7 @@ export function BlogPreview() {
         }} transition={{
           delay: index * 0.1
         }}>
-              <SpaceCard variant="default" className="h-full cursor-pointer group hover:border-cyan-500/40 transition-colors" onClick={() => navigate(`/blog/${post.id}`)}>
+              <SpaceCard variant="default" className="h-full cursor-pointer group hover:border-cyan-500/40 transition-colors" onClick={() => router.push(`/blog/${post.id}`)}>
                 <div className="p-6">
                   {/* Image */}
                   <div className="text-6xl mb-4 text-center">{post.image}</div>
@@ -221,7 +223,7 @@ export function BlogPreview() {
       }} viewport={{
         once: true
       }} className="md:hidden text-center mt-8">
-          <button onClick={() => navigate('/blog')} className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/30 rounded-xl text-white">
+          <button onClick={() => router.push('/blog')} className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/30 rounded-xl text-white">
             View All Posts
             <ArrowRightIcon className="w-4 h-4" />
           </button>

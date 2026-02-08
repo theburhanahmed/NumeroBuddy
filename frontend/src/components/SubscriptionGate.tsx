@@ -1,8 +1,9 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { LockIcon, CrownIcon, SparklesIcon, ArrowUpIcon } from 'lucide-react';
 import { useSubscription, SubscriptionTier } from '../contexts/SubscriptionContext';
-import { GlassButton } from './GlassButton';
+import { GlassButton } from '@/components/glassmorphism/glass-button';
 import { MagneticCard } from './MagneticCard';
 interface SubscriptionGateProps {
   feature: string;
@@ -18,6 +19,7 @@ export function SubscriptionGate({
   showPreview = false,
   previewContent
 }: SubscriptionGateProps) {
+  const router = useRouter();
   const {
     hasAccess,
     tier
@@ -105,7 +107,12 @@ export function SubscriptionGate({
               </span>
             </div>
 
-            <GlassButton variant="liquid" size="lg" className="w-full glass-glow mb-3">
+            <GlassButton
+              variant="liquid"
+              size="lg"
+              className="w-full glass-glow mb-3"
+              onClick={() => router.push(`/subscription/checkout?plan=${requiredTier === 'enterprise' ? 'elite' : requiredTier}`)}
+            >
               Upgrade to {info.name} - {info.price}
             </GlassButton>
 

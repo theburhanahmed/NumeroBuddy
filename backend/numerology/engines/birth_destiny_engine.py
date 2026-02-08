@@ -1,9 +1,11 @@
 import json
 import os
+from .conflict_resolver import ConflictResolver
 
 class NumerologyBaseEngine:
     def __init__(self):
         self.rules_path = os.path.join(os.getcwd(), 'rules')
+        self.conflict_resolver = ConflictResolver()
 
     def load_rules(self, filename):
         with open(os.path.join(self.rules_path, filename), 'r') as f:
@@ -33,10 +35,15 @@ class BirthDestinyEngine(NumerologyBaseEngine):
         full_dob_sum = day + month + year
         destiny_number = self.reduce_to_single_digit(full_dob_sum)
         
-        # Check for Master Numbers
+        # Check for Master Numbers - preserve them
         master_numbers = []
-        if self.sum_digits(day) in [11, 22]:
-            master_numbers.append(self.sum_digits(day))
+        day_sum = self.sum_digits(day)
+        if day_sum in [11, 22, 33]:
+            master_numbers.append(day_sum)
+            # Validate master number preservation
+            master_warning = self.conflict_resolver.validate_master_number_preservation(
+                day_sum, "birth day calculation"
+            )
         
         # Reduction of full DOB for master check
         def get_master_sum(d, m, y):
@@ -48,7 +55,10 @@ class BirthDestinyEngine(NumerologyBaseEngine):
         m_sum = get_master_sum(day, month, year)
         if m_sum:
             master_numbers.append(m_sum)
-
+            master_warning = self.conflict_resolver.validate_master_number_preservation(
+                m_sum, "destiny number calculation"
+            )
+        
         # Check for Karmic Debt
         karmic_debts = []
         # Day checks
@@ -59,11 +69,29 @@ class BirthDestinyEngine(NumerologyBaseEngine):
         birth_traits = next((item for item in self.rules['outputs'] if item['number'] == birth_number), {})
         destiny_traits = next((item for item in self.rules['outputs'] if item['number'] == destiny_number), {})
         
+        # Rule-based warnings
         warnings = []
         for debt in karmic_debts:
             warning = next((w for w in self.rules['warnings'] if w['id'] == f"karmic_debt_{debt}"), None)
             if warning:
                 warnings.append(warning)
+        
+        # Conflict resolution validation
+        conflict_warnings = self.conflict_resolver.validate_karmic_debts([day, full_dob_sum])
+        conflict_warnings.extend(self.conflict_resolver.validate_risky_numbers([birth_number, destiny_number]))
+        
+        # Sun worship exclusion check
+        sun_warning = self.conflict_resolver.validate_sun_worship_exclusion(birth_number, destiny_number)
+        if sun_warning:
+            conflict_warnings.append(sun_warning)
+        
+        # Combine all warnings
+        all_warnings = warnings + conflict_warnings
+        
+        # Check for opposite number conflict (internal)
+        opposite_warning = self.conflict_resolver.validate_opposite_numbers(birth_number, destiny_number)
+        if opposite_warning:
+            all_warnings.append(opposite_warning)
 
         return {
             "birth_number": birth_number,
@@ -72,6 +100,6 @@ class BirthDestinyEngine(NumerologyBaseEngine):
             "karmic_debts": karmic_debts,
             "birth_traits": birth_traits,
             "destiny_traits": destiny_traits,
-            "warnings": warnings,
+            "warnings": all_warnings,
             "mark": "deterministic"
         }

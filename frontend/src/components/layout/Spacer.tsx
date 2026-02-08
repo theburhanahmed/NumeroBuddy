@@ -16,19 +16,19 @@ export interface SpacerProps {
 
 const Spacer = React.forwardRef<HTMLDivElement, SpacerProps>(
   ({ size = 4, axis = "y", className }, ref) => {
-    const spacingValue = 
+    const spacingValue: string | number =
       size === "section-sm" ? spacing.section.sm :
       size === "section-md" ? spacing.section.md :
       size === "section-lg" ? spacing.section.lg :
-      spacing[size as keyof typeof spacing] || spacing[4]
+      (spacing as unknown as Record<string, string | number>)[String(size)] ?? spacing[4]
 
     const style: React.CSSProperties = {}
     
     if (axis === "x" || axis === "both") {
-      style.width = spacingValue
+      style.width = spacingValue as React.CSSProperties['width']
     }
     if (axis === "y" || axis === "both") {
-      style.height = spacingValue
+      style.height = spacingValue as React.CSSProperties['height']
     }
 
     return (

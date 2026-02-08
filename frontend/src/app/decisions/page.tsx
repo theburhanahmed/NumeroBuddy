@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { motion } from 'framer-motion';
 import { Lightbulb, TrendingUp, CheckCircle, XCircle } from 'lucide-react';
+import { GlassBackground } from '@/components/glass/glass-background';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { GlassButton } from '@/components/glassmorphism/glass-button';
-import { FloatingOrbs } from '@/components/ui/floating-orbs';
-import { AmbientParticles } from '@/components/ui/ambient-particles';
 import { decisionAPI, DecisionAnalysis } from '@/lib/numerology-api';
 
 export default function DecisionsPage() {
@@ -38,16 +37,16 @@ export default function DecisionsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Loading...</p>
+      <div className="relative min-h-screen bg-[#0a1628] flex items-center justify-center">
+        <GlassBackground starCount={80} />
+        <p className="relative z-10 text-white">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 relative overflow-hidden p-4 sm:p-8">
-      <AmbientParticles />
-      <FloatingOrbs />
+    <div className="min-h-screen bg-[#0a1628] relative overflow-hidden p-4 sm:p-8">
+      <GlassBackground starCount={80} />
       <div className="relative z-10">
       <div className="max-w-4xl mx-auto">
         <motion.h1

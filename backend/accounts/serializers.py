@@ -339,6 +339,7 @@ class PasswordResetTokenConfirmSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for user profile."""
     email = serializers.EmailField(source='user.email', read_only=True)
+    phone = serializers.CharField(source='user.phone', read_only=True, allow_null=True)
     full_name = serializers.CharField(
         source='user.full_name',
         max_length=100,
@@ -347,26 +348,32 @@ class UserProfileSerializer(serializers.ModelSerializer):
     )
     is_premium = serializers.BooleanField(source='user.is_premium', read_only=True)
     subscription_plan = serializers.CharField(source='user.subscription_plan', read_only=True)
+    profile_completed_at = serializers.DateTimeField(read_only=True)
     
     class Meta:
         model = UserProfile
-        fields = ['email', 'full_name', 'date_of_birth', 'gender', 'timezone', 'location', 'profile_picture_url', 'bio', 'is_premium', 'subscription_plan']
-        read_only_fields = ['email', 'is_premium', 'subscription_plan']
+        fields = ['email', 'phone', 'full_name', 'date_of_birth', 'gender', 'timezone', 'location', 'profile_picture_url', 'bio', 'is_premium', 'subscription_plan', 'profile_completed_at']
+        read_only_fields = ['email', 'is_premium', 'subscription_plan', 'profile_completed_at']
     
     def update(self, instance, validated_data):
         """Update both UserProfile and User model fields."""
-        # Extract user-related fields
-        user_data = validated_data.pop('user', {})
-        
-        # Update User model if full_name is provided
-        if 'full_name' in user_data:
+        full_name = validated_data.pop('full_name', None)
+        if full_name is None:
+            user_data = validated_data.pop('user', None)
+            full_name = user_data.get('full_name') if isinstance(user_data, dict) else None
+        if full_name is not None:
             user = instance.user
-            user.full_name = user_data['full_name']
+            user.full_name = full_name
             user.save(update_fields=['full_name', 'updated_at'])
         
         # Update UserProfile fields
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            if hasattr(instance, attr):
+                setattr(instance, attr, value)
+        
+        # Mark profile as complete when required fields are present
+        if instance.date_of_birth and instance.user.full_name and not instance.profile_completed_at:
+            instance.profile_completed_at = timezone.now()
         
         instance.save()
         return instance

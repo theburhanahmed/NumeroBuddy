@@ -87,7 +87,8 @@ def ai_chat(request):
         # Get user's numerology profile
         try:
             from numerology.models import NumerologyProfile
-            numerology_profile = NumerologyProfile.objects.get(user=user)
+            from numerology.profile_utils import get_numerology_profile
+            numerology_profile = get_numerology_profile(user)
             life_path = numerology_profile.life_path_number
             destiny = numerology_profile.destiny_number
             soul_urge = numerology_profile.soul_urge_number

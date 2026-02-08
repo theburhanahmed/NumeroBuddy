@@ -8,12 +8,14 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from django.db import models
 from datetime import timedelta
-from .models import DashboardWidget, UserActivity, QuickInsight
+from .models import DashboardWidget, QuickInsight
+from analytics.models import UserActivityLog
 from .serializers import (
     DashboardWidgetSerializer, UserActivitySerializer,
     QuickInsightSerializer, DashboardOverviewSerializer
 )
 from numerology.models import NumerologyProfile, DailyReading
+from numerology.profile_utils import get_numerology_profile
 from numerology.serializers import NumerologyProfileSerializer, DailyReadingSerializer
 
 
@@ -39,8 +41,8 @@ def dashboard_overview(request):
     ).order_by('-priority', '-created_at')[:5]
     insight_serializer = QuickInsightSerializer(insights, many=True)
     
-    # Get recent activities
-    recent_activities = UserActivity.objects.filter(
+    # Get recent activities (from consolidated analytics.UserActivityLog)
+    recent_activities = UserActivityLog.objects.filter(
         user=user
     ).order_by('-created_at')[:10]
     activity_serializer = UserActivitySerializer(recent_activities, many=True)
@@ -59,7 +61,7 @@ def dashboard_overview(request):
     # Get numerology profile
     numerology_profile_data = None
     try:
-        profile = NumerologyProfile.objects.get(user=user)
+        profile = get_numerology_profile(user)
         numerology_profile_data = NumerologyProfileSerializer(profile).data
     except NumerologyProfile.DoesNotExist:
         pass

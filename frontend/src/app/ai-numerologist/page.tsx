@@ -10,7 +10,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { MessageSquareIcon, SparklesIcon } from 'lucide-react'
-import { AccessibleSpaceBackground } from '@/components/space/accessible-space-background'
+import { GlassBackground } from '@/components/glass/glass-background'
 import { LandingNav } from '@/components/landing/landing-nav'
 import { LandingFooter } from '@/components/landing/landing-footer'
 import { SpaceCard } from '@/components/space/space-card'
@@ -22,8 +22,8 @@ export default function AINumerologistPage() {
   const router = useRouter()
 
   return (
-    <div className="relative min-h-screen">
-      <AccessibleSpaceBackground />
+    <div className="relative min-h-screen bg-[#0a1628] overflow-hidden">
+      <GlassBackground starCount={80} />
       <LandingNav />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8 pt-28">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 interface Particle {
   x: number;
   y: number;

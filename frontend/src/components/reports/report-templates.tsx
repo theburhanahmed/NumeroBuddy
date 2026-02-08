@@ -5,18 +5,7 @@ import { motion } from 'framer-motion';
 import { FileText, Star, Plus, Edit, Trash2, Download } from 'lucide-react';
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
-import { reportAPI } from '@/lib/numerology-api';
-
-interface ReportTemplate {
-  id: string;
-  name: string;
-  description: string;
-  report_type: string;
-  is_premium: boolean;
-  is_custom: boolean;
-  owner?: string;
-  created_at: string;
-}
+import { reportAPI, type ReportTemplate } from '@/lib/numerology-api';
 
 interface ReportTemplatesProps {
   onCreateTemplate?: () => void;
@@ -146,7 +135,7 @@ export function ReportTemplates({ onCreateTemplate, onSelectTemplate }: ReportTe
 
             <div className="flex items-center justify-between text-xs text-white/50">
               <span className="capitalize">{template.report_type.replace('_', ' ')}</span>
-              {template.is_custom && (
+              {(template.is_custom ?? false) && (
                 <span className="text-cyan-400">Custom</span>
               )}
             </div>
@@ -156,8 +145,7 @@ export function ReportTemplates({ onCreateTemplate, onSelectTemplate }: ReportTe
                 <TouchOptimizedButton
                   variant="secondary"
                   size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     // Handle edit
                   }}
                   icon={<Edit className="w-3 h-3" />}
@@ -167,10 +155,7 @@ export function ReportTemplates({ onCreateTemplate, onSelectTemplate }: ReportTe
                 <TouchOptimizedButton
                   variant="secondary"
                   size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteTemplate(template.id);
-                  }}
+                  onClick={() => handleDeleteTemplate(template.id)}
                   icon={<Trash2 className="w-3 h-3" />}
                 >
                   Delete

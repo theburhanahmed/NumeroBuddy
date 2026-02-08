@@ -5,11 +5,10 @@ import { motion } from 'framer-motion';
 import { FileTextIcon, CheckCircleIcon } from 'lucide-react';
 import { LandingNav } from '@/components/landing/landing-nav';
 import { LandingFooter } from '@/components/landing/landing-footer';
+import { GlassBackground } from '@/components/glass/glass-background';
 import { GlassCard } from '@/components/glassmorphism/glass-card';
 import { LiquidGlassHero } from '@/components/ui/liquid-glass-hero';
 import { MagneticCard } from '@/components/magnetic/magnetic-card';
-import { FloatingOrbs } from '@/components/ui/floating-orbs';
-import { AmbientParticles } from '@/components/ui/ambient-particles';
 export default function TermsOfService() {
   const sections = [{
     title: '1. Acceptance of Terms',
@@ -40,9 +39,8 @@ export default function TermsOfService() {
     title: '8. Changes to Terms',
     content: 'We reserve the right to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms on this page.'
   }];
-  return <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 transition-colors duration-500 relative overflow-hidden">
-      <AmbientParticles />
-      <FloatingOrbs />
+  return <div className="w-full min-h-screen bg-[#0a1628] relative overflow-hidden">
+      <GlassBackground starCount={80} />
       <LandingNav />
 
       {/* Hero Section */}

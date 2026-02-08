@@ -352,6 +352,11 @@ def _handle_subscription_updated(data: dict):
     
     try:
         subscription = Subscription.objects.get(stripe_subscription_id=subscription_id)
+        # Get plan from Stripe metadata if available (handles external Stripe Checkout)
+        plan_from_metadata = (data.get('metadata') or {}).get('plan')
+        if plan_from_metadata and plan_from_metadata in ('free', 'basic', 'premium', 'elite'):
+            subscription.plan = plan_from_metadata
+
         subscription.status = status
         subscription.current_period_start = datetime.fromtimestamp(
             data.get('current_period_start'),
@@ -364,14 +369,17 @@ def _handle_subscription_updated(data: dict):
         subscription.cancel_at_period_end = data.get('cancel_at_period_end', False)
         subscription.save()
         
-        # Update user premium status
+        # Update user premium status and plan (keep User in sync with Subscription)
         user = subscription.user
         if status == 'active':
             user.is_premium = True
+            user.subscription_plan = subscription.plan
             user.premium_expiry = subscription.current_period_end
         else:
             user.is_premium = False
-        user.save(update_fields=['is_premium', 'premium_expiry'])
+            user.subscription_plan = 'free'
+            user.premium_expiry = None
+        user.save(update_fields=['is_premium', 'subscription_plan', 'premium_expiry'])
     except Subscription.DoesNotExist:
         logger.warning(f"Subscription not found: {subscription_id}")
     except Exception as e:
@@ -401,7 +409,9 @@ def _handle_subscription_deleted(data: dict):
 
 
 def _handle_invoice_payment_succeeded(data: dict):
-    """Handle successful invoice payment."""
+    """Handle successful invoice payment.
+    Syncs User from Subscription to handle race with customer.subscription.updated.
+    """
     subscription_id = data.get('subscription')
     amount = Decimal(data.get('amount_paid', 0)) / 100
     customer_id = data.get('customer')
@@ -409,9 +419,22 @@ def _handle_invoice_payment_succeeded(data: dict):
     if not subscription_id:
         return
     
+    # subscription_id can be string or expanded object
+    if isinstance(subscription_id, dict):
+        subscription_id = subscription_id.get('id')
+    if not subscription_id:
+        return
+
     try:
         subscription = Subscription.objects.get(stripe_subscription_id=subscription_id)
         user = subscription.user
+
+        # Sync User from Subscription (handles race with subscription.updated)
+        if subscription.status == 'active':
+            user.is_premium = True
+            user.subscription_plan = subscription.plan
+            user.premium_expiry = subscription.current_period_end
+            user.save(update_fields=['is_premium', 'subscription_plan', 'premium_expiry'])
         
         # Create billing history entry
         BillingHistory.objects.create(

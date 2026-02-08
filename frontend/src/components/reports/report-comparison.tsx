@@ -5,15 +5,7 @@ import { motion } from 'framer-motion';
 import { GitCompare, FileText, Download } from 'lucide-react';
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
-import { reportAPI } from '@/lib/numerology-api';
-
-interface GeneratedReport {
-  id: string;
-  title: string;
-  report_type: string;
-  generated_at: string;
-  person_name?: string;
-}
+import { reportAPI, type GeneratedReport } from '@/lib/numerology-api';
 
 interface ReportComparisonData {
   id: string;

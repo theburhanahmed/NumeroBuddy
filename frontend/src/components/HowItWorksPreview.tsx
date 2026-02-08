@@ -1,10 +1,12 @@
+'use client';
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { CalendarIcon, SparklesIcon, BrainIcon, TrendingUpIcon, ArrowRightIcon } from 'lucide-react';
 import { TouchOptimizedButton } from './TouchOptimizedButton';
 export function HowItWorksPreview() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const steps = [{
     icon: <CalendarIcon className="w-6 h-6" />,
     title: 'Enter Birth Date',
@@ -90,7 +92,7 @@ export function HowItWorksPreview() {
       }} viewport={{
         once: true
       }} className="text-center">
-          <TouchOptimizedButton variant="secondary" size="lg" onClick={() => navigate('/how-it-works')} icon={<ArrowRightIcon className="w-5 h-5" />} ariaLabel="Learn more about how NumerAI works">
+          <TouchOptimizedButton variant="secondary" size="lg" onClick={() => router.push('/how-it-works')} icon={<ArrowRightIcon className="w-5 h-5" />} ariaLabel="Learn more about how NumerAI works">
             See Full Process
           </TouchOptimizedButton>
         </motion.div>

@@ -5,7 +5,8 @@ from typing import Dict, List, Any, Optional
 from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.db.models import Avg, Count, Q
-from numerology.models import Remedy, RemedyTracking, RemedyEffectiveness, RemedyCombination, NumerologyProfile
+from numerology.models import Remedy, RemedyTracking, NumerologyProfile
+# RemedyEffectiveness, RemedyCombination deprecated: use RemedyTracking.effectiveness_rating and in-memory combination logic
 
 
 class RemediesService:
@@ -147,22 +148,13 @@ class RemediesService:
         )
         mood_improvement = mood_after_avg - mood_before_avg if mood_before_avg and mood_after_avg else None
         
-        # Calculate overall effectiveness score
+        # Calculate overall effectiveness score (RemedyTracking.effectiveness_rating is source of truth)
         effectiveness_score = self._calculate_effectiveness_score(
             completion_rate=(completed_entries / total_entries * 100) if total_entries > 0 else 0,
             avg_rating=avg_rating,
             mood_improvement=mood_improvement
         )
-        
-        # Save effectiveness record
-        effectiveness = RemedyEffectiveness.objects.create(
-            user=user,
-            remedy=remedy,
-            effectiveness_score=effectiveness_score,
-            period_start=start_date,
-            period_end=end_date
-        )
-        
+
         return {
             'effectiveness_score': round(effectiveness_score, 2),
             'completion_rate': round((completed_entries / total_entries * 100) if total_entries > 0 else 0, 2),
@@ -171,7 +163,6 @@ class RemediesService:
             'total_tracked_days': total_entries,
             'period_start': start_date.isoformat(),
             'period_end': end_date.isoformat(),
-            'effectiveness_id': str(effectiveness.id)
         }
     
     def get_remedy_combinations(

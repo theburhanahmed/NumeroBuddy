@@ -27,8 +27,6 @@ from .models import (
     KarmicTimeline,
     RebirthCycle,
     PredictiveCycle,
-    BreakthroughYear,
-    CrisisYear,
     LifeMilestone,
     GenerationalAnalysis,
     FamilyUnitProfile,
@@ -556,44 +554,6 @@ class PredictiveCycleAdmin(admin.ModelAdmin):
         ('User', {'fields': ('user',)}),
         ('Cycle', {'fields': ('cycle_type', 'year', 'cycle_data')}),
         ('Prediction', {'fields': ('confidence_score', 'severity_level')}),
-        ('Metadata', {'fields': ('calculated_at', 'updated_at')}),
-    )
-    
-    readonly_fields = ['calculated_at', 'updated_at']
-
-
-@admin.register(BreakthroughYear)
-class BreakthroughYearAdmin(admin.ModelAdmin):
-    """Admin interface for BreakthroughYear model."""
-    
-    list_display = ['user', 'year', 'personal_year', 'breakthrough_type', 'confidence_score', 'calculated_at']
-    list_filter = ['year', 'personal_year', 'calculated_at']
-    search_fields = ['user__email', 'user__full_name', 'breakthrough_type', 'description']
-    ordering = ['year']
-    
-    fieldsets = (
-        ('User', {'fields': ('user',)}),
-        ('Breakthrough', {'fields': ('year', 'personal_year', 'breakthrough_type', 'description', 'preparation')}),
-        ('Prediction', {'fields': ('confidence_score',)}),
-        ('Metadata', {'fields': ('calculated_at', 'updated_at')}),
-    )
-    
-    readonly_fields = ['calculated_at', 'updated_at']
-
-
-@admin.register(CrisisYear)
-class CrisisYearAdmin(admin.ModelAdmin):
-    """Admin interface for CrisisYear model."""
-    
-    list_display = ['user', 'year', 'personal_year', 'crisis_type', 'severity_level', 'calculated_at']
-    list_filter = ['year', 'severity_level', 'calculated_at']
-    search_fields = ['user__email', 'user__full_name', 'crisis_type', 'description']
-    ordering = ['year']
-    
-    fieldsets = (
-        ('User', {'fields': ('user',)}),
-        ('Crisis', {'fields': ('year', 'personal_year', 'crisis_type', 'description', 'guidance')}),
-        ('Severity', {'fields': ('severity_level', 'preparation_steps')}),
         ('Metadata', {'fields': ('calculated_at', 'updated_at')}),
     )
     

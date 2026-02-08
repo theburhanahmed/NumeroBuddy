@@ -5,6 +5,7 @@ import pytest
 from datetime import date
 from rest_framework import status
 from numerology.models import NumerologyProfile, DailyReading
+from numerology.profile_utils import get_numerology_profile
 
 
 @pytest.mark.django_db
@@ -24,7 +25,7 @@ class TestNumerologyFlow:
         assert 'birth_chart' in response.data
         
         # Verify profile was created
-        profile = NumerologyProfile.objects.get(user=test_user)
+        profile = get_numerology_profile(test_user)
         assert profile.life_path_number is not None
     
     def test_get_birth_chart(self, authenticated_api_client, test_user):

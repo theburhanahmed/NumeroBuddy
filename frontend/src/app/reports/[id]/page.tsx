@@ -15,6 +15,7 @@ import {
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
+import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
 import { useAuth } from '@/contexts/auth-context';
 import { reportAPI } from '@/lib/numerology-api';
 import { GeneratedReport } from '@/types';
@@ -50,8 +51,13 @@ export default function ReportDetailPage({ params }: { params: { id: string } })
   }, [params.id]);
 
   useEffect(() => {
+    const id = typeof params.id === 'string' ? params.id : undefined;
+    if (!id || id === 'undefined') {
+      router.replace('/reports');
+      return;
+    }
     fetchReport();
-  }, [fetchReport]);
+  }, [fetchReport, params.id, router]);
 
   const handleDownload = async () => {
     try {
@@ -121,15 +127,11 @@ export default function ReportDetailPage({ params }: { params: { id: string } })
     return (
       <CosmicPageLayout>
         <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-12 bg-[#1a2942]/40 rounded w-1/3 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-[#1a2942]/40 rounded-2xl"></div>
-              ))}
-            </div>
-            <div className="h-96 bg-[#1a2942]/40 rounded-2xl"></div>
+          <CosmicSkeletonLoader variant="text" className="mb-8" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <CosmicSkeletonLoader variant="card" count={3} className="h-24" />
           </div>
+          <CosmicSkeletonLoader variant="card" className="h-96" />
         </div>
       </CosmicPageLayout>
     );

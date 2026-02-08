@@ -7,6 +7,7 @@ from django.utils import timezone
 from numerology.models import (
     NumerologyProfile, MentalStateTracking, MentalStateAnalysis
 )
+from numerology.profile_utils import get_numerology_profile
 from numerology.numerology import NumerologyCalculator
 from accounts.models import User
 import os
@@ -172,7 +173,7 @@ class MentalStateAIService:
         """
         # Get user's numerology profile
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return [{
                 'type': 'info',
@@ -282,8 +283,8 @@ class MentalStateAIService:
             Dictionary with emotional compatibility analysis
         """
         try:
-            profile1 = NumerologyProfile.objects.get(user=person1)
-            profile2 = NumerologyProfile.objects.get(user=person2)
+            profile1 = get_numerology_profile(person1)
+            profile2 = get_numerology_profile(person2)
         except NumerologyProfile.DoesNotExist:
             return {
                 'error': 'One or both users do not have numerology profiles'
@@ -358,7 +359,7 @@ class MentalStateAIService:
         
         # Get numerology profile
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
         except NumerologyProfile.DoesNotExist:
             return {
                 'correlations': [],
@@ -397,7 +398,7 @@ class MentalStateAIService:
     def _get_current_numerology_cycle(self, user: User, date: date) -> str:
         """Get current numerology cycle description."""
         try:
-            profile = NumerologyProfile.objects.get(user=user)
+            profile = get_numerology_profile(user)
             personal_year = profile.personal_year_number
             
             # Calculate personal month

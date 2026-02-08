@@ -2,11 +2,13 @@
 Django management command to change a user's subscription plan for testing.
 
 Usage:
-    python manage.py change_subscription <user_email_or_id> <plan> [--status STATUS]
+    python manage.py change_subscription <user_email_or_id> <plan> [options]
 
 Examples:
     python manage.py change_subscription user@example.com premium
     python manage.py change_subscription user@example.com basic --status active
+    python manage.py change_subscription user@example.com premium --trailing
+    python manage.py change_subscription user@example.com premium --status trialing --trial-days 14
     python manage.py change_subscription user@example.com free
 """
 from django.core.management.base import BaseCommand, CommandError
@@ -17,7 +19,7 @@ from payments.models import Subscription
 
 
 class Command(BaseCommand):
-    help = 'Change a user\'s subscription plan for testing purposes'
+    help = 'Change a user\'s subscription plan for testing (plan, period length, trailing, trial)'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -42,7 +44,19 @@ class Command(BaseCommand):
             '--days',
             type=int,
             default=30,
-            help='Number of days for premium expiry (default: 30)'
+            help='Period length in days (default: 30)'
+        )
+        parser.add_argument(
+            '--trailing',
+            action='store_true',
+            help='Set cancel_at_period_end=True (user keeps access until period end)'
+        )
+        parser.add_argument(
+            '--trial-days',
+            type=int,
+            default=None,
+            metavar='N',
+            help='Start trial: set status=trialing and trial_end to N days from now'
         )
 
     def handle(self, *args, **options):
@@ -50,6 +64,12 @@ class Command(BaseCommand):
         plan = options['plan']
         status = options['status']
         days = options['days']
+        trailing = options['trailing']
+        trial_days = options['trial_days']
+
+        # --trial-days implies status=trialing
+        if trial_days is not None:
+            status = 'trialing'
 
         # Find user
         try:
@@ -73,12 +93,15 @@ class Command(BaseCommand):
         # Update User model
         user.subscription_plan = plan
         user.is_premium = plan in ['basic', 'premium', 'elite']
-        
-        if plan in ['basic', 'premium', 'elite'] and status == 'active':
-            user.premium_expiry = timezone.now() + timedelta(days=days)
+
+        now = timezone.now()
+        period_end = now + timedelta(days=days)
+
+        if plan in ['basic', 'premium', 'elite'] and status in ('active', 'trialing'):
+            user.premium_expiry = period_end
         elif plan == 'free':
             user.premium_expiry = None
-        
+
         user.save(update_fields=['subscription_plan', 'is_premium', 'premium_expiry'])
         self.stdout.write(
             self.style.SUCCESS(
@@ -88,30 +111,50 @@ class Command(BaseCommand):
 
         # Update or create Subscription model
         if plan in ['basic', 'premium', 'elite']:
+            trial_start = now if trial_days else None
+            trial_end = (now + timedelta(days=trial_days)) if trial_days else None
+
+            defaults = {
+                'plan': plan,
+                'status': status,
+                'current_period_start': now,
+                'current_period_end': period_end,
+                'trial_start': trial_start,
+                'trial_end': trial_end,
+                'cancel_at_period_end': trailing,
+            }
             subscription, created = Subscription.objects.get_or_create(
                 user=user,
-                defaults={
-                    'plan': plan,
-                    'status': status,
-                    'current_period_start': timezone.now(),
-                    'current_period_end': timezone.now() + timedelta(days=days),
-                }
+                defaults=defaults,
             )
-            
+
             if not created:
                 subscription.plan = plan
                 subscription.status = status
-                if status == 'active':
-                    subscription.current_period_start = timezone.now()
-                    subscription.current_period_end = timezone.now() + timedelta(days=days)
-                    subscription.cancel_at_period_end = False
+                subscription.current_period_start = now
+                subscription.current_period_end = period_end
+                subscription.cancel_at_period_end = trailing
+                if trial_days:
+                    subscription.trial_start = now
+                    subscription.trial_end = now + timedelta(days=trial_days)
+                elif status == 'active':
+                    subscription.trial_start = None
+                    subscription.trial_end = None
                 subscription.save()
-            
+
             self.stdout.write(
                 self.style.SUCCESS(
                     f'✓ Updated Subscription: plan={plan}, status={status}'
                 )
             )
+            if trailing:
+                self.stdout.write(
+                    self.style.SUCCESS('  cancel_at_period_end=True (trailing period)')
+                )
+            if trial_days:
+                self.stdout.write(
+                    self.style.SUCCESS(f'  trial_end={subscription.trial_end}')
+                )
         else:
             # For free plan, cancel any existing subscription
             if hasattr(user, 'subscription'):

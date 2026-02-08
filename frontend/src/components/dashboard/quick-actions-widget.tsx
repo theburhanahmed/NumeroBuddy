@@ -18,21 +18,21 @@ interface QuickAction {
 const quickActions: QuickAction[] = [
   {
     id: 'report',
-    label: 'Generate Report',
+    label: 'Generate my report',
     icon: FileText,
-    path: '/reports',
+    path: '/reports/generate?person=self',
     color: 'from-cyan-500 to-blue-600',
   },
   {
     id: 'reading',
-    label: 'Daily Reading',
+    label: 'Your Daily Reading',
     icon: Calendar,
     path: '/daily-reading',
     color: 'from-purple-500 to-pink-600',
   },
   {
     id: 'compatibility',
-    label: 'Check Compatibility',
+    label: 'Compatibility (You vs Partner)',
     icon: Users,
     path: '/compatibility',
     color: 'from-yellow-500 to-orange-600',

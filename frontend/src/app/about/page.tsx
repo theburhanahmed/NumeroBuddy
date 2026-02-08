@@ -1,244 +1,241 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { SparklesIcon, HeartIcon, UsersIcon, TrendingUpIcon, StarIcon, TargetIcon } from 'lucide-react';
-import { AccessibleSpaceBackground } from '@/components/space/accessible-space-background';
-import { LandingNav } from '@/components/landing/landing-nav';
-import { LandingFooter } from '@/components/landing/landing-footer';
-import { SpaceCard } from '@/components/space/space-card';
-import { OptimizedPremium3DPlanet } from '@/components/3d/optimized-premium-3d-planet';
+import React from 'react'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import {
+  SparklesIcon,
+  HeartIcon,
+  TargetIcon,
+  UsersIcon,
+  TrendingUpIcon,
+} from 'lucide-react'
+import { GlassBackground } from '@/components/glass/glass-background'
+import { LandingNav } from '@/components/landing/landing-nav'
+import { LandingFooter } from '@/components/landing/landing-footer'
+import { CosmicButton } from '@/components/glassmorphism/cosmic-button'
+
+const values = [
+  {
+    icon: <HeartIcon className="w-6 h-6" />,
+    title: 'Authenticity',
+    description:
+      'We honor the ancient wisdom of numerology while embracing modern technology.',
+    color: 'from-pink-500 to-rose-600',
+  },
+  {
+    icon: <UsersIcon className="w-6 h-6" />,
+    title: 'Community',
+    description:
+      'Building a supportive space for seekers to connect and grow together.',
+    color: 'from-cyan-400 to-blue-600',
+  },
+  {
+    icon: <SparklesIcon className="w-6 h-6" />,
+    title: 'Empowerment',
+    description:
+      'Providing tools and insights that help you make confident life decisions.',
+    color: 'from-purple-500 to-indigo-600',
+  },
+  {
+    icon: <TrendingUpIcon className="w-6 h-6" />,
+    title: 'Growth',
+    description:
+      'Continuously evolving our platform to serve your spiritual journey better.',
+    color: 'from-green-500 to-emerald-600',
+  },
+]
+
+const milestones = [
+  { year: '2020', event: 'Founded with a vision to democratize numerology' },
+  { year: '2021', event: 'Launched AI-powered numerology chat' },
+  { year: '2022', event: 'Reached 10,000 active users' },
+  { year: '2023', event: 'Introduced interactive birth charts' },
+  { year: '2024', event: 'Serving 100,000+ seekers worldwide' },
+]
+
 export default function AboutUs() {
-  const values = [
-    {
-      icon: <SparklesIcon className="w-6 h-6" />,
-      title: 'Ancient Wisdom',
-      description:
-        'We honor the timeless practice of numerology while embracing modern technology.',
-      color: 'from-cyan-400 to-blue-600',
-    },
-    {
-      icon: <HeartIcon className="w-6 h-6" />,
-      title: 'Authenticity',
-      description:
-        'We provide genuine insights based on proven numerological principles.',
-      color: 'from-pink-500 to-rose-600',
-    },
-    {
-      icon: <TargetIcon className="w-6 h-6" />,
-      title: 'Accuracy',
-      description:
-        'Our AI-powered system delivers precise calculations and personalized readings.',
-      color: 'from-purple-500 to-indigo-600',
-    },
-    {
-      icon: <UsersIcon className="w-6 h-6" />,
-      title: 'Community',
-      description:
-        'We build a supportive space for seekers to explore their cosmic journey together.',
-      color: 'from-green-500 to-emerald-600',
-    },
-  ];
-
-  const stats = [
-    {
-      value: '50K+',
-      label: 'Active Users',
-    },
-    {
-      value: '500K+',
-      label: 'Readings Generated',
-    },
-    {
-      value: '4.9★',
-      label: 'Average Rating',
-    },
-    {
-      value: '98%',
-      label: 'Satisfaction Rate',
-    },
-  ];
+  const router = useRouter()
 
   return (
-    <div className="relative min-h-screen">
-      <AccessibleSpaceBackground />
+    <div className="relative min-h-screen bg-[#0a1628] overflow-hidden">
+      <GlassBackground starCount={80} />
       <LandingNav />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 pt-28">
-        {/* Hero Section */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-20 pt-28">
+        {/* Header */}
         <motion.div
-          initial={{
-            opacity: 0,
-            y: 20,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-20"
         >
-          <h1 className="text-4xl md:text-6xl font-['Playfair_Display'] font-bold text-white mb-6">
-            About
+          <motion.span
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="inline-block mb-6 px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-semibold backdrop-blur-xl"
+          >
+            Our Story
+          </motion.span>
+
+          <h1 className="text-5xl md:text-6xl font-display text-white mb-6 leading-tight">
+            Bridging Ancient Wisdom
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
-              NumerAI
+              With Modern Technology
             </span>
           </h1>
-          <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
-            We're on a mission to make ancient numerology wisdom accessible to
-            everyone through the power of AI and modern technology. Your cosmic
-            journey starts here.
+
+          <p className="text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">
+            NumerAI was born from a simple belief: everyone deserves access to
+            the transformative insights of numerology. We combine ancient wisdom
+            with cutting-edge AI to help you discover your cosmic purpose.
           </p>
         </motion.div>
 
-        {/* Story Section */}
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 20,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            delay: 0.2,
-          }}
-          className="mb-16"
-        >
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-['Playfair_Display'] font-bold text-white mb-6">
-                Our Story
-              </h2>
-              <div className="space-y-4 text-white/70 leading-relaxed">
-                <p>
-                  Founded in 2023, NumerAI was born from a simple belief:
-                  everyone deserves access to the profound insights that
-                  numerology offers. We saw an opportunity to bridge ancient
-                  wisdom with cutting-edge AI technology.
-                </p>
-                <p>
-                  Our team of numerology experts, data scientists, and designers
-                  came together to create a platform that makes numerology
-                  readings accurate, accessible, and beautifully presented.
-                </p>
-                <p>
-                  Today, we serve over 50,000 users worldwide, helping them
-                  discover their life path, understand their relationships, and
-                  navigate their cosmic journey with confidence and clarity.
-                </p>
+        {/* Mission & Vision */}
+        <div className="grid md:grid-cols-2 gap-8 mb-20">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="group relative"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative p-8 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all h-full">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white mb-6 shadow-lg">
+                <TargetIcon className="w-8 h-8" />
               </div>
+              <h2 className="text-2xl font-display text-white mb-4">Our Mission</h2>
+              <p className="text-white/70 leading-relaxed">
+                To make numerology accessible, understandable, and actionable for
+                everyone seeking clarity, purpose, and self-discovery in their
+                life journey.
+              </p>
             </div>
-            <div className="flex justify-center">
-              <OptimizedPremium3DPlanet
-                type="earth"
-                size="lg"
-                withRings={true}
-                withMoons={true}
-              />
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Stats */}
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 20,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            delay: 0.3,
-          }}
-          className="mb-16"
-        >
-          <SpaceCard variant="premium" className="p-8 md:p-12">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{
-                    opacity: 0,
-                    scale: 0.9,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                  }}
-                  transition={{
-                    delay: 0.4 + index * 0.1,
-                  }}
-                  className="text-center"
-                >
-                  <div className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-white/70">{stat.label}</div>
-                </motion.div>
-              ))}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="group relative"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative p-8 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all h-full">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white mb-6 shadow-lg">
+                <SparklesIcon className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-display text-white mb-4">Our Vision</h2>
+              <p className="text-white/70 leading-relaxed">
+                To become the world&apos;s most trusted platform for numerological
+                insights, empowering millions to live in alignment with their
+                cosmic blueprint.
+              </p>
             </div>
-          </SpaceCard>
-        </motion.div>
+          </motion.div>
+        </div>
 
         {/* Values */}
         <motion.div
-          initial={{
-            opacity: 0,
-            y: 20,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            delay: 0.5,
-          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mb-20"
         >
-          <h2 className="text-3xl font-['Playfair_Display'] font-bold text-white text-center mb-12">
-            Our Values
+          <h2 className="text-3xl font-display text-white text-center mb-12">
+            Our Core Values
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {values.map((value, index) => (
               <motion.div
                 key={value.title}
-                initial={{
-                  opacity: 0,
-                  y: 20,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  delay: 0.6 + index * 0.1,
-                }}
-                whileHover={{
-                  y: -4,
-                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + index * 0.1 }}
+                className="group relative"
               >
-                <SpaceCard variant="default" className="p-6 h-full text-center">
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${value.color} opacity-0 group-hover:opacity-10 rounded-3xl blur-xl transition-opacity`}
+                />
+                <div className="relative p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all text-center h-full">
                   <div
-                    className={`w-14 h-14 rounded-xl bg-gradient-to-br ${value.color} flex items-center justify-center text-white mx-auto mb-4 shadow-lg`}
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${value.color} flex items-center justify-center text-white mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform`}
                   >
                     {value.icon}
                   </div>
-                  <h3 className="text-xl font-['Playfair_Display'] font-bold text-white mb-3">
-                    {value.title}
-                  </h3>
-                  <p className="text-white/70 text-sm leading-relaxed">
+                  <h3 className="font-semibold text-white mb-2">{value.title}</h3>
+                  <p className="text-sm text-white/60 leading-relaxed">
                     {value.description}
                   </p>
-                </SpaceCard>
+                </div>
               </motion.div>
             ))}
+          </div>
+        </motion.div>
+
+        {/* Timeline */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mb-20"
+        >
+          <h2 className="text-3xl font-display text-white text-center mb-12">
+            Our Journey
+          </h2>
+          <div className="relative max-w-3xl mx-auto">
+            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-cyan-400 to-purple-600" />
+            <div className="space-y-8">
+              {milestones.map((milestone, index) => (
+                <motion.div
+                  key={milestone.year}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.7 + index * 0.1 }}
+                  className="relative flex items-start gap-6"
+                >
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg z-10 flex-shrink-0">
+                    {milestone.year.slice(2)}
+                  </div>
+                  <div className="flex-1 p-6 rounded-2xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
+                    <div className="text-sm text-cyan-400 font-semibold mb-1">
+                      {milestone.year}
+                    </div>
+                    <p className="text-white/80">{milestone.event}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="text-center"
+        >
+          <div className="p-12 rounded-3xl bg-gradient-to-br from-cyan-500/10 to-purple-600/10 border border-cyan-500/30 backdrop-blur-xl">
+            <h2 className="text-3xl md:text-4xl font-display text-white mb-4">
+              Join Our Cosmic Community
+            </h2>
+            <p className="text-white/70 mb-8 max-w-2xl mx-auto">
+              Be part of a growing community of seekers discovering their
+              purpose through numerology.
+            </p>
+            <CosmicButton
+              onClick={() => router.push('/register')}
+              variant="primary"
+              size="lg"
+            >
+              Start Your Journey
+            </CosmicButton>
           </div>
         </motion.div>
       </div>
 
       <LandingFooter />
     </div>
-  );
+  )
 }

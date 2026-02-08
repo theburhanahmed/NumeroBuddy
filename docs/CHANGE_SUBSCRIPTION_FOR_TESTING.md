@@ -1,5 +1,7 @@
 # How to Change User Subscription Plan for Testing
 
+> **For a simplified guide**, see [SUBSCRIPTION_CHANGE_GUIDE.md](./SUBSCRIPTION_CHANGE_GUIDE.md).
+
 This guide explains how to change a user's subscription plan from the backend for testing purposes.
 
 ## Important Notes

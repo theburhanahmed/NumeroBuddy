@@ -5,7 +5,7 @@ class PersonalYearEngine(NumerologyBaseEngine):
         super().__init__()
         self.rules = self.load_rules('personal_years.rules.json')
 
-    def calculate(self, birth_day, birth_month, current_year, birth_year, driver_number):
+    def calculate(self, birth_day, birth_month, current_year, birth_year, driver_number, compound_number=None):
         # Universal Year
         universal_year = self.reduce_to_single_digit(current_year)
         
@@ -61,6 +61,30 @@ class PersonalYearEngine(NumerologyBaseEngine):
         py_data = next((p for p in self.rules['outputs'] if p['personal_year'] == personal_year), {})
         warning = next((w for w in self.rules['warnings'] if w['personal_year'] == personal_year), None)
         remedy = next((r for r in self.rules['remedies'] if r['personal_year'] == personal_year), None)
+        
+        # Conflict resolution: Personal Year vs Compound Number override
+        conflict_warnings = []
+        if compound_number:
+            temporal_warning = self.conflict_resolver.validate_personal_year_override(
+                personal_year, compound_number
+            )
+            if temporal_warning:
+                conflict_warnings.append(temporal_warning)
+        
+        # Check for Personal Year 1 lost opportunities warning
+        if personal_year == 1:
+            conflict_warnings.append({
+                'type': 'lost_opportunity',
+                'severity': 'high',
+                'message': 'Opportunities in Personal Year 1 are prioritized. If lost, blocked for next 9-year cycle.',
+                'override': True
+            })
+        
+        # Combine warnings
+        all_warnings = []
+        if warning:
+            all_warnings.append(warning)
+        all_warnings.extend(conflict_warnings)
 
         return {
             "universal_year": universal_year,
@@ -72,7 +96,7 @@ class PersonalYearEngine(NumerologyBaseEngine):
             "positive_aspects": py_data.get('positive'),
             "negative_aspects": py_data.get('negative'),
             "personal_months": personal_months,
-            "warning": warning,
+            "warning": all_warnings if all_warnings else None,
             "remedy": remedy,
             "mark": "deterministic"
         }

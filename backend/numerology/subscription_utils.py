@@ -17,8 +17,8 @@ def get_user_subscription_tier(user: User) -> str:
     # First check if user has an active subscription
     if hasattr(user, 'subscription') and user.subscription:
         subscription = user.subscription
-        # Check if subscription is active
-        if subscription.status == 'active':
+        # Check if subscription is active or trialing (trial = access before first payment)
+        if subscription.status in ('active', 'trialing'):
             return subscription.plan
     
     # Fall back to user's subscription_plan field

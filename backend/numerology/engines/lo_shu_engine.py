@@ -6,7 +6,7 @@ class LoShuEngine(NumerologyBaseEngine):
         self.rules_grid = self.load_rules('missing_numbers_grid.rules.json')
         self.rules_donations = self.load_rules('missing_number_donations.rules.json')
 
-    def calculate_grid(self, dob_day, dob_month, dob_year, driver, conductor):
+    def calculate_grid(self, dob_day, dob_month, dob_year, driver, conductor, birth_number=None, destiny_number=None):
         # Convert all to digits
         all_digits = str(dob_day) + str(dob_month) + str(dob_year) + str(driver) + str(conductor)
         # Note: Century digit '1' or '2' is usually ignored in some systems, but I'll follow common Lo Shu practice of using all digits unless specified.
@@ -28,6 +28,8 @@ class LoShuEngine(NumerologyBaseEngine):
         
         # Missing number traits and remedies
         missing_info = []
+        conflict_warnings = []
+        
         for n in missing_numbers:
             trait = self.rules_grid['outputs'][1]['traits'].get(str(n))
             remedy = next((r for r in self.rules_grid['remedies'] if r['number'] == n), {})
@@ -39,10 +41,32 @@ class LoShuEngine(NumerologyBaseEngine):
                 "remedy": remedy,
                 "donation": donation
             })
+            
+            # Conflict resolution: Missing number warnings override compatibility optimism
+            # If missing number is risky (4, 8) or karmic debt related, add warning
+            if n in self.conflict_resolver.RISKY_NUMBERS:
+                conflict_warnings.append({
+                    'type': 'missing_risky_number',
+                    'severity': 'high',
+                    'number': n,
+                    'message': f"Missing risky number {n} - warnings override compatibility optimism",
+                    'override': True
+                })
+        
+        # If missing numbers include critical ones, override optimistic compatibility
+        critical_missing = [n for n in missing_numbers if n in {4, 8}]
+        if critical_missing and (birth_number or destiny_number):
+            conflict_warnings.append({
+                'type': 'missing_number_override',
+                'severity': 'medium',
+                'message': f"Missing numbers {critical_missing} override compatibility optimism",
+                'override': True
+            })
 
         return {
             "counts": counts,
             "missing_info": missing_info,
             "traits": traits,
+            "warnings": conflict_warnings,
             "mark": "deterministic"
         }

@@ -3,6 +3,18 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 
+// Deterministic "random" so server and client render the same (avoids hydration mismatch)
+function seeded(i: number, seed: number) {
+  const x = Math.sin(i * 12.9898 + seed) * 43758.5453
+  return x - Math.floor(x)
+}
+
+// Fixed decimals so server and client serialize identical style strings (avoids hydration mismatch)
+function fix(n: number, decimals = 4): string {
+  const d = 10 ** decimals
+  return (Math.round(n * d) / d).toString()
+}
+
 // Floating Neon Runes Component
 export function FloatingNeonRunes({ count = 8 }: { count?: number }) {
   const runes = ['☿', '♀', '♁', '♂', '♃', '♄', '♅', '♆']
@@ -14,9 +26,9 @@ export function FloatingNeonRunes({ count = 8 }: { count?: number }) {
           key={i}
           className="absolute"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            fontSize: `${24 + Math.random() * 24}px`,
+            left: `${fix(seeded(i, 1) * 100)}%`,
+            top: `${fix(seeded(i, 2) * 100)}%`,
+            fontSize: `${fix(24 + seeded(i, 3) * 24, 2)}px`,
             color: i % 2 === 0 ? '#00d4ff' : '#a855f7',
             textShadow: `
               0 0 20px currentColor,
@@ -25,16 +37,16 @@ export function FloatingNeonRunes({ count = 8 }: { count?: number }) {
             `,
           }}
           animate={{
-            y: [0, -30 - Math.random() * 30, 0],
-            x: [0, Math.random() * 20 - 10, 0],
+            y: [0, -30 - seeded(i, 4) * 30, 0],
+            x: [0, seeded(i, 5) * 20 - 10, 0],
             opacity: [0.3, 0.8, 0.3],
             rotate: [0, 360],
           }}
           transition={{
-            duration: 8 + Math.random() * 4,
+            duration: 8 + seeded(i, 6) * 4,
             repeat: Infinity,
             ease: 'easeInOut',
-            delay: Math.random() * 4,
+            delay: seeded(i, 7) * 4,
           }}
         >
           {runes[i % runes.length]}
@@ -44,26 +56,30 @@ export function FloatingNeonRunes({ count = 8 }: { count?: number }) {
   )
 }
 
-// Particle Swarm Component
+// Particle Swarm Component (deterministic seeded values for SSR/client match)
 export function ParticleSwarm({ count = 50 }: { count?: number }) {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       {[...Array(count)].map((_, i) => {
         const color = ['#00d4ff', '#4a9eff', '#a855f7', '#ec4899'][i % 4]
-        const pathRadius = 100 + Math.random() * 200
-        const duration = 15 + Math.random() * 10
+        const pathRadius = 100 + seeded(i, 10) * 200
+        const duration = 15 + seeded(i, 11) * 10
+        const w = 2 + seeded(i, 12) * 3
+        const h = 2 + seeded(i, 13) * 3
+        const glow1 = 8 + seeded(i, 14) * 8
+        const glow2 = 16 + seeded(i, 15) * 16
 
         return (
           <motion.div
             key={i}
             className="absolute rounded-full"
             style={{
-              width: `${2 + Math.random() * 3}px`,
-              height: `${2 + Math.random() * 3}px`,
+              width: `${fix(w)}px`,
+              height: `${fix(h)}px`,
               left: '50%',
               top: '50%',
               background: color,
-              boxShadow: `0 0 ${8 + Math.random() * 8}px ${color}, 0 0 ${16 + Math.random() * 16}px ${color}`,
+              boxShadow: `0 0 ${fix(glow1)}px ${color}, 0 0 ${fix(glow2)}px ${color}`,
             }}
             animate={{
               x: [
@@ -159,16 +175,16 @@ export function NebulaStreaks() {
         />
       ))}
 
-      {/* Volumetric Fog Clouds */}
+      {/* Volumetric Fog Clouds (deterministic for hydration) */}
       {[...Array(4)].map((_, i) => (
         <motion.div
           key={`fog-${i}`}
           className="absolute rounded-full"
           style={{
-            width: `${200 + Math.random() * 300}px`,
-            height: `${100 + Math.random() * 150}px`,
-            left: `${Math.random() * 80}%`,
-            top: `${Math.random() * 80}%`,
+            width: `${fix(200 + seeded(i, 20) * 300)}px`,
+            height: `${fix(100 + seeded(i, 21) * 150)}px`,
+            left: `${fix(seeded(i, 22) * 80)}%`,
+            top: `${fix(seeded(i, 23) * 80)}%`,
             background: `radial-gradient(ellipse, 
               rgba(0, 212, 255, 0.15) 0%, 
               rgba(168, 85, 247, 0.1) 50%, 
@@ -194,7 +210,7 @@ export function NebulaStreaks() {
   )
 }
 
-// Cosmic Fog Component
+// Cosmic Fog Component (deterministic for hydration)
 export function CosmicFog() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -203,10 +219,10 @@ export function CosmicFog() {
           key={i}
           className="absolute"
           style={{
-            width: `${300 + Math.random() * 400}px`,
-            height: `${200 + Math.random() * 300}px`,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
+            width: `${fix(300 + seeded(i, 30) * 400)}px`,
+            height: `${fix(200 + seeded(i, 31) * 300)}px`,
+            left: `${fix(seeded(i, 32) * 100)}%`,
+            top: `${fix(seeded(i, 33) * 100)}%`,
             background: `radial-gradient(ellipse, 
               rgba(0, 212, 255, 0.08) 0%, 
               rgba(74, 158, 255, 0.05) 30%,

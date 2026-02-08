@@ -6,24 +6,26 @@
 
 'use client'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
 
-import * as React from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { ArrowLeftIcon, LockIcon, CheckIcon } from "lucide-react"
-import { BaseButton } from "@/components/base/BaseButton"
-import { BaseCard } from "@/components/base/BaseCard"
-import { BaseInput } from "@/components/base/BaseInput"
-import { CosmicPageLayout } from "@/components/cosmic/cosmic-page-layout"
-import { useAuth } from "@/contexts/auth-context"
-import { paymentsAPI } from "@/lib/api-client"
-import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+import * as React from 'react'
+import { Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowLeftIcon, LockIcon, CheckIcon } from 'lucide-react'
+import { BaseButton } from '@/components/base/BaseButton'
+import { BaseCard } from '@/components/base/BaseCard'
+import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout'
+import { useAuth } from '@/contexts/auth-context'
+import { useSubscription } from '@/contexts/SubscriptionContext'
+import { paymentsAPI } from '@/lib/api-client'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
+  const { refreshFeatures } = useSubscription()
   const [loading, setLoading] = React.useState(false)
   const [planId, setPlanId] = React.useState(searchParams.get('plan') || 'premium')
   const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'yearly'>(
@@ -58,17 +60,24 @@ export default function CheckoutPage() {
         payment_method_id: undefined, // Would be set from Stripe Elements
       })
 
-      if (response.client_secret) {
-        // Handle Stripe payment
-        // This would integrate with Stripe Elements
+      const data = response.data || response
+      const clientSecret = data.client_secret
+      const status = data.status
+
+      if (clientSecret && status !== 'active') {
         toast.success('Redirecting to payment...')
+        // TODO: Integrate Stripe Elements - on success, call refreshUser/refreshFeatures and redirect
       } else {
+        // Payment completed (active or immediate) - refresh state and redirect
+        await refreshUser()
+        await refreshFeatures()
         toast.success('Subscription created successfully!')
-        router.push('/subscription?success=true')
+        router.push('/dashboard')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Checkout failed:', error)
-      toast.error(error?.response?.data?.error || 'Failed to process checkout')
+      const err = error as { response?: { data?: { error?: string } } }
+      toast.error(err?.response?.data?.error || 'Failed to process checkout')
     } finally {
       setLoading(false)
     }
@@ -226,3 +235,18 @@ export default function CheckoutPage() {
   )
 }
 
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <CosmicPageLayout>
+          <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <div className="animate-pulse rounded-xl bg-white/5 h-64 w-full" />
+          </div>
+        </CosmicPageLayout>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
+  )
+}
