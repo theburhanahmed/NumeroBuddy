@@ -29,8 +29,6 @@ const BirthChartDemo3D = dynamic(
   }
 )
 
-export const dynamic = 'force-dynamic'
-
 export default function BirthChartDemoPage() {
   const router = useRouter()
 
