@@ -30,8 +30,6 @@ const BirthChart3DSection = dynamic(
   }
 );
 
-export const dynamic = 'force-dynamic';
-
 export default function BirthChart() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
