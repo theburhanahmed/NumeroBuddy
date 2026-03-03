@@ -58,6 +58,7 @@
   html {
     /* Default to dark theme to prevent white flash */
     @apply dark;
+    color-scheme: dark;
     /* Fallback dark background before CSS variables load */
     background-color: hsl(222.2 84% 4.9%);
     color: hsl(210 40% 98%);
@@ -107,6 +108,18 @@
   .backdrop-blur-3xl {
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
+  }
+}
+
+/* Skip target and anchor links: land below fixed navbar */
+#main-content {
+  scroll-margin-top: 7rem;
+}
+
+/* Mobile bottom nav clearance (safe area aware) */
+@media (max-width: 768px) {
+  #main-content {
+    padding-bottom: max(5rem, env(safe-area-inset-bottom, 5rem));
   }
 }
 

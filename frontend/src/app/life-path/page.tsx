@@ -370,7 +370,7 @@ export default function LifePathAnalysis() {
               Your Strengths
             </h3>
             {analysisLoading ? (
-              <p className="text-sm text-white/60">Loading...</p>
+              <p className="text-sm text-white/60">Loading…</p>
             ) : (
               <ul className="space-y-3">
                 {strengths.map((strength, index) => (
@@ -405,7 +405,7 @@ export default function LifePathAnalysis() {
               Growth Opportunities
             </h3>
             {analysisLoading ? (
-              <p className="text-sm text-white/60">Loading...</p>
+              <p className="text-sm text-white/60">Loading…</p>
             ) : (
               <ul className="space-y-3">
                 {challenges.map((challenge, index) => (

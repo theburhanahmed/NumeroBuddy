@@ -16,6 +16,7 @@ import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
 import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { useAuth } from '@/contexts/auth-context';
 import { reportAPI } from '@/lib/numerology-api';
 import { GeneratedReport } from '@/types';
@@ -172,11 +173,20 @@ export default function ReportDetailPage({ params }: { params: { id: string } })
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
+              <Breadcrumbs
+                items={[
+                  { label: 'Reports', href: '/reports' },
+                  { label: report.title },
+                ]}
+                showHome={false}
+                className="mb-3 text-white/70"
+              />
               <TouchOptimizedButton 
                 variant="secondary" 
                 onClick={() => router.push('/reports')}
                 className="mb-4"
                 icon={<ChevronLeft className="w-5 h-5" />}
+                ariaLabel="Back to Reports"
               >
                 Back to Reports
               </TouchOptimizedButton>

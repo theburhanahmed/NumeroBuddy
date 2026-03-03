@@ -146,6 +146,12 @@ export default function Signup() {
     const hasErrors = Object.values(newErrors).some(error => error !== '');
     if (hasErrors) {
       toast.error('Please fix all errors before submitting');
+      const fieldOrder = ['name', 'email', 'birthDate', 'password', 'confirmPassword'];
+      const firstField = fieldOrder.find((f) => newErrors[f as keyof typeof newErrors]);
+      if (firstField) {
+        const el = document.getElementById(firstField);
+        if (el && typeof (el as HTMLInputElement).focus === 'function') (el as HTMLInputElement).focus();
+      }
       return;
     }
     setIsLoading(true);
@@ -235,12 +241,13 @@ export default function Signup() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Name Input */}
                 <div>
-                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                  <label htmlFor="name" className="block text-sm font-semibold text-white/90 mb-2">
                     Full Name
                   </label>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400/70" />
                     <input
+                      id="name"
                       type="text"
                       name="name"
                       value={formData.name}
@@ -286,12 +293,13 @@ export default function Signup() {
 
                 {/* Email Input */}
                 <div>
-                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-white/90 mb-2">
                     Email Address
                   </label>
                   <div className="relative">
                     <MailIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400/70" />
                     <input
+                      id="email"
                       type="email"
                       name="email"
                       value={formData.email}
@@ -337,12 +345,13 @@ export default function Signup() {
 
                 {/* Birth Date Input */}
                 <div>
-                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                  <label htmlFor="birthDate" className="block text-sm font-semibold text-white/90 mb-2">
                     Birth Date
                   </label>
                   <div className="relative">
                     <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400/70" />
                     <input
+                      id="birthDate"
                       type="date"
                       name="birthDate"
                       value={formData.birthDate}
@@ -387,12 +396,13 @@ export default function Signup() {
 
                 {/* Password Input */}
                 <div>
-                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                  <label htmlFor="password" className="block text-sm font-semibold text-white/90 mb-2">
                     Password
                   </label>
                   <div className="relative">
                     <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400/70" />
                     <input
+                      id="password"
                       type={showPassword ? 'text' : 'password'}
                       name="password"
                       value={formData.password}
@@ -449,12 +459,13 @@ export default function Signup() {
 
                 {/* Confirm Password Input */}
                 <div>
-                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-white/90 mb-2">
                     Confirm Password
                   </label>
                   <div className="relative">
                     <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400/70" />
                     <input
+                      id="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
                       name="confirmPassword"
                       value={formData.confirmPassword}

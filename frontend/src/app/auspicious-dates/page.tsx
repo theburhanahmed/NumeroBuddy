@@ -264,7 +264,7 @@ export default function AuspiciousDatesPage() {
                     className="w-full"
                     disabled={loading}
                   >
-                    {loading ? 'Loading...' : activeTab === 'optimize' ? 'Optimize' : 'Search Dates'}
+                    {loading ? 'Loading…' : activeTab === 'optimize' ? 'Optimize' : 'Search Dates'}
                   </GlassButton>
                 </div>
               </div>

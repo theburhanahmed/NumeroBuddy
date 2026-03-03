@@ -120,7 +120,7 @@ export function ExpertAvailabilityManager({ onSave }: ExpertAvailabilityProps) {
       <div className="mt-6">
         <GlassButton onClick={handleSave} disabled={loading} className="w-full">
           <Save className="w-4 h-4 mr-2" />
-          {loading ? 'Saving...' : 'Save Availability'}
+          {loading ? 'Saving…' : 'Save Availability'}
         </GlassButton>
       </div>
     </GlassCard>

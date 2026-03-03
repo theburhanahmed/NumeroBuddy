@@ -110,7 +110,7 @@ export default function GoogleCallbackPage() {
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-600" />
             <p className="text-gray-600 dark:text-gray-400">
-              Loading...
+              Loading…
             </p>
           </div>
         </div>

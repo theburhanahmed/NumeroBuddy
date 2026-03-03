@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -11,29 +11,35 @@ import {
   MoreHorizontalIcon,
 } from 'lucide-react';
 import { useAIChat } from '@/contexts/ai-chat-context';
+import { MobileMoreSheet } from './mobile-more-sheet';
 
 const navItems = [
   { id: 'home', label: 'Home', icon: HomeIcon, path: '/dashboard' },
   { id: 'numbers', label: 'My Numbers', icon: HashIcon, path: '/my-numerology' },
   { id: 'timing', label: 'Timing', icon: ClockIcon, path: '/timing-cycles' },
-  { id: 'chat', label: 'Chat', icon: MessageSquareIcon, action: true },
-  { id: 'more', label: 'More', icon: MoreHorizontalIcon, path: '/dashboard' },
+  { id: 'chat', label: 'Chat', icon: MessageSquareIcon, action: 'chat' as const },
+  { id: 'more', label: 'More', icon: MoreHorizontalIcon, action: 'more' as const },
 ];
+
+const morePaths = ['/settings', '/reports', '/consultations', '/profile'];
 
 export function MobileBottomNav() {
   const router = useRouter();
   const pathname = usePathname();
   const { openChat } = useAIChat();
+  const [moreOpen, setMoreOpen] = useState(false);
 
-  const handleClick = (item: typeof navItems[0]) => {
-    if (item.action) {
+  const handleClick = (item: (typeof navItems)[0]) => {
+    if (item.action === 'chat') {
       openChat();
+    } else if (item.action === 'more') {
+      setMoreOpen(true);
     } else if (item.path) {
       router.push(item.path);
     }
   };
 
-  const isActive = (item: typeof navItems[0]) => {
+  const isActive = (item: (typeof navItems)[0]) => {
     if (item.id === 'home') {
       return pathname === '/dashboard';
     }
@@ -42,6 +48,9 @@ export function MobileBottomNav() {
     }
     if (item.id === 'timing') {
       return pathname?.startsWith('/timing-cycles') || pathname?.startsWith('/daily-reading');
+    }
+    if (item.id === 'more') {
+      return morePaths.some((p) => pathname?.startsWith(p));
     }
     return false;
   };
@@ -64,13 +73,15 @@ export function MobileBottomNav() {
                 onClick={() => handleClick(item)}
                 className={`
                   flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl
-                  transition-all min-w-[60px]
+                  transition-all min-w-[60px] min-h-[44px]
                   ${active
                     ? 'text-cyan-400 bg-cyan-500/10'
                     : 'text-white/70 hover:text-white'
                   }
                 `}
                 whileTap={{ scale: 0.9 }}
+                aria-label={item.label}
+                aria-expanded={item.id === 'more' ? moreOpen : undefined}
               >
                 <Icon className={`w-5 h-5 ${active ? 'text-cyan-400' : ''}`} />
                 <span className={`text-xs font-medium ${active ? 'text-cyan-400' : ''}`}>
@@ -81,6 +92,7 @@ export function MobileBottomNav() {
           })}
         </div>
       </div>
+      <MobileMoreSheet open={moreOpen} onOpenChange={setMoreOpen} />
     </motion.nav>
   );
 }
