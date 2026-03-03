@@ -32,6 +32,14 @@ function getApiUrl(): string {
     return fallback;
   }
 
+  // During SSR/prerender (build time), avoid throwing so static generation succeeds.
+  // The variable must be set at build time for client bundles; if missing here
+  // we return a placeholder so the build doesn't fail. Runtime in the browser
+  // will still validate and throw when the app actually runs.
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
   const errorMessage =
     'NEXT_PUBLIC_API_URL environment variable is required but not set.\n' +
     'Please set this variable in your deployment environment:\n' +
@@ -39,10 +47,7 @@ function getApiUrl(): string {
     '- Docker: Pass it as build arg: --build-arg NEXT_PUBLIC_API_URL=...\n' +
     '- Local: Add it to .env.local file';
 
-  if (typeof window !== 'undefined') {
-    console.error(errorMessage);
-    throw new Error(errorMessage);
-  }
+  console.error(errorMessage);
   throw new Error(errorMessage);
 }
 
