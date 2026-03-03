@@ -7,6 +7,8 @@ interface UseFormOptions {
   initialValues: Record<string, string>;
   validationRules: ValidationRules;
   onSubmit: (values: Record<string, string>) => void | Promise<void>;
+  /** Called when submit fails validation with the first invalid field name (for focus) */
+  onValidationFail?: (firstErrorField: string) => void;
 }
 
 // Helper function to normalize error values - ensures they're always strings
@@ -51,7 +53,8 @@ const normalizeError = (error: any): string => {
 export function useForm({
   initialValues,
   validationRules,
-  onSubmit
+  onSubmit,
+  onValidationFail
 }: UseFormOptions) {
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -153,6 +156,11 @@ export function useForm({
       // Use normalized setter - this will normalize everything
       setErrorsNormalized(newErrors);
 
+      if (hasErrors && onValidationFail) {
+        const firstField = Object.keys(validationRules).find((key) => newErrors[key]);
+        if (firstField) onValidationFail(firstField);
+      }
+
       if (!hasErrors) {
         setIsSubmitting(true);
         try {
@@ -162,7 +170,7 @@ export function useForm({
         }
       }
     },
-    [values, validationRules, onSubmit, setErrorsNormalized]
+    [values, validationRules, onSubmit, setErrorsNormalized, onValidationFail]
   );
 
   const reset = useCallback(() => {

@@ -27,7 +27,7 @@ export function ProtectedRoute({
       <div className="relative w-full min-h-screen bg-[#0a1628] flex items-center justify-center">
         <GlassBackground starCount={80} />
         <div className="relative z-10">
-          <LoadingSpinner size="lg" message="Loading..." />
+          <LoadingSpinner size="lg" message="Loading…" />
         </div>
       </div>
     );

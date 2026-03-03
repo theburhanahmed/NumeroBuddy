@@ -1,20 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Navigation } from '@/components/navigation';
 
 /**
- * Default layout wrapper for pages that need navigation
- * Used by pages at the root level (not in [locale] or (auth))
+ * Default layout wrapper for pages that need consistent top padding below navbar.
+ * Navigation and main landmark are provided by root layout.
  */
 export function DefaultPageLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <Navigation />
-      <main id="main-content" className="pt-16">
-        {children}
-      </main>
-    </>
-  );
+  return <div className="pt-28">{children}</div>;
 }
 

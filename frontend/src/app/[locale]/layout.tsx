@@ -1,9 +1,8 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { locales } from '@/i18n/config';
-import { Navigation } from "@/components/navigation";
 
-// Note: metadata and viewport are exported from root layout.tsx
+// Note: metadata and viewport are exported from root layout.tsx. Navigation is in root layout.
 
 export default async function LocaleLayout({
   children,
@@ -30,8 +29,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <Navigation />
-      <main id="main-content" className="pt-16">{children}</main>
+      <div className="pt-28">{children}</div>
     </NextIntlClientProvider>
   );
 }

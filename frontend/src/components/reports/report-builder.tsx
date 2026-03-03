@@ -241,7 +241,7 @@ export function ReportBuilder({ onSave }: ReportBuilderProps) {
           disabled={loading || !selectedPerson || !reportTitle || sections.length === 0}
           icon={<Save className="w-4 h-4" />}
         >
-          {loading ? 'Saving...' : 'Save Report'}
+          {loading ? 'Saving…' : 'Save Report'}
         </TouchOptimizedButton>
         <TouchOptimizedButton
           variant="secondary"

@@ -16,6 +16,7 @@ import { CrystalNumerologyCube } from '@/components/3d/crystal-numerology-cube';
 import { useIntersectionObserver } from '@/hooks/use-intersection-observer';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useLocalStorage } from '@/hooks/use-local-storage';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useAIChat } from '@/contexts/ai-chat-context';
 import { OnboardingModal } from '@/components/OnboardingModal';
 import { SubscriptionGate } from '@/components/SubscriptionGate';
@@ -50,7 +51,9 @@ function DashboardContent() {
   const { isOnboardingComplete, showOnboarding, triggerOnboarding, dismissOnboarding } = useOnboarding();
   const { openChat } = useAIChat();
   const isMobile = useIsMobile();
+  const reducedMotion = useReducedMotion();
   const [isLoading, setIsLoading] = useState(true);
+  const getDelay = (d: number) => (reducedMotion ? 0 : Math.min(d * 0.35, 0.4));
   const [statsRef, statsVisible] = useIntersectionObserver({
     threshold: 0.1,
   });
@@ -409,7 +412,7 @@ function DashboardContent() {
             y: 0,
           }}
           transition={{
-            delay: 0.1,
+            delay: getDelay(0.1),
           }}
           className="mb-8"
           id="numbers"
@@ -439,7 +442,7 @@ function DashboardContent() {
                       scale: 1,
                     }}
                     transition={{
-                      delay: 0.2 + index * 0.1,
+                      delay: getDelay(0.2 + index * 0.1),
                     }}
                     className="flex flex-col items-center"
                   >
@@ -486,7 +489,7 @@ function DashboardContent() {
               y: 0,
             }}
             transition={{
-              delay: 0.2,
+              delay: getDelay(0.2),
             }}
             className="mb-8"
           >
@@ -518,7 +521,7 @@ function DashboardContent() {
             y: 0,
           }}
           transition={{
-            delay: 0.3,
+            delay: getDelay(0.3),
           }}
           id="actions"
         >
@@ -538,7 +541,7 @@ function DashboardContent() {
                   y: 0,
                 }}
                 transition={{
-                  delay: 0.4 + index * 0.1,
+                  delay: getDelay(0.4 + index * 0.1),
                 }}
                 whileHover={{
                   y: -4,
@@ -583,7 +586,7 @@ function DashboardContent() {
             y: 0,
           }}
           transition={{
-            delay: 0.4,
+            delay: getDelay(0.4),
           }}
           className="mt-8"
         >
@@ -720,7 +723,7 @@ function DashboardContent() {
               y: 0,
             }}
             transition={{
-              delay: 0.5,
+              delay: getDelay(0.5),
             }}
             className="mt-8"
           >
@@ -734,7 +737,7 @@ function DashboardContent() {
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 }}
+                  transition={{ delay: getDelay(0.6) }}
                 >
                   <ChaldeanInsightsCard data={chaldeanAnalysis} />
                 </motion.div>
@@ -745,7 +748,7 @@ function DashboardContent() {
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.7 }}
+                  transition={{ delay: getDelay(0.7) }}
                 >
                   <ZodiacPlanetCard data={zodiacNumerology} />
                 </motion.div>
@@ -757,7 +760,7 @@ function DashboardContent() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: getDelay(0.8) }}
                 className="mt-6"
               >
                 <LoShuGridVisualization 
@@ -772,14 +775,14 @@ function DashboardContent() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9 }}
+                transition={{ delay: getDelay(0.9) }}
               >
                 <QuickActionsWidget />
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.0 }}
+                transition={{ delay: getDelay(1.0) }}
               >
                 <InsightsWidget />
               </motion.div>
@@ -789,14 +792,14 @@ function DashboardContent() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.1 }}
+                transition={{ delay: getDelay(1.1) }}
               >
                 <ActivityFeed />
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 }}
+                transition={{ delay: getDelay(1.2) }}
               >
                 <Recommendations />
               </motion.div>
@@ -805,7 +808,7 @@ function DashboardContent() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.3 }}
+              transition={{ delay: getDelay(1.3) }}
               className="mt-6"
             >
               <Rewards />

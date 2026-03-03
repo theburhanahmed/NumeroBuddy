@@ -538,7 +538,7 @@ function GenerateReportContent() {
 
 export default function GenerateReportPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Loading…</div>}>
       <GenerateReportContent />
     </Suspense>
   );

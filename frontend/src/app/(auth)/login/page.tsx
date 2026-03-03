@@ -76,6 +76,10 @@ function LoginContent() {
           });
         }
       }
+    },
+    onValidationFail: (field) => {
+      const el = document.getElementById(field);
+      if (el && typeof (el as HTMLInputElement).focus === 'function') (el as HTMLInputElement).focus();
     }
   });
 
@@ -145,12 +149,13 @@ function LoginContent() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email Input */}
                 <div>
-                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-white/90 mb-2">
                     Email Address
                   </label>
                   <div className="relative">
                     <MailIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400/70" />
                     <input
+                      id="email"
                       type="email"
                       name="email"
                       value={values.email}
@@ -198,12 +203,13 @@ function LoginContent() {
 
                 {/* Password Input */}
                 <div>
-                  <label className="block text-sm font-semibold text-white/90 mb-2">
+                  <label htmlFor="password" className="block text-sm font-semibold text-white/90 mb-2">
                     Password
                   </label>
                   <div className="relative">
                     <LockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400/70" />
                     <input
+                      id="password"
                       type={showPassword ? 'text' : 'password'}
                       name="password"
                       value={values.password}

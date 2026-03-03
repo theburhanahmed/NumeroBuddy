@@ -14,6 +14,7 @@ import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
 import { CosmicSkeletonLoader } from '@/components/cosmic/cosmic-skeleton-loader';
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { useAuth } from '@/contexts/auth-context';
 import { peopleAPI } from '@/lib/numerology-api';
 import { Person } from '@/types';
@@ -139,13 +140,22 @@ export default function EditPersonPage() {
         >
           {/* Header */}
           <div className="mb-8">
+            <Breadcrumbs
+              items={[
+                { label: 'People', href: '/people' },
+                ...(person ? [{ label: person.name, href: `/people/${person.id}` }, { label: 'Edit' }] : [{ label: 'Edit' }]),
+              ]}
+              showHome={false}
+              className="mb-3 text-white/70"
+            />
             <TouchOptimizedButton 
               variant="secondary" 
-              onClick={() => router.push('/people')}
+              onClick={() => router.push(person ? `/people/${person.id}` : '/people')}
               className="mb-4"
               icon={<ChevronLeft className="w-5 h-5" />}
+              ariaLabel={person ? `Back to ${person.name}` : 'Back to People'}
             >
-              Back
+              {person ? `Back to ${person.name}` : 'Back'}
             </TouchOptimizedButton>
             <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
               Edit Person

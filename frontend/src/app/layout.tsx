@@ -87,7 +87,9 @@ export default function RootLayout({
                     {/* Global Navigation */}
                     <Navigation />
 
-                    {children}
+                    <main id="main-content" className="min-h-screen scroll-mt-28 md:pb-0">
+                      {children}
+                    </main>
 
                     {/* Global UI Elements - AI chat only on dashboard for logged-in subscribers */}
                     <DashboardAIChatOnly />

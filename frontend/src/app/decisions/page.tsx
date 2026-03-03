@@ -39,7 +39,7 @@ export default function DecisionsPage() {
     return (
       <div className="relative min-h-screen bg-[#0a1628] flex items-center justify-center">
         <GlassBackground starCount={80} />
-        <p className="relative z-10 text-white">Loading...</p>
+        <p className="relative z-10 text-white">Loading…</p>
       </div>
     );
   }
