@@ -16,7 +16,8 @@ import { LandingFooter } from '@/components/landing/landing-footer'
 import { SpaceCard } from '@/components/space/space-card'
 import { SpaceButton } from '@/components/space/space-button'
 import { LiquidMetalOrb } from '@/components/effects/liquid-metal-orb'
-import { CanvasWrapper } from '@/components/3d/canvas-wrapper'
+
+export const dynamic = 'force-dynamic'
 
 export default function AINumerologistPage() {
   const router = useRouter()
