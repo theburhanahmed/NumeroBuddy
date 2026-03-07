@@ -10,7 +10,8 @@ SUBSCRIPTION_FEATURES = {
         'basic_interpretations': True,
         'name_numerology': False,
         'phone_numerology': False,
-        'lo_shu_grid': False,
+        'lo_shu_grid': True,  # Basic grid for free; enhanced visualization requires basic+
+        'numerology_lo_shu_visualization': False,
         'rectification_suggestions': False,
         'detailed_analysis': False,
         'compatibility_insights': False,
@@ -24,6 +25,7 @@ SUBSCRIPTION_FEATURES = {
         'name_numerology': True,
         'phone_numerology': False,
         'lo_shu_grid': True,
+        'numerology_lo_shu_visualization': False,
         'rectification_suggestions': True,  # Limited
         'detailed_analysis': False,
         'compatibility_insights': False,
@@ -37,6 +39,7 @@ SUBSCRIPTION_FEATURES = {
         'name_numerology': True,
         'phone_numerology': True,
         'lo_shu_grid': True,
+        'numerology_lo_shu_visualization': True,
         'rectification_suggestions': True,  # Full
         'detailed_analysis': True,
         'compatibility_insights': True,
@@ -51,6 +54,7 @@ SUBSCRIPTION_FEATURES = {
         'name_numerology': True,
         'phone_numerology': True,
         'lo_shu_grid': True,
+        'numerology_lo_shu_visualization': True,
         'rectification_suggestions': True,  # Full + Advanced
         'detailed_analysis': True,
         'compatibility_insights': True,

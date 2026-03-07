@@ -32,19 +32,13 @@ export function InstallPrompt() {
       return
     }
 
-    // Listen for beforeinstallprompt event
+    // Capture the install event. Do not call preventDefault() so the browser can show its
+    // native banner if it wants; we store the event to show our custom UI and call prompt() on Install click.
     const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault()
       const promptEvent = e as BeforeInstallPromptEvent
       setDeferredPrompt(promptEvent)
-      
-      // Only show our custom prompt UI if user hasn't dismissed it
-      // The browser's native prompt will be shown when user clicks Install
       if (!dismissed) {
-        // Show prompt after a delay
-        setTimeout(() => {
-          setShowPrompt(true)
-        }, 3000)
+        setTimeout(() => setShowPrompt(true), 3000)
       }
     }
 
@@ -161,7 +155,6 @@ export function usePWAInstall() {
     }
 
     const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
     }
 

@@ -130,16 +130,26 @@ export default function LoShuGridPage() {
   }
 
   if (error) {
+    const isUpgradeRequired = /upgrade|Basic plan|Premium plan|subscription/i.test(error);
     return (
       <CosmicPageLayout>
         <div className="flex items-center justify-center min-h-[60vh] p-4">
           <SpaceCard variant="elevated" className="p-6 max-w-md">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-red-400" />
-              <h2 className="text-xl font-bold text-white">Error</h2>
+              <h2 className="text-xl font-bold text-white">
+                {isUpgradeRequired ? 'Upgrade to unlock' : 'Error'}
+              </h2>
             </div>
             <p className="text-white/70 mb-4">{error}</p>
-            <TouchOptimizedButton onClick={fetchLoShuGrid} variant="primary">Retry</TouchOptimizedButton>
+            <div className="flex gap-3">
+              {isUpgradeRequired && (
+                <TouchOptimizedButton onClick={() => router.push('/subscription')} variant="primary">
+                  View plans
+                </TouchOptimizedButton>
+              )}
+              <TouchOptimizedButton onClick={fetchLoShuGrid} variant="secondary">Retry</TouchOptimizedButton>
+            </div>
           </SpaceCard>
         </div>
       </CosmicPageLayout>

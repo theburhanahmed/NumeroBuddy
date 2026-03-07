@@ -34,10 +34,10 @@ export function ActivityFeed({ activities: providedActivities, limit = 10 }: Act
     try {
       setLoading(true);
       const response = await numerologyAPI.getDashboardActivity({ limit });
-      setActivities(Array.isArray(response) ? response : []);
+      const list = response?.activities ?? (Array.isArray(response) ? response : []);
+      setActivities(list);
     } catch (error: any) {
       console.error('Failed to fetch activities:', error);
-      // Set empty array on error to prevent crashes
       setActivities([]);
     } finally {
       setLoading(false);
@@ -46,9 +46,12 @@ export function ActivityFeed({ activities: providedActivities, limit = 10 }: Act
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'report_generated': return FileText;
-      case 'daily_reading': return Calendar;
-      case 'remedy_completed': return Sparkles;
+      case 'report_generated':
+      case 'report': return FileText;
+      case 'daily_reading':
+      case 'reading': return Calendar;
+      case 'remedy_completed':
+      case 'remedy': return Sparkles;
       case 'visualization_viewed': return BarChart3;
       case 'profile_updated': return User;
       default: return Clock;
@@ -57,9 +60,12 @@ export function ActivityFeed({ activities: providedActivities, limit = 10 }: Act
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'report_generated': return 'text-purple-400';
-      case 'daily_reading': return 'text-cyan-400';
-      case 'remedy_completed': return 'text-green-400';
+      case 'report_generated':
+      case 'report': return 'text-purple-400';
+      case 'daily_reading':
+      case 'reading': return 'text-cyan-400';
+      case 'remedy_completed':
+      case 'remedy': return 'text-green-400';
       case 'visualization_viewed': return 'text-yellow-400';
       case 'profile_updated': return 'text-blue-400';
       default: return 'text-white/70';
