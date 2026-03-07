@@ -30,6 +30,19 @@ from django.db.migrations.loader import MigrationLoader
 
 cursor = connection.cursor()
 
+# If django_migrations table does not exist, run initial migrate and skip fix logic
+cursor.execute("""
+    SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'django_migrations'
+    )
+""")
+if not cursor.fetchone()[0]:
+    print("  → django_migrations table does not exist (fresh database). Running initial migrate...")
+    call_command('migrate', '--no-input', '--run-syncdb', verbosity=1, interactive=False)
+    print("  ✓ Initial migrations applied. Skipping migration consistency fix (not needed for fresh DB).")
+    sys.exit(0)
+
 # Define migration dependency chain for accounts app
 # Format: (migration_name, dependencies_list, table_name_if_creates_one)
 ACCOUNTS_MIGRATIONS = [
