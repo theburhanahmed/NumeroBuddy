@@ -18,8 +18,9 @@ from .serializers import (
     SubscriptionSerializer, CreateSubscriptionSerializer,
     PaymentSerializer, BillingHistorySerializer,
 )
+from django.conf import settings
 from .services import (
-    create_subscription, create_payment_intent,
+    create_subscription, create_payment_intent, create_checkout_session,
     handle_webhook_event, get_or_create_stripe_customer,
     update_subscription, cancel_subscription,
 )
@@ -78,6 +79,47 @@ def create_subscription_view(request):
         return Response(
             {'error': 'An error occurred. Please try again.'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_checkout_session_view(request):
+    """
+    Create a Stripe Checkout Session and return the URL for redirect.
+    POST /api/v1/payments/create-checkout-session/
+    Body: { "plan": "basic|premium|elite", "success_url": "...", "cancel_url": "..." (optional) }
+    """
+    plan = request.data.get('plan', 'premium')
+    if plan not in ('basic', 'premium', 'elite'):
+        return Response(
+            {'error': 'Invalid plan. Must be basic, premium, or elite.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+    success_url = request.data.get('success_url') or f'{frontend_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}'
+    cancel_url = request.data.get('cancel_url') or f'{frontend_url}/subscription/checkout'
+    try:
+        result = create_checkout_session(
+            user=request.user,
+            plan=plan,
+            success_url=success_url,
+            cancel_url=cancel_url,
+        )
+        return Response({'url': result['url'], 'session_id': result['session_id']}, status=status.HTTP_200_OK)
+    except ValueError as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error creating checkout session: {str(e)}")
+        return Response(
+            {'error': 'Payment setup failed. Please try again.'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    except Exception as e:
+        logger.error(f"Error creating checkout session: {str(e)}")
+        return Response(
+            {'error': 'An error occurred. Please try again.'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 

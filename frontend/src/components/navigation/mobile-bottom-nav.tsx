@@ -3,23 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import {
-  HomeIcon,
-  HashIcon,
-  ClockIcon,
-  MessageSquareIcon,
-  MoreHorizontalIcon,
-} from 'lucide-react';
 import { useAIChat } from '@/contexts/ai-chat-context';
 import { MobileMoreSheet } from './mobile-more-sheet';
-
-const navItems = [
-  { id: 'home', label: 'Home', icon: HomeIcon, path: '/dashboard' },
-  { id: 'numbers', label: 'My Numbers', icon: HashIcon, path: '/my-numerology' },
-  { id: 'timing', label: 'Timing', icon: ClockIcon, path: '/timing-cycles' },
-  { id: 'chat', label: 'Chat', icon: MessageSquareIcon, action: 'chat' as const },
-  { id: 'more', label: 'More', icon: MoreHorizontalIcon, action: 'more' as const },
-];
+import { mobileBottomNavItems } from '@/config/navigation';
 
 const morePaths = ['/settings', '/reports', '/consultations', '/profile'];
 
@@ -29,7 +15,7 @@ export function MobileBottomNav() {
   const { openChat } = useAIChat();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const handleClick = (item: (typeof navItems)[0]) => {
+  const handleClick = (item: (typeof mobileBottomNavItems)[0]) => {
     if (item.action === 'chat') {
       openChat();
     } else if (item.action === 'more') {
@@ -63,7 +49,7 @@ export function MobileBottomNav() {
     >
       <div className="bg-[#1a2942]/95 backdrop-blur-xl border-t border-cyan-500/20 shadow-2xl">
         <div className="flex items-center justify-around px-2 py-2">
-          {navItems.map((item) => {
+          {mobileBottomNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item);
             

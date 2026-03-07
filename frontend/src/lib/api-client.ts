@@ -221,6 +221,8 @@ export const userAPI = {
 export const paymentsAPI = {
   createSubscription: (data: { plan: string; payment_method_id?: string }) =>
     apiClient.post('/api/v1/payments/create-subscription/', data),
+  createCheckoutSession: (data: { plan: string; success_url?: string; cancel_url?: string }) =>
+    apiClient.post('/api/v1/payments/create-checkout-session/', data),
   updateSubscription: (data: { plan?: string; cancel_at_period_end?: boolean }) =>
     apiClient.post('/api/v1/payments/update-subscription/', data),
   cancelSubscription: () =>

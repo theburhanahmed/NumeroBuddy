@@ -1,8 +1,10 @@
 """
 Django admin configuration for accounts models.
 """
+from datetime import timedelta
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils import timezone
 from django.utils.html import format_html
 from django.urls import reverse
 from django.shortcuts import redirect
@@ -52,6 +54,24 @@ class UserAdmin(BaseUserAdmin):
         self.message_user(request, f'{count} user(s) set to Free plan.', messages.SUCCESS)
     set_plan_free.short_description = "Set selected users to Free plan"
     
+    def _ensure_subscription_for_plan(self, user, plan):
+        """Create or update Subscription so User and Subscription stay in sync."""
+        from payments.models import Subscription
+        now = timezone.now()
+        subscription, created = Subscription.objects.get_or_create(
+            user=user,
+            defaults={
+                'plan': plan,
+                'status': 'active',
+                'current_period_start': now,
+                'current_period_end': now + timedelta(days=30),
+            },
+        )
+        if not created:
+            subscription.plan = plan
+            subscription.status = 'active'
+            subscription.save(update_fields=['plan', 'status'])
+
     def set_plan_basic(self, request, queryset):
         """Set selected users to Basic plan."""
         count = 0
@@ -59,15 +79,11 @@ class UserAdmin(BaseUserAdmin):
             user.subscription_plan = 'basic'
             user.is_premium = True
             user.save(update_fields=['subscription_plan', 'is_premium'])
-            # Sync with subscription if it exists
-            if hasattr(user, 'subscription'):
-                user.subscription.plan = 'basic'
-                user.subscription.status = 'active'
-                user.subscription.save(update_fields=['plan', 'status'])
+            self._ensure_subscription_for_plan(user, 'basic')
             count += 1
         self.message_user(request, f'{count} user(s) set to Basic plan.', messages.SUCCESS)
     set_plan_basic.short_description = "Set selected users to Basic plan"
-    
+
     def set_plan_premium(self, request, queryset):
         """Set selected users to Premium plan."""
         count = 0
@@ -75,15 +91,11 @@ class UserAdmin(BaseUserAdmin):
             user.subscription_plan = 'premium'
             user.is_premium = True
             user.save(update_fields=['subscription_plan', 'is_premium'])
-            # Sync with subscription if it exists
-            if hasattr(user, 'subscription'):
-                user.subscription.plan = 'premium'
-                user.subscription.status = 'active'
-                user.subscription.save(update_fields=['plan', 'status'])
+            self._ensure_subscription_for_plan(user, 'premium')
             count += 1
         self.message_user(request, f'{count} user(s) set to Premium plan.', messages.SUCCESS)
     set_plan_premium.short_description = "Set selected users to Premium plan"
-    
+
     def set_plan_elite(self, request, queryset):
         """Set selected users to Elite plan."""
         count = 0
@@ -91,32 +103,36 @@ class UserAdmin(BaseUserAdmin):
             user.subscription_plan = 'elite'
             user.is_premium = True
             user.save(update_fields=['subscription_plan', 'is_premium'])
-            # Sync with subscription if it exists
-            if hasattr(user, 'subscription'):
-                user.subscription.plan = 'elite'
-                user.subscription.status = 'active'
-                user.subscription.save(update_fields=['plan', 'status'])
+            self._ensure_subscription_for_plan(user, 'elite')
             count += 1
         self.message_user(request, f'{count} user(s) set to Elite plan.', messages.SUCCESS)
     set_plan_elite.short_description = "Set selected users to Elite plan"
     
     def save_model(self, request, obj, form, change):
-        """Override save to sync with subscription model."""
+        """Override save to sync with subscription model. Creates Subscription if missing when setting paid plan."""
         super().save_model(request, obj, form, change)
-        # Sync user subscription_plan with Subscription model if it exists
-        if hasattr(obj, 'subscription'):
-            subscription = obj.subscription
-            # Map user subscription_plan to subscription plan
-            # Only sync if it's a paid plan (basic, premium, elite)
-            if obj.subscription_plan in ['basic', 'premium', 'elite']:
+        from payments.models import Subscription
+
+        if obj.subscription_plan in ['basic', 'premium', 'elite']:
+            now = timezone.now()
+            subscription, created = Subscription.objects.get_or_create(
+                user=obj,
+                defaults={
+                    'plan': obj.subscription_plan,
+                    'status': 'active',
+                    'current_period_start': now,
+                    'current_period_end': now + timedelta(days=30),
+                },
+            )
+            if not created:
                 subscription.plan = obj.subscription_plan
                 if obj.is_premium and subscription.status != 'active':
                     subscription.status = 'active'
                 subscription.save(update_fields=['plan', 'status'])
-            elif obj.subscription_plan == 'free':
-                # If set to free, cancel the subscription
-                subscription.status = 'canceled'
-                subscription.save(update_fields=['status'])
+        elif obj.subscription_plan == 'free':
+            if hasattr(obj, 'subscription'):
+                obj.subscription.status = 'canceled'
+                obj.subscription.save(update_fields=['status'])
     
     add_fieldsets = (
         (None, {

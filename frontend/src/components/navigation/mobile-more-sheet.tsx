@@ -3,28 +3,15 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  SettingsIcon,
-  FileTextIcon,
-  VideoIcon,
-  UserIcon,
-  LogOutIcon,
-  XIcon,
-} from 'lucide-react';
+import { LogOutIcon, XIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
+import { mobileMoreLinks } from '@/config/navigation';
 
 export interface MobileMoreSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const moreLinks = [
-  { label: 'Settings', path: '/settings', icon: SettingsIcon },
-  { label: 'Reports', path: '/reports', icon: FileTextIcon },
-  { label: 'Consultations', path: '/consultations', icon: VideoIcon },
-  { label: 'Profile', path: '/profile', icon: UserIcon },
-] as const;
 
 export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
   const router = useRouter();
@@ -77,7 +64,7 @@ export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
               </button>
             </div>
             <nav className="p-4 space-y-1" style={{ overscrollBehavior: 'contain' }}>
-              {moreLinks.map(({ label, path, icon: Icon }) => (
+              {mobileMoreLinks.map(({ label, path, icon: Icon }) => (
                 <button
                   key={path}
                   type="button"

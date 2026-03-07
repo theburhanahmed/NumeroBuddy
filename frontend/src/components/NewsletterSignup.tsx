@@ -7,7 +7,7 @@ export function NewsletterSignup() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual newsletter signup
+    // Newsletter backend not yet implemented; show coming soon feedback
     setIsSubmitted(true);
     setTimeout(() => {
       setEmail('');

@@ -2734,10 +2734,16 @@ def get_yearly_report(request, year=None, person_id=None):
 @throttle_classes([])  # Exempt from throttling - health checks need unlimited access
 @cache_page(30)  # Cache for 30 seconds
 def health_check(request):
-    """Lightweight health check endpoint with caching."""
-    return Response({
-        'status': 'healthy'
-    }, status=status.HTTP_200_OK)
+    """Health check for load balancers. Verifies DB connectivity; returns 503 if DB unreachable."""
+    from django.db import connection
+    try:
+        connection.ensure_connection()
+        return Response({'status': 'healthy', 'database': 'ok'}, status=status.HTTP_200_OK)
+    except Exception:
+        return Response(
+            {'status': 'unhealthy', 'database': 'error'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
 
 
 @api_view(['POST'])
