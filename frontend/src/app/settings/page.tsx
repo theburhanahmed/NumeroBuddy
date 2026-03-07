@@ -21,8 +21,16 @@ import { CosmicPageLayout } from '@/components/cosmic/cosmic-page-layout';
 import { SpaceCard } from '@/components/space/space-card';
 import { TouchOptimizedButton } from '@/components/buttons/touch-optimized-button';
 import { CosmicTooltip } from '@/components/cosmic/cosmic-tooltip';
-import { userAPI, apiKeyAPI } from '@/lib/api-client';
+import { userAPI, apiKeyAPI, notificationAPI } from '@/lib/api-client';
 import { toast } from 'sonner';
+
+// Map UI notification keys to backend notification_type (channel: in_app)
+const NOTIFICATION_TYPE_MAP: Record<string, string> = {
+  dailyReadings: 'daily_reading',
+  weeklyForecasts: 'report_ready',
+  specialEvents: 'info',
+  productUpdates: 'subscription',
+};
 
 export default function Settings() {
   const router = useRouter();
@@ -187,7 +195,10 @@ export default function Settings() {
 
   const handleSaveProfile = async () => {
     try {
-      // TODO: Implement actual save API call
+      await userAPI.updateProfile({
+        full_name: profileData.name,
+        date_of_birth: profileData.birthDate || undefined,
+      });
       toast.success('Profile updated successfully!');
     } catch (error) {
       toast.error('Failed to update profile');
@@ -200,9 +211,57 @@ export default function Settings() {
     specialEvents: true,
     productUpdates: true,
   });
+  const [notificationLoading, setNotificationLoading] = useState(false);
+  const [notificationSaving, setNotificationSaving] = useState(false);
 
-  const handleSaveNotifications = () => {
-    toast.success('Notification preferences saved!');
+  useEffect(() => {
+    if (activeTab === 'notifications') {
+      setNotificationLoading(true);
+      notificationAPI
+        .getPreferences()
+        .then((res) => {
+          const data = res.data || res;
+          if (Array.isArray(data)) {
+            const prefs: Record<string, boolean> = {
+              dailyReadings: true,
+              weeklyForecasts: true,
+              specialEvents: true,
+              productUpdates: true,
+            };
+            data.forEach((p: { notification_type: string; channel: string; enabled: boolean }) => {
+              if (p.channel === 'in_app') {
+                const key = Object.keys(NOTIFICATION_TYPE_MAP).find(
+                  (k) => NOTIFICATION_TYPE_MAP[k] === p.notification_type
+                );
+                if (key) prefs[key as keyof typeof prefs] = p.enabled;
+              }
+            });
+            setNotificationSettings(prefs);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setNotificationLoading(false));
+    }
+  }, [activeTab]);
+
+  const handleSaveNotifications = async () => {
+    try {
+      setNotificationSaving(true);
+      await notificationAPI.bulkUpdatePreferences({
+        preferences: (Object.keys(NOTIFICATION_TYPE_MAP) as Array<keyof typeof NOTIFICATION_TYPE_MAP>).map(
+          (key) => ({
+            notification_type: NOTIFICATION_TYPE_MAP[key],
+            channel: 'in_app',
+            enabled: notificationSettings[key],
+          })
+        ),
+      });
+      toast.success('Notification preferences saved!');
+    } catch (error) {
+      toast.error('Failed to save notification preferences');
+    } finally {
+      setNotificationSaving(false);
+    }
   };
 
   return (
@@ -427,11 +486,12 @@ export default function Settings() {
                 <div className="pt-4">
                   <TouchOptimizedButton
                     variant="primary"
-                    icon={<SaveIcon className="w-5 h-5" />}
+                    icon={notificationSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <SaveIcon className="w-5 h-5" />}
                     onClick={handleSaveNotifications}
                     ariaLabel="Save notification preferences"
+                    disabled={notificationSaving || notificationLoading}
                   >
-                    Save Preferences
+                    {notificationSaving ? 'Saving...' : 'Save Preferences'}
                   </TouchOptimizedButton>
                 </div>
               </div>

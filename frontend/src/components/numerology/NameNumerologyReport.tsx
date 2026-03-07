@@ -52,7 +52,6 @@ export function NameNumerologyReport({ report }: NameNumerologyReportProps) {
   };
 
   const exportPDF = () => {
-    // TODO: Implement PDF export
     toast({
       title: 'Coming Soon',
       description: 'PDF export will be available soon',

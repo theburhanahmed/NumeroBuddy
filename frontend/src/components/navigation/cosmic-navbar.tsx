@@ -1,82 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  SparklesIcon,
-  MenuIcon,
-  XIcon,
-  UserIcon,
-  SettingsIcon,
-  LogOutIcon,
-  ChevronDownIcon,
-  TrendingUpIcon,
-  HeartIcon,
-  UsersIcon,
-  Users2Icon,
-  CalendarIcon,
-  StarIcon,
-  HashIcon,
-  MountainIcon,
-  Grid3x3Icon,
-  BookOpenIcon,
-  ClockIcon,
-  FileTextIcon,
-  PhoneIcon,
-  BriefcaseIcon,
-  CarIcon,
-  FileText,
-  Plus,
-  GitCompare as Compare,
-  FileStack,
-} from 'lucide-react'
+import { SparklesIcon, MenuIcon, XIcon, UserIcon, SettingsIcon, LogOutIcon, ChevronDownIcon } from 'lucide-react'
 import { useAuth } from '@/contexts/auth-context'
 import { useAIChat } from '@/contexts/ai-chat-context'
-
-interface SubmenuItem {
-  label: string
-  path: string
-  icon: React.ComponentType<{ className?: string }>
-}
-
-interface SubmenuItems {
-  [key: string]: SubmenuItem[]
-}
-
-const submenuItems: SubmenuItems = {
-  'My Numerology': [
-    { label: 'Life Path', path: '/life-path', icon: TrendingUpIcon },
-    { label: 'Birth Chart', path: '/birth-chart', icon: StarIcon },
-    { label: 'All Numbers', path: '/my-numerology/all-numbers', icon: HashIcon },
-    { label: 'Pinnacles & Challenges', path: '/my-numerology/pinnacles', icon: MountainIcon },
-    { label: 'Lo Shu Grid', path: '/lo-shu-grid', icon: Grid3x3Icon },
-    { label: 'Karmic Analysis', path: '/my-numerology/karmic', icon: SparklesIcon },
-  ],
-  'Relationships': [
-    { label: 'Compatibility', path: '/compatibility', icon: HeartIcon },
-    { label: 'Compare People', path: '/relationships/compare', icon: UsersIcon },
-    { label: 'Family Numerology', path: '/generational-numerology', icon: Users2Icon },
-  ],
-  'Timing & Cycles': [
-    { label: 'Daily Reading', path: '/daily-reading', icon: BookOpenIcon },
-    { label: 'Forecasts', path: '/forecasts', icon: TrendingUpIcon },
-    { label: 'Auspicious Dates', path: '/auspicious-dates', icon: CalendarIcon },
-    { label: 'Personal Cycles', path: '/timing-cycles/personal', icon: ClockIcon },
-  ],
-  'Tools': [
-    { label: 'Name Analysis', path: '/name-numerology', icon: FileTextIcon },
-    { label: 'Phone Analysis', path: '/phone-numerology', icon: PhoneIcon },
-    { label: 'Business Analysis', path: '/business-name-numerology', icon: BriefcaseIcon },
-    { label: 'Asset Analysis', path: '/tools/assets', icon: CarIcon },
-  ],
-  'Reports': [
-    { label: 'My Reports', path: '/reports', icon: FileText },
-    { label: 'Generate Reports', path: '/reports/generate', icon: Plus },
-    { label: 'Combine Reports', path: '/reports/combine', icon: Compare },
-    { label: 'Bulk Generate', path: '/reports/bulk-generate', icon: FileStack },
-  ],
-}
+import { getMainNavItems, submenuItems } from '@/config/navigation'
 
 export function CosmicNavbar() {
   const router = useRouter()
@@ -93,17 +23,7 @@ export function CosmicNavbar() {
     router.push('/login')
   }
 
-  const mainNavItems = [
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'My Numerology', path: '/my-numerology', hasSubmenu: true },
-    { label: 'Relationships', path: '/relationships', hasSubmenu: true },
-    { label: 'Timing & Cycles', path: '/timing-cycles', hasSubmenu: true },
-    { label: 'Tools', path: '/tools', hasSubmenu: true },
-    { label: 'Reports', path: '/reports', hasSubmenu: true },
-    { label: 'Remedies', path: '/remedies' },
-    { label: 'Chat', action: openChat },
-    { label: 'Consultations', path: '/consultations' },
-  ]
+  const mainNavItems = useMemo(() => getMainNavItems(openChat), [openChat])
 
   // Close dropdown when clicking outside
   useEffect(() => {

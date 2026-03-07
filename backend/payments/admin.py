@@ -33,7 +33,22 @@ class SubscriptionAdmin(admin.ModelAdmin):
         }),
     )
     
-    actions = ['set_plan_basic', 'set_plan_premium', 'set_plan_elite', 'activate_subscription', 'set_active_status']
+    actions = ['set_plan_free', 'set_plan_basic', 'set_plan_premium', 'set_plan_elite', 'activate_subscription', 'set_active_status']
+
+    def set_plan_free(self, request, queryset):
+        """Set selected subscriptions to Free (cancel and sync user to free)."""
+        count = 0
+        for subscription in queryset:
+            subscription.status = 'canceled'
+            subscription.save(update_fields=['status'])
+            if subscription.user:
+                subscription.user.subscription_plan = 'free'
+                subscription.user.is_premium = False
+                subscription.user.premium_expiry = None
+                subscription.user.save(update_fields=['subscription_plan', 'is_premium', 'premium_expiry'])
+            count += 1
+        self.message_user(request, f'{count} subscription(s) set to Free (canceled). User synced.', messages.SUCCESS)
+    set_plan_free.short_description = "Set to Free (cancel & sync user)"
     
     def set_plan_basic(self, request, queryset):
         """Set selected subscriptions to Basic plan."""

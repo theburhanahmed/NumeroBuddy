@@ -64,6 +64,7 @@ This checklist covers all configuration steps required to deploy NumerAI to prod
 - [ ] Click **"Add endpoint"**
 - [ ] Enter webhook URL: `https://your-backend-domain.com/api/v1/payments/webhook/`
 - [ ] Select events to listen to:
+  - [ ] `checkout.session.completed` (for Stripe Checkout redirect flow)
   - [ ] `payment_intent.succeeded`
   - [ ] `payment_intent.payment_failed`
   - [ ] `customer.subscription.created`
@@ -540,7 +541,7 @@ DEFAULT_FROM_EMAIL=noreply@your-domain.com
 ## 🧪 10. Pre-Production Testing
 
 ### 10.1 Backend API Testing
-- [ ] Health check endpoint: `GET /api/v1/health/`
+- [ ] Health check endpoint: `GET /api/v1/health/` (returns 200 with `database: ok` when DB is reachable; 503 when DB is down)
 - [ ] User registration flow
 - [ ] OTP verification
 - [ ] User login

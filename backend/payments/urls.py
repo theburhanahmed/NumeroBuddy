@@ -8,6 +8,7 @@ app_name = 'payments'
 
 urlpatterns = [
     path('payments/create-subscription/', views.create_subscription_view, name='create-subscription'),
+    path('payments/create-checkout-session/', views.create_checkout_session_view, name='create-checkout-session'),
     path('payments/update-subscription/', views.update_subscription_view, name='update-subscription'),
     path('payments/cancel-subscription/', views.cancel_subscription_view, name='cancel-subscription'),
     path('payments/subscription-status/', views.subscription_status, name='subscription-status'),

@@ -93,6 +93,36 @@ def create_payment_intent(user: User, amount: Decimal, currency: str = 'usd', de
         raise
 
 
+def create_checkout_session(user: User, plan: str, success_url: str, cancel_url: str) -> dict:
+    """
+    Create a Stripe Checkout Session for subscription (redirect to Stripe-hosted page).
+    On success, Stripe redirects to success_url; webhook checkout.session.completed syncs DB.
+    """
+    if plan not in ('basic', 'premium', 'elite'):
+        raise ValueError(f"Invalid plan: {plan}")
+    price_id = settings.STRIPE_PRICE_IDS.get(plan)
+    if not price_id:
+        plan_prices = {'basic': 999, 'premium': 1999, 'elite': 2999}
+        price = stripe.Price.create(
+            unit_amount=plan_prices[plan],
+            currency='usd',
+            recurring={'interval': 'month'},
+            product_data={'name': f'NumerAI {plan.capitalize()} Plan', 'metadata': {'plan': plan}},
+        )
+        price_id = price.id
+    customer_id = get_or_create_stripe_customer(user)
+    session = stripe.checkout.Session.create(
+        customer=customer_id,
+        client_reference_id=str(user.id),
+        mode='subscription',
+        line_items=[{'price': price_id, 'quantity': 1}],
+        success_url=success_url,
+        cancel_url=cancel_url,
+        subscription_data={'metadata': {'plan': plan, 'user_id': str(user.id)}},
+    )
+    return {'url': session.url, 'session_id': session.id}
+
+
 def create_subscription(user: User, plan: str, payment_method_id: str = None) -> dict:
     """
     Create a Stripe subscription for the user.
@@ -256,6 +286,8 @@ def handle_webhook_event(event: dict) -> dict:
             _handle_payment_intent_succeeded(data)
         elif event_type == 'payment_intent.payment_failed':
             _handle_payment_intent_failed(data)
+        elif event_type == 'checkout.session.completed':
+            _handle_checkout_session_completed(data)
         elif event_type == 'customer.subscription.updated':
             _handle_subscription_updated(data)
         elif event_type == 'customer.subscription.deleted':
@@ -342,6 +374,56 @@ def _handle_payment_intent_failed(data: dict):
         logger.warning(f"Payment not found for failed payment intent: {payment_intent_id}")
     except Exception as e:
         logger.error(f"Error handling payment intent failed: {str(e)}")
+
+
+def _handle_checkout_session_completed(data: dict):
+    """Create or sync Subscription from Stripe Checkout Session (mode=subscription)."""
+    client_reference_id = data.get('client_reference_id')
+    subscription_id = data.get('subscription')
+    customer_id = data.get('customer')
+    if not client_reference_id or not subscription_id:
+        logger.warning("checkout.session.completed missing client_reference_id or subscription")
+        return
+    try:
+        user = User.objects.get(id=client_reference_id)
+    except User.DoesNotExist:
+        logger.error(f"User not found for checkout session: {client_reference_id}")
+        return
+    subscription_id = subscription_id if isinstance(subscription_id, str) else subscription_id.get('id')
+    try:
+        stripe_sub = stripe.Subscription.retrieve(subscription_id, expand=['items.data.price'])
+    except stripe.error.StripeError as e:
+        logger.error(f"Failed to retrieve Stripe subscription: {e}")
+        return
+    plan = (stripe_sub.get('metadata') or {}).get('plan')
+    if not plan and stripe_sub.get('items', {}).get('data'):
+        price = stripe_sub['items']['data'][0].get('price', {})
+        plan = (price.get('metadata') or {}).get('plan') or 'premium'
+    if plan not in ('basic', 'premium', 'elite'):
+        plan = 'premium'
+    subscription, created = Subscription.objects.get_or_create(
+        user=user,
+        defaults={
+            'stripe_subscription_id': stripe_sub.id,
+            'stripe_customer_id': customer_id or stripe_sub.get('customer', ''),
+            'plan': plan,
+            'status': stripe_sub.get('status', 'active'),
+            'current_period_start': datetime.fromtimestamp(stripe_sub['current_period_start'], tz=timezone.utc) if stripe_sub.get('current_period_start') else None,
+            'current_period_end': datetime.fromtimestamp(stripe_sub['current_period_end'], tz=timezone.utc) if stripe_sub.get('current_period_end') else None,
+        },
+    )
+    if not created:
+        subscription.stripe_subscription_id = stripe_sub.id
+        subscription.stripe_customer_id = customer_id or stripe_sub.get('customer', '')
+        subscription.plan = plan
+        subscription.status = stripe_sub.get('status', 'active')
+        subscription.current_period_start = datetime.fromtimestamp(stripe_sub['current_period_start'], tz=timezone.utc) if stripe_sub.get('current_period_start') else None
+        subscription.current_period_end = datetime.fromtimestamp(stripe_sub['current_period_end'], tz=timezone.utc) if stripe_sub.get('current_period_end') else None
+        subscription.save()
+    user.subscription_plan = plan
+    user.is_premium = subscription.status == 'active'
+    user.premium_expiry = subscription.current_period_end
+    user.save(update_fields=['subscription_plan', 'is_premium', 'premium_expiry'])
 
 
 def _handle_subscription_updated(data: dict):

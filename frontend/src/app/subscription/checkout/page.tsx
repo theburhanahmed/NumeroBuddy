@@ -55,20 +55,32 @@ function CheckoutContent() {
 
     setLoading(true)
     try {
+      // Prefer Stripe Checkout (redirect): user pays on Stripe-hosted page; webhook syncs DB; success page refreshes user.
+      try {
+        const sessionRes = await paymentsAPI.createCheckoutSession({
+          plan: planId,
+        })
+        const sessionData = sessionRes.data || sessionRes
+        if (sessionData?.url) {
+          toast.success('Redirecting to secure payment...')
+          window.location.href = sessionData.url
+          return
+        }
+      } catch (_) {
+        // Fallback: create subscription via API (e.g. when Stripe Checkout not configured)
+      }
+
       const response = await paymentsAPI.createSubscription({
         plan: planId,
-        payment_method_id: undefined, // Would be set from Stripe Elements
+        payment_method_id: undefined,
       })
-
       const data = response.data || response
       const clientSecret = data.client_secret
       const status = data.status
 
       if (clientSecret && status !== 'active') {
-        toast.success('Redirecting to payment...')
-        // TODO: Integrate Stripe Elements - on success, call refreshUser/refreshFeatures and redirect
+        toast.info('Payment method required. Use Stripe Checkout when configured.')
       } else {
-        // Payment completed (active or immediate) - refresh state and redirect
         await refreshUser()
         await refreshFeatures()
         toast.success('Subscription created successfully!')
