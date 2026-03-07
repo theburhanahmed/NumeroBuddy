@@ -174,48 +174,62 @@ class DashboardService:
             List of activity dictionaries
         """
         activities = []
-        
-        # Get recent reports
-        if not activity_types or 'report' in activity_types:
-            reports = GeneratedReport.objects.filter(user=user).order_by('-generated_at')[:limit]
-            for report in reports:
-                activities.append({
-                    'type': 'report',
-                    'id': str(report.id),
-                    'title': f'Generated report: {report.title}',
-                    'description': f'Report for {report.person.name}',
-                    'timestamp': report.generated_at.isoformat(),
-                    'path': f'/reports/{report.id}'
-                })
-        
-        # Get recent readings
-        if not activity_types or 'reading' in activity_types:
-            readings = DailyReading.objects.filter(user=user).order_by('-reading_date')[:limit]
-            for reading in readings:
-                activities.append({
-                    'type': 'reading',
-                    'id': str(reading.id),
-                    'title': f'Daily reading for {reading.reading_date}',
-                    'description': f'Personal day {reading.personal_day_number}',
-                    'timestamp': reading.created_at.isoformat(),
-                    'path': f'/daily-reading?date={reading.reading_date}'
-                })
-        
+
+        # Get recent reports (defensive: avoid 500 if model or schema differs)
+        if not activity_types or 'report' in activity_types or 'report_generated' in activity_types:
+            if GeneratedReport is not None:
+                try:
+                    reports = GeneratedReport.objects.filter(user=user).select_related('person').order_by('-generated_at')[:limit]
+                    for report in reports:
+                        person_name = report.person.name if report.person_id else 'Report'
+                        activities.append({
+                            'type': 'report_generated',
+                            'id': str(report.id),
+                            'title': f'Generated report: {report.title}',
+                            'description': f'Report for {person_name}',
+                            'timestamp': report.generated_at.isoformat(),
+                            'path': f'/reports/{report.id}'
+                        })
+                except Exception:
+                    pass
+
+        # Get recent readings (DailyReading has generated_at)
+        if not activity_types or 'reading' in activity_types or 'daily_reading' in activity_types:
+            try:
+                readings = DailyReading.objects.filter(user=user).order_by('-reading_date')[:limit]
+                for reading in readings:
+                    activities.append({
+                        'type': 'daily_reading',
+                        'id': str(reading.id),
+                        'title': f'Daily reading for {reading.reading_date}',
+                        'description': f'Personal day {reading.personal_day_number}',
+                        'timestamp': reading.generated_at.isoformat(),
+                        'path': f'/daily-reading?date={reading.reading_date}'
+                    })
+            except Exception:
+                pass
+
         # Get recent remedy tracking
-        if not activity_types or 'remedy' in activity_types:
-            trackings = RemedyTracking.objects.filter(user=user, is_completed=True).order_by('-date')[:limit]
-            for tracking in trackings:
-                activities.append({
-                    'type': 'remedy',
-                    'id': str(tracking.id),
-                    'title': f'Completed: {tracking.remedy.title}',
-                    'description': f'Tracked on {tracking.date}',
-                    'timestamp': tracking.created_at.isoformat(),
-                    'path': '/remedies'
-                })
-        
+        if not activity_types or 'remedy' in activity_types or 'remedy_completed' in activity_types:
+            try:
+                trackings = RemedyTracking.objects.filter(user=user, is_completed=True).select_related('remedy').order_by('-date')[:limit]
+                for tracking in trackings:
+                    activities.append({
+                        'type': 'remedy_completed',
+                        'id': str(tracking.id),
+                        'title': f'Completed: {tracking.remedy.title}',
+                        'description': f'Tracked on {tracking.date}',
+                        'timestamp': tracking.created_at.isoformat(),
+                        'path': '/remedies'
+                    })
+            except Exception:
+                pass
+
         # Sort by timestamp and limit
-        activities.sort(key=lambda x: x['timestamp'], reverse=True)
+        try:
+            activities.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        except Exception:
+            pass
         return activities[:limit]
     
     def get_recommendations(

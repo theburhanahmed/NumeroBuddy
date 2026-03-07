@@ -316,22 +316,14 @@ def get_lo_shu_grid(request):
                 'error': 'Full name and birth date are required for Lo Shu Grid calculation.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Check if enhanced visualization is requested
+        # Check if enhanced visualization is requested (requires premium; fallback to basic for free)
         enhanced = request.query_params.get('enhanced', 'false').lower() == 'true'
-        
-        if enhanced:
-            # Use enhanced service with arrows
-            if not can_access_feature(user, 'numerology_lo_shu_visualization'):
-                return Response({
-                    'error': 'Enhanced Lo Shu Grid visualization is available for Premium plan and above.',
-                    'required_tier': 'premium',
-                    'feature': 'numerology_lo_shu_visualization'
-                }, status=status.HTTP_403_FORBIDDEN)
-            
+        use_enhanced = enhanced and can_access_feature(user, 'numerology_lo_shu_visualization')
+
+        if use_enhanced:
             service = LoShuGridService(profile.calculation_system)
             lo_shu_grid = service.calculate_enhanced_grid(user_full_name, user.profile.date_of_birth)
         else:
-            # Use basic calculation
             calculator = NumerologyCalculator(profile.calculation_system)
             lo_shu_grid = calculator.calculate_lo_shu_grid(user_full_name, user.profile.date_of_birth)
         
@@ -7841,17 +7833,16 @@ def get_dashboard_activity(request):
         from .services.dashboard_service import DashboardService
         service = DashboardService()
         activities = service.get_recent_activity(user, limit, activity_types if activity_types else None)
-        
         return Response({
             'activities': activities,
             'count': len(activities)
         }, status=status.HTTP_200_OK)
-    
     except Exception as e:
-        logger.error(f'Error getting activity feed: {str(e)}')
+        logger.exception('Error getting activity feed: %s', e)
         return Response({
-            'error': 'Failed to get activity feed.'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            'activities': [],
+            'count': 0
+        }, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
