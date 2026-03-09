@@ -48,7 +48,7 @@ whitenoise==6.6.0
 
 # Security and Cryptography
 cryptography==46.0.3
-PyJWT==2.9.0
+PyJWT==2.11.0
 pycparser==2.22
 
 # Build dependencies for cryptography
