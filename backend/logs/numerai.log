@@ -31820,3 +31820,7 @@ Traceback (most recent call last):
 redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
 ERROR 2026-03-01 07:38:18,491 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 500 155543
 ERROR 2026-03-01 07:38:18,491 basehttp "POST /api/v1/auth/login/ HTTP/1.1" 500 155543
+DEBUG 2026-03-11 22:03:38,486 apps Notifications table verified
+DEBUG 2026-03-11 22:03:38,486 apps Notifications table verified
+INFO 2026-03-11 22:03:39,543 autoreload Watching for file changes with StatReloader
+INFO 2026-03-11 22:03:39,543 autoreload Watching for file changes with StatReloader

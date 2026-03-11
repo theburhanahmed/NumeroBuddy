@@ -54,6 +54,7 @@ __pycache__
 .coverage
 .coverage.*
 backend/venv/
+backend/.venv/
 frontend/node_modules/
 
 # local frontend backups
