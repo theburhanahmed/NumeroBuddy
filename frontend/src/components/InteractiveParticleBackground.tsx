@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 interface Particle {
   x: number;
   y: number;
@@ -136,16 +136,35 @@ export function InteractiveParticleBackground({
         // Draw particle with glow
         ctx.save();
         // Outer glow
-        const gradient = ctx.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, particle.size * 4);
-        gradient.addColorStop(0, `${particle.color}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`);
-        gradient.addColorStop(0.5, `${particle.color}${Math.floor(opacity * 0.3 * 255).toString(16).padStart(2, '0')}`);
+        const gradient = ctx.createRadialGradient(
+          particle.x,
+          particle.y,
+          0,
+          particle.x,
+          particle.y,
+          particle.size * 4
+        );
+        gradient.addColorStop(
+          0,
+          `${particle.color}${Math.floor(opacity * 255).
+          toString(16).
+          padStart(2, '0')}`
+        );
+        gradient.addColorStop(
+          0.5,
+          `${particle.color}${Math.floor(opacity * 0.3 * 255).
+          toString(16).
+          padStart(2, '0')}`
+        );
         gradient.addColorStop(1, `${particle.color}00`);
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size * 4, 0, Math.PI * 2);
         ctx.fill();
         // Core particle
-        ctx.fillStyle = `${particle.color}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`;
+        ctx.fillStyle = `${particle.color}${Math.floor(opacity * 255).
+        toString(16).
+        padStart(2, '0')}`;
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fill();
@@ -153,13 +172,15 @@ export function InteractiveParticleBackground({
       });
       // Draw connections between nearby particles
       particlesRef.current.forEach((particle, i) => {
-        particlesRef.current.slice(i + 1).forEach(otherParticle => {
+        particlesRef.current.slice(i + 1).forEach((otherParticle) => {
           const dx = particle.x - otherParticle.x;
           const dy = particle.y - otherParticle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < 100) {
             const opacity = (1 - distance / 100) * 0.15;
-            ctx.strokeStyle = `${particleColor}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`;
+            ctx.strokeStyle = `${particleColor}${Math.floor(opacity * 255).
+            toString(16).
+            padStart(2, '0')}`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
@@ -170,13 +191,26 @@ export function InteractiveParticleBackground({
       });
       // Draw mouse cursor glow
       if (mouseRef.current.active) {
-        const gradient = ctx.createRadialGradient(mouseRef.current.x, mouseRef.current.y, 0, mouseRef.current.x, mouseRef.current.y, mouseRadius);
+        const gradient = ctx.createRadialGradient(
+          mouseRef.current.x,
+          mouseRef.current.y,
+          0,
+          mouseRef.current.x,
+          mouseRef.current.y,
+          mouseRadius
+        );
         gradient.addColorStop(0, `${particleColor}20`);
         gradient.addColorStop(0.5, `${particleColor}10`);
         gradient.addColorStop(1, `${particleColor}00`);
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(mouseRef.current.x, mouseRef.current.y, mouseRadius, 0, Math.PI * 2);
+        ctx.arc(
+          mouseRef.current.x,
+          mouseRef.current.y,
+          mouseRadius,
+          0,
+          Math.PI * 2
+        );
         ctx.fill();
       }
       animationFrameRef.current = requestAnimationFrame(animate);
@@ -191,13 +225,30 @@ export function InteractiveParticleBackground({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isClient, prefersReducedMotion, particleCount, particleColor, glowIntensity, gravityStrength, mouseRadius]);
+  }, [
+  isClient,
+  prefersReducedMotion,
+  particleCount,
+  particleColor,
+  glowIntensity,
+  gravityStrength,
+  mouseRadius]
+  );
   if (!isClient || prefersReducedMotion) {
-    return <div className={`fixed inset-0 bg-[#0B0F19] ${className}`}>
+    return (
+      <div className={`fixed inset-0 bg-[#0B0F19] ${className}`}>
         <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent" />
-      </div>;
+      </div>);
+
   }
-  return <canvas ref={canvasRef} className={`fixed inset-0 ${className}`} style={{
-    background: '#0B0F19'
-  }} aria-hidden="true" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className={`fixed inset-0 ${className}`}
+      style={{
+        background: '#0B0F19'
+      }}
+      aria-hidden="true" />);
+
+
 }

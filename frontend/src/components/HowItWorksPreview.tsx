@@ -1,41 +1,56 @@
-'use client';
-
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { CalendarIcon, SparklesIcon, BrainIcon, TrendingUpIcon, ArrowRightIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import {
+  CalendarIcon,
+  SparklesIcon,
+  BrainIcon,
+  TrendingUpIcon,
+  ArrowRightIcon } from
+'lucide-react';
 import { TouchOptimizedButton } from './TouchOptimizedButton';
 export function HowItWorksPreview() {
-  const router = useRouter();
-  const steps = [{
+  const navigate = useNavigate();
+  const steps = [
+  {
     icon: <CalendarIcon className="w-6 h-6" />,
     title: 'Enter Birth Date',
     description: 'Your cosmic blueprint begins'
-  }, {
+  },
+  {
     icon: <SparklesIcon className="w-6 h-6" />,
     title: 'AI Analysis',
     description: 'Patterns revealed instantly'
-  }, {
+  },
+  {
     icon: <BrainIcon className="w-6 h-6" />,
     title: 'Get Insights',
     description: 'Personalized guidance'
-  }, {
+  },
+  {
     icon: <TrendingUpIcon className="w-6 h-6" />,
     title: 'Grow Daily',
     description: 'Track your journey'
   }];
-  return <section className="relative py-20 px-4 md:px-6">
+
+  return (
+    <section className="relative py-20 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} viewport={{
-        once: true
-      }} className="text-center mb-12">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0
+          }}
+          viewport={{
+            once: true
+          }}
+          className="text-center mb-12">
+
           <h2 className="text-3xl md:text-4xl font-['Playfair_Display'] font-bold text-white mb-4">
             How It Works
           </h2>
@@ -46,19 +61,29 @@ export function HowItWorksPreview() {
 
         {/* Steps */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {steps.map((step, index) => <motion.div key={step.title} initial={{
-          opacity: 0,
-          y: 20
-        }} whileInView={{
-          opacity: 1,
-          y: 0
-        }} viewport={{
-          once: true
-        }} transition={{
-          delay: index * 0.1
-        }} className="relative">
+          {steps.map((step, index) =>
+          <motion.div
+            key={step.title}
+            initial={{
+              opacity: 0,
+              y: 20
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0
+            }}
+            viewport={{
+              once: true
+            }}
+            transition={{
+              delay: index * 0.1
+            }}
+            className="relative">
+
               {/* Connection line */}
-              {index < steps.length - 1 && <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-cyan-400/50 to-transparent -translate-x-1/2 z-0" />}
+              {index < steps.length - 1 &&
+            <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-cyan-400/50 to-transparent -translate-x-1/2 z-0" />
+            }
 
               <div className="relative z-10 text-center">
                 {/* Icon */}
@@ -79,23 +104,36 @@ export function HowItWorksPreview() {
                 {/* Description */}
                 <p className="text-sm text-white/60">{step.description}</p>
               </div>
-            </motion.div>)}
+            </motion.div>
+          )}
         </div>
 
         {/* CTA */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} viewport={{
-        once: true
-      }} className="text-center">
-          <TouchOptimizedButton variant="secondary" size="lg" onClick={() => router.push('/how-it-works')} icon={<ArrowRightIcon className="w-5 h-5" />} ariaLabel="Learn more about how NumerAI works">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0
+          }}
+          viewport={{
+            once: true
+          }}
+          className="text-center">
+
+          <TouchOptimizedButton
+            variant="secondary"
+            size="lg"
+            onClick={() => navigate('/how-it-works')}
+            icon={<ArrowRightIcon className="w-5 h-5" />}
+            ariaLabel="Learn more about how NumerAI works">
+
             See Full Process
           </TouchOptimizedButton>
         </motion.div>
       </div>
-    </section>;
+    </section>);
+
 }

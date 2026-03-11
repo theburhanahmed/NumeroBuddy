@@ -1,7 +1,6 @@
-import React, { ComponentPropsWithoutRef } from 'react';
-import { cn } from '@/lib/utils';
-
-type MenuToggleProps = ComponentPropsWithoutRef<'svg'> & {
+import React, { Component } from 'react';
+import { cn } from '../../utils/cn';
+type MenuToggleProps = ComponentProps<'svg'> & {
   open: boolean;
   duration?: number;
 };

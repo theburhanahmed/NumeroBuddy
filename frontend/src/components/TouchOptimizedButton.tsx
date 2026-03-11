@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useIsMobile } from '@/hooks/use-media-query';
+import { useIsMobile } from '../hooks/useMediaQuery';
 interface TouchOptimizedButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
@@ -35,8 +35,10 @@ export function TouchOptimizedButton({
     lg: isMobile ? 'px-9 py-5 text-lg min-h-[52px]' : 'px-8 py-4 text-lg'
   };
   const variantStyles = {
-    primary: 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white border border-cyan-400/50 shadow-lg shadow-cyan-500/30',
-    secondary: 'bg-[#1a2942]/60 backdrop-blur-xl text-white border border-cyan-500/30',
+    primary:
+    'bg-gradient-to-r from-cyan-500 to-blue-600 text-white border border-cyan-400/50 shadow-lg shadow-cyan-500/30',
+    secondary:
+    'bg-[#1a2942]/60 backdrop-blur-xl text-white border border-cyan-500/30',
     ghost: 'bg-transparent text-cyan-400 border border-cyan-500/30'
   };
   const handleClick = () => {
@@ -46,25 +48,43 @@ export function TouchOptimizedButton({
     }
     onClick?.();
   };
-  return <motion.button type={type} onClick={handleClick} disabled={disabled} aria-label={ariaLabel} className={`
+  return (
+    <motion.button
+      type={type}
+      onClick={handleClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      className={`
         inline-flex items-center justify-center gap-2 font-semibold rounded-xl 
         transition-all duration-300 relative overflow-hidden
         ${sizeClasses[size]} 
         ${variantStyles[variant]} 
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}
         ${className}
-      `} whileHover={!disabled && !isMobile ? {
-    scale: 1.05,
-    y: -2
-  } : undefined} whileTap={!disabled ? {
-    scale: 0.95
-  } : undefined}
-  // Enhanced touch feedback
-  style={{
-    WebkitTapHighlightColor: 'transparent',
-    touchAction: 'manipulation'
-  }}>
+      `}
+      whileHover={
+      !disabled && !isMobile ?
+      {
+        scale: 1.05,
+        y: -2
+      } :
+      undefined
+      }
+      whileTap={
+      !disabled ?
+      {
+        scale: 0.95
+      } :
+      undefined
+      }
+      // Enhanced touch feedback
+      style={{
+        WebkitTapHighlightColor: 'transparent',
+        touchAction: 'manipulation'
+      }}>
+
       {children}
       {icon && <span className="flex-shrink-0">{icon}</span>}
-    </motion.button>;
+    </motion.button>);
+
 }

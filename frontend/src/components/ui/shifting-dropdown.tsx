@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type ReactNode } from 'react';
+import React, { useEffect, useState, Component } from 'react';
 import {
   ArrowRight,
   SparklesIcon,

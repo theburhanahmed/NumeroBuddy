@@ -1,247 +1,176 @@
-'use client';
-
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/auth-context';
-import { featureFlagsAPI } from '@/lib/numerology-api';
-
-export type SubscriptionTier = 'free' | 'basic' | 'premium' | 'elite' | 'enterprise';
-
+import React, { useEffect, useState, createContext, useContext } from 'react';
+export type SubscriptionTier = 'free' | 'premium' | 'enterprise';
 interface UsageLimits {
+  dailyReadings: {
+    used: number;
+    limit: number;
+  };
   monthlyReports: {
     used: number;
     limit: number;
   };
-  [key: string]: {
+  aiMessages: {
     used: number;
     limit: number;
   };
 }
-
-interface FeatureAccess {
-  [featureName: string]: {
-    hasAccess: boolean;
-    limits?: Record<string, any>;
-  };
-}
-
 interface SubscriptionContextType {
   tier: SubscriptionTier;
-  /** Alias for tier for components that use subscriptionPlan. */
-  subscriptionPlan: SubscriptionTier;
   setTier: (tier: SubscriptionTier) => void;
   hasAccess: (feature: string) => boolean;
+  canAccessFeature: (requiredTier: SubscriptionTier) => boolean;
   usageLimits: UsageLimits;
-  canUseFeature: (feature: string) => boolean;
-  incrementUsage: (feature: string) => void;
-  featureAccess: FeatureAccess;
-  refreshFeatures: () => Promise<void>;
-  isLoadingFeatures: boolean;
+  incrementUsage: (feature: keyof UsageLimits) => boolean;
+  canUseFeature: (feature: keyof UsageLimits) => boolean;
+  resetDailyLimits: () => void;
 }
-
-const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
-
-const tierLimits: Record<SubscriptionTier, UsageLimits> = {
+const SubscriptionContext = createContext<SubscriptionContextType | undefined>(
+  undefined
+);
+const tierHierarchy: Record<SubscriptionTier, number> = {
+  free: 0,
+  premium: 1,
+  enterprise: 2
+};
+const featureAccess: Record<string, SubscriptionTier> = {
+  // Free features
+  'basic-life-path': 'free',
+  'basic-daily-reading': 'free',
+  'basic-name-analysis': 'free',
+  // Premium features
+  'full-numerology-report': 'premium',
+  'all-calculators': 'premium',
+  'unlimited-daily-readings': 'premium',
+  remedies: 'premium',
+  'ai-chat': 'premium',
+  forecasts: 'premium',
+  'birth-chart': 'premium',
+  compatibility: 'premium',
+  'phone-numerology': 'premium',
+  'business-numerology': 'premium',
+  'auspicious-dates': 'premium',
+  'community-forum': 'premium',
+  'learning-hub': 'premium',
+  // Enterprise features
+  consultations: 'enterprise',
+  'priority-support': 'enterprise',
+  'advanced-analytics': 'enterprise',
+  'custom-reports': 'enterprise',
+  'api-access': 'enterprise'
+};
+const defaultLimits: Record<SubscriptionTier, UsageLimits> = {
   free: {
-    monthlyReports: { used: 0, limit: 1 },
-  },
-  basic: {
-    monthlyReports: { used: 0, limit: 5 },
+    dailyReadings: {
+      used: 0,
+      limit: 3
+    },
+    monthlyReports: {
+      used: 0,
+      limit: 1
+    },
+    aiMessages: {
+      used: 0,
+      limit: 0
+    }
   },
   premium: {
-    monthlyReports: { used: 0, limit: 10 },
-  },
-  elite: {
-    monthlyReports: { used: 0, limit: 50 },
+    dailyReadings: {
+      used: 0,
+      limit: -1
+    },
+    monthlyReports: {
+      used: 0,
+      limit: 10
+    },
+    aiMessages: {
+      used: 0,
+      limit: 50
+    }
   },
   enterprise: {
-    monthlyReports: { used: 0, limit: -1 }, // -1 means unlimited
-  },
-};
-
-const featureTierMap: Record<string, SubscriptionTier> = {
-  'full-numerology-report': 'premium',
-  'auspicious-dates': 'premium',
-  'ai-chat': 'premium',
-  'advanced-numerology': 'premium',
-  'monthlyReports': 'free',
-};
-
-// Map backend subscription plans to frontend tiers
-// Backend uses: free, premium, elite. Frontend display: free, premium, enterprise
-function mapBackendTierToFrontend(backendTier: string | undefined | null): SubscriptionTier {
-  if (!backendTier) return 'free';
-  
-  const tierMap: Record<string, SubscriptionTier> = {
-    'free': 'free',
-    'basic': 'premium', // deprecated: map basic to premium
-    'premium': 'premium',
-    'elite': 'enterprise',
-    'enterprise': 'enterprise',
-  };
-  
-  return tierMap[backendTier.toLowerCase()] || 'free';
-}
-
-export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  const [tier, setTierState] = useState<SubscriptionTier>('free');
-  const [usageLimits, setUsageLimits] = useState<UsageLimits>(tierLimits.free);
-  const [featureAccess, setFeatureAccess] = useState<FeatureAccess>({});
-  const [isLoadingFeatures, setIsLoadingFeatures] = useState<boolean>(false);
-
-  const refreshFeatures = useCallback(async () => {
-    if (!user) {
-      setFeatureAccess({});
-      return;
+    dailyReadings: {
+      used: 0,
+      limit: -1
+    },
+    monthlyReports: {
+      used: 0,
+      limit: -1
+    },
+    aiMessages: {
+      used: 0,
+      limit: -1
     }
-
-    try {
-      setIsLoadingFeatures(true);
-      const data = await featureFlagsAPI.getUserFeatures();
-      
-      // Map features to featureAccess object
-      const access: FeatureAccess = {};
-      data.features.forEach((feature: any) => {
-        access[feature.feature_name] = {
-          hasAccess: feature.has_access || false,
-          limits: feature.limits || {},
-        };
-      });
-      setFeatureAccess(access);
-      
-      // Update tier from backend
-      const backendTier = data.subscription_tier || 'free';
-      const userTier = mapBackendTierToFrontend(backendTier);
-      setTierState(userTier);
-      setUsageLimits(tierLimits[userTier]);
-    } catch (error) {
-      console.error('Error fetching user features:', error);
-      // Fallback to user data
-      if (user) {
-        const userTier = mapBackendTierToFrontend(
-          (user as any).subscription_plan || ((user as any).is_premium ? 'premium' : 'free')
-        );
-        setTierState(userTier);
-        setUsageLimits(tierLimits[userTier]);
-      }
-    } finally {
-      setIsLoadingFeatures(false);
-    }
-  }, [user]);
-
+  }
+};
+export function SubscriptionProvider({ children }: {children: ReactNode;}) {
+  const [tier, setTier] = useState<SubscriptionTier>('free');
+  const [usageLimits, setUsageLimits] = useState<UsageLimits>(
+    defaultLimits.free
+  );
+  // Update usage limits when tier changes
   useEffect(() => {
-    // Check user's actual subscription from backend
-    if (user) {
-      // Check if user has is_premium flag or subscription_plan
-      const userTier = mapBackendTierToFrontend(
-        (user as any).subscription_plan || ((user as any).is_premium ? 'premium' : 'free')
-      );
-      setTierState(userTier);
-      setUsageLimits(tierLimits[userTier]);
-      
-      // Fetch feature flags from API
-      refreshFeatures();
-    } else {
-      // No user, default to free
-      setTierState('free');
-      setUsageLimits(tierLimits.free);
-      setFeatureAccess({});
-    }
-
-    // Load usage from localStorage
-    const savedUsage = localStorage.getItem('subscription_usage');
-    if (savedUsage) {
-      try {
-        const parsed = JSON.parse(savedUsage);
-        setUsageLimits((prev) => ({ ...prev, ...parsed }));
-      } catch (e) {
-        // Ignore parse errors
+    setUsageLimits(defaultLimits[tier]);
+  }, [tier]);
+  const hasAccess = (feature: string): boolean => {
+    const requiredTier = featureAccess[feature];
+    if (!requiredTier) return true;
+    return tierHierarchy[tier] >= tierHierarchy[requiredTier];
+  };
+  const canAccessFeature = (requiredTier: SubscriptionTier): boolean => {
+    return tierHierarchy[tier] >= tierHierarchy[requiredTier];
+  };
+  const canUseFeature = (feature: keyof UsageLimits): boolean => {
+    const limit = usageLimits[feature];
+    if (limit.limit === -1) return true; // Unlimited
+    return limit.used < limit.limit;
+  };
+  const incrementUsage = (feature: keyof UsageLimits): boolean => {
+    if (!canUseFeature(feature)) return false;
+    setUsageLimits((prev) => ({
+      ...prev,
+      [feature]: {
+        ...prev[feature],
+        used: prev[feature].used + 1
       }
-    }
-  }, [user, refreshFeatures]);
-
-  const setTier = useCallback((newTier: SubscriptionTier) => {
-    setTierState(newTier);
-    setUsageLimits(tierLimits[newTier]);
-    localStorage.setItem('subscription_tier', newTier);
-  }, []);
-
-  const hasAccess = useCallback(
-    (feature: string): boolean => {
-      // First check feature flags API result
-      if (featureAccess[feature]) {
-        return featureAccess[feature].hasAccess;
+    }));
+    return true;
+  };
+  const resetDailyLimits = () => {
+    setUsageLimits((prev) => ({
+      ...prev,
+      dailyReadings: {
+        ...prev.dailyReadings,
+        used: 0
+      },
+      aiMessages: {
+        ...prev.aiMessages,
+        used: 0
       }
-      
-      // Fallback to tier-based check
-      const requiredTier = featureTierMap[feature] || 'free';
-      const tierHierarchy: Record<SubscriptionTier, number> = {
-        free: 0,
-        basic: 1,
-        premium: 2,
-        elite: 3,
-        enterprise: 4,
-      };
-      return tierHierarchy[tier] >= tierHierarchy[requiredTier as SubscriptionTier] || false;
-    },
-    [tier, featureAccess]
-  );
-
-  const canUseFeature = useCallback(
-    (feature: string): boolean => {
-      if (!hasAccess(feature)) return false;
-      const limit = usageLimits[feature];
-      if (!limit) return true;
-      if (limit.limit === -1) return true; // Unlimited
-      return limit.used < limit.limit;
-    },
-    [hasAccess, usageLimits]
-  );
-
-  const incrementUsage = useCallback(
-    (feature: string) => {
-      setUsageLimits((prev) => {
-        const newLimits = { ...prev };
-        if (newLimits[feature]) {
-          newLimits[feature] = {
-            ...newLimits[feature],
-            used: newLimits[feature].used + 1,
-          };
-        } else {
-          newLimits[feature] = { used: 1, limit: 1 };
-        }
-        localStorage.setItem('subscription_usage', JSON.stringify(newLimits));
-        return newLimits;
-      });
-    },
-    []
-  );
-
+    }));
+  };
   return (
     <SubscriptionContext.Provider
       value={{
         tier,
-        subscriptionPlan: tier,
         setTier,
         hasAccess,
+        canAccessFeature,
         usageLimits,
-        canUseFeature,
         incrementUsage,
-        featureAccess,
-        refreshFeatures,
-        isLoadingFeatures,
-      }}
-    >
-      {children}
-    </SubscriptionContext.Provider>
-  );
-}
+        canUseFeature,
+        resetDailyLimits
+      }}>
 
+      {children}
+    </SubscriptionContext.Provider>);
+
+}
 export function useSubscription() {
   const context = useContext(SubscriptionContext);
   if (context === undefined) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
+    throw new Error(
+      'useSubscription must be used within a SubscriptionProvider'
+    );
   }
   return context;
 }
-
