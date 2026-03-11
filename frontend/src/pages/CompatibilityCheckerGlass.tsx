@@ -27,11 +27,7 @@ export function CompatibilityCheckerGlass() {
     e.preventDefault();
     setStep('results');
   };
-  const compatibilityScore = 85; // Mock data
-  const lifePathNumbers = {
-    person1: 7,
-    person2: 3
-  };
+  const compatibilityScore = null;
   return (
     <div className="relative min-h-screen bg-[#0a1628] overflow-hidden">
       <GlassBackground starCount={60} />
@@ -295,90 +291,21 @@ export function CompatibilityCheckerGlass() {
                 y: -20
               }}>
 
-                {/* Compatibility Score */}
+                {/* Compatibility Summary (no mocked score) */}
                 <div className="text-center mb-12">
-                  <motion.div
-                  initial={{
-                    scale: 0
-                  }}
-                  animate={{
-                    scale: 1
-                  }}
-                  transition={{
-                    delay: 0.2,
-                    type: 'spring'
-                  }}
-                  className="relative w-48 h-48 mx-auto mb-8">
-
-                    <svg className="w-full h-full -rotate-90">
-                      <circle
-                      cx="96"
-                      cy="96"
-                      r="88"
-                      stroke="rgba(6, 182, 212, 0.2)"
-                      strokeWidth="12"
-                      fill="none" />
-
-                      <motion.circle
-                      cx="96"
-                      cy="96"
-                      r="88"
-                      stroke="url(#gradient)"
-                      strokeWidth="12"
-                      fill="none"
-                      strokeLinecap="round"
-                      initial={{
-                        strokeDasharray: '0 552'
-                      }}
-                      animate={{
-                        strokeDasharray: `${compatibilityScore / 100 * 552} 552`
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        delay: 0.5
-                      }} />
-
-                      <defs>
-                        <linearGradient
-                        id="gradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%">
-
-                          <stop offset="0%" stopColor="#ec4899" />
-                          <stop offset="100%" stopColor="#f43f5e" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <motion.div
-                      initial={{
-                        opacity: 0
-                      }}
-                      animate={{
-                        opacity: 1
-                      }}
-                      transition={{
-                        delay: 1
-                      }}
-                      className="text-6xl font-bold text-white">
-
-                        {compatibilityScore}%
-                      </motion.div>
-                      <div className="text-sm text-white/60">Compatibility</div>
-                    </div>
-                  </motion.div>
+                  <div className="relative w-48 h-48 mx-auto mb-8 flex items-center justify-center rounded-full border border-pink-400/40 bg-pink-500/10">
+                    <HeartIcon className="w-16 h-16 text-pink-400" />
+                  </div>
 
                   <h2 className="text-3xl font-serif text-white mb-2">
                     {person1.name || 'Person 1'} & {person2.name || 'Person 2'}
                   </h2>
                   <p className="text-xl text-pink-400">
-                    Excellent Match - Strong Cosmic Connection
+                    Explore how your numbers interact across key areas of your relationship.
                   </p>
                 </div>
 
-                {/* Life Path Numbers */}
+                {/* Life Path Numbers (conceptual preview only) */}
                 <div className="grid md:grid-cols-2 gap-6 mb-12">
                   <motion.div
                   initial={{
@@ -398,7 +325,7 @@ export function CompatibilityCheckerGlass() {
                       {person1.name || 'Person 1'}
                     </div>
                     <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-cyan-600 mb-2">
-                      {lifePathNumbers.person1}
+                      ?
                     </div>
                     <div className="text-sm text-white/80">
                       Life Path Number
@@ -423,7 +350,7 @@ export function CompatibilityCheckerGlass() {
                       {person2.name || 'Person 2'}
                     </div>
                     <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-pink-500 to-rose-600 mb-2">
-                      {lifePathNumbers.person2}
+                      ?
                     </div>
                     <div className="text-sm text-white/80">
                       Life Path Number

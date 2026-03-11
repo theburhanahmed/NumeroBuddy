@@ -51,7 +51,7 @@ export function HowItWorks() {
           </motion.div>
 
           <h1 className="text-5xl md:text-7xl font-['Playfair_Display'] font-bold text-white mb-6 leading-tight">
-            How NumerAI
+            How numerobuddy
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
               Works
             </span>
@@ -110,7 +110,7 @@ export function HowItWorks() {
           className="mt-32 mb-16">
 
           <h2 className="text-4xl md:text-5xl font-['Playfair_Display'] font-bold text-white mb-12 text-center">
-            Why NumerAI
+            Why numerobuddy
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
               Is Different
             </span>
@@ -208,7 +208,7 @@ export function HowItWorks() {
                 size="lg"
                 onClick={() => navigate('/signup')}
                 icon={<ArrowRightIcon className="w-5 h-5" />}
-                ariaLabel="Get started with NumerAI">
+                ariaLabel="Get started with numerobuddy">
 
                 Get Started Free
               </TouchOptimizedButton>

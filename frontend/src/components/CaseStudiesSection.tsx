@@ -49,7 +49,7 @@ const caseStudies: CaseStudy[] = [
   }],
 
   quote:
-  "NumerAI helped me see my natural strengths clearly. The timing guidance was spot-on—I made the leap and haven't looked back."
+  "numerobuddy helped me see my natural strengths clearly. The timing guidance was spot-on—I made the leap and haven't looked back."
 },
 {
   name: 'Sarah & Michael',
@@ -105,7 +105,7 @@ const caseStudies: CaseStudy[] = [
   }],
 
   quote:
-  "NumerAI's daily guidance kept me grounded during my pivot. Understanding my Life Path 5 need for freedom transformed how I run my business."
+  "numerobuddy's daily guidance kept me grounded during my pivot. Understanding my Life Path 5 need for freedom transformed how I run my business."
 }];
 
 const categoryColors = {
@@ -162,7 +162,7 @@ export function CaseStudiesSection() {
           </h2>
 
           <p className="text-xl text-white/70 max-w-2xl mx-auto">
-            Discover how NumerAI has transformed lives through personalized
+            Discover how numerobuddy has transformed lives through personalized
             cosmic guidance
           </p>
         </motion.div>

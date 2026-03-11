@@ -17,7 +17,7 @@ const testimonials: Testimonial[] = [
   avatar: '👩‍💼',
   rating: 5,
   lifePath: 7,
-  text: "NumerAI's insights helped me understand my life purpose with incredible clarity. The AI chat feature is like having a personal numerologist available 24/7."
+  text: "numerobuddy's insights helped me understand my life purpose with incredible clarity. The AI chat feature is like having a personal numerologist available 24/7."
 },
 {
   name: 'Marcus Rodriguez',
@@ -33,7 +33,7 @@ const testimonials: Testimonial[] = [
   avatar: '🧘‍♀️',
   rating: 5,
   lifePath: 9,
-  text: 'As a professional numerologist, I was skeptical of AI. But NumerAI combines ancient wisdom with modern technology beautifully. Highly recommend!'
+  text: 'As a professional numerologist, I was skeptical of AI. But numerobuddy combines ancient wisdom with modern technology beautifully. Highly recommend!'
 },
 {
   name: 'James Wilson',
@@ -49,7 +49,7 @@ const testimonials: Testimonial[] = [
   avatar: '🎨',
   rating: 5,
   lifePath: 3,
-  text: 'NumerAI helped me find my creative flow again. The remedies section with crystal recommendations was exactly what I needed.'
+  text: 'numerobuddy helped me find my creative flow again. The remedies section with crystal recommendations was exactly what I needed.'
 },
 {
   name: 'David Kim',
@@ -57,7 +57,7 @@ const testimonials: Testimonial[] = [
   avatar: '💼',
   rating: 5,
   lifePath: 4,
-  text: 'I use NumerAI for timing major decisions. The forecasts have been remarkably accurate, and the interface is beautiful and intuitive.'
+  text: 'I use numerobuddy for timing major decisions. The forecasts have been remarkably accurate, and the interface is beautiful and intuitive.'
 }];
 
 export function TestimonialsSection() {
@@ -110,7 +110,7 @@ export function TestimonialsSection() {
 
           <p className="text-xl text-white/70 max-w-2xl mx-auto">
             Join thousands of people who have discovered their cosmic destiny
-            with NumerAI
+            with numerobuddy
           </p>
         </motion.div>
 

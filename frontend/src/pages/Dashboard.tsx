@@ -25,9 +25,11 @@ import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAIChat } from '../contexts/AIChatContext';
+import { useAuth } from '../contexts/AuthContext';
 export function Dashboard() {
   const navigate = useNavigate();
   const { openChat } = useAIChat();
+  const { user, numerologyProfile } = useAuth();
   const isMobile = useIsMobile();
   const [statsRef, statsVisible] = useIntersectionObserver({
     threshold: 0.1
@@ -103,26 +105,27 @@ export function Dashboard() {
   }];
 
   const coreNumbers = [
-  {
-    number: 7,
-    label: 'Life Path',
-    color: 'cyan' as const
-  },
-  {
-    number: 3,
-    label: 'Destiny',
-    color: 'purple' as const
-  },
-  {
-    number: 5,
-    label: 'Soul Urge',
-    color: 'blue' as const
-  },
-  {
-    number: 9,
-    label: 'Personality',
-    color: 'pink' as const
-  }];
+    {
+      number: numerologyProfile?.lifePath ?? null,
+      label: 'Life Path',
+      color: 'cyan' as const,
+    },
+    {
+      number: numerologyProfile?.destiny ?? null,
+      label: 'Destiny',
+      color: 'purple' as const,
+    },
+    {
+      number: numerologyProfile?.soulUrge ?? null,
+      label: 'Soul Urge',
+      color: 'blue' as const,
+    },
+    {
+      number: numerologyProfile?.personality ?? null,
+      label: 'Personality',
+      color: 'pink' as const,
+    },
+  ];
 
   return (
     <CosmicPageLayout>
@@ -160,7 +163,7 @@ export function Dashboard() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-['Playfair_Display'] font-bold text-white mb-2">
-              Welcome Back, Sarah
+              Welcome back{user?.full_name ? `, ${user.full_name}` : ''}
             </h1>
             <p className="text-white/70 text-lg">
               Your cosmic dashboard awaits
@@ -249,9 +252,10 @@ export function Dashboard() {
                 className="flex flex-col items-center">
 
                     <CrystalNumerologyCube
-                  number={item.number}
-                  size={isMobile ? 'sm' : 'md'}
-                  color={item.color} />
+                      number={item.number ?? 0}
+                      size={isMobile ? 'sm' : 'md'}
+                      color={item.color}
+                    />
 
                     <p className="text-base font-semibold text-white mt-4">
                       {item.label}

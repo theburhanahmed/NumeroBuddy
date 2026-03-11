@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CalendarIcon, TrendingUpIcon, SunIcon, MoonIcon } from 'lucide-react';
 import { SpaceCard } from './SpaceCard';
+import { numerologyAPI } from '../lib/numerology-api';
 interface CycleInfo {
   number: number;
   name: string;
@@ -89,28 +90,34 @@ const cycleData: {
 };
 export function PersonalCycleCalculator() {
   const [currentDate] = useState(new Date());
-  const [personalYear, setPersonalYear] = useState(5);
-  const [personalMonth, setPersonalMonth] = useState(3);
-  const [personalDay, setPersonalDay] = useState(7);
+  const [personalYear, setPersonalYear] = useState<number | null>(null);
+  const [personalMonth, setPersonalMonth] = useState<number | null>(null);
+  const [personalDay, setPersonalDay] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    // Calculate personal cycles based on birth date (mock calculation)
-    // In real implementation, this would use actual birth date from user profile
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-    const day = currentDate.getDate();
-    // Simplified calculation (replace with actual numerology algorithm)
-    const yearSum = String(year).
-    split('').
-    reduce((sum, digit) => sum + parseInt(digit), 0);
-    const reducedYear =
-    yearSum > 9 ?
-    String(yearSum).
-    split('').
-    reduce((sum, digit) => sum + parseInt(digit), 0) :
-    yearSum;
-    setPersonalYear(reducedYear);
-    setPersonalMonth((reducedYear + month) % 9 || 9);
-    setPersonalDay((reducedYear + month + day) % 9 || 9);
+    const fetchCycles = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const profile = await numerologyAPI.getNumerologyProfile();
+        if (profile) {
+          setPersonalYear(profile.personal_year_number);
+          setPersonalMonth(profile.personal_month_number);
+        }
+        const isoDate = currentDate.toISOString().split('T')[0];
+        const daily = await numerologyAPI.getDailyReading({ date: isoDate });
+        if (daily && typeof daily.personal_day_number === 'number') {
+          setPersonalDay(daily.personal_day_number);
+        }
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load personal cycles.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCycles();
   }, [currentDate]);
   return (
     <div className="space-y-6">
@@ -162,9 +169,11 @@ export function PersonalCycleCalculator() {
             </div>
             <div>
               <h3 className="text-xl font-['Playfair_Display'] font-bold text-white">
-                Personal Year {personalYear}
+                Personal Year {personalYear ?? '–'}
               </h3>
-              <p className="text-sm text-white/60">Your annual cycle theme</p>
+              <p className="text-sm text-white/60">
+                Your annual cycle theme
+              </p>
             </div>
           </div>
 
@@ -183,10 +192,12 @@ export function PersonalCycleCalculator() {
                   type: 'spring',
                   stiffness: 200
                 }}
-                className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${cycleData[personalYear].color} flex items-center justify-center shadow-2xl`}>
+                className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${
+                  personalYear ? cycleData[personalYear].color : 'from-slate-500 to-slate-700'
+                } flex items-center justify-center shadow-2xl`}>
 
                 <span className="text-6xl font-bold text-white">
-                  {personalYear}
+                  {personalYear ?? '–'}
                 </span>
               </motion.div>
             </div>
@@ -197,23 +208,25 @@ export function PersonalCycleCalculator() {
                 <h4 className="text-sm font-semibold text-cyan-400 mb-1">
                   Theme
                 </h4>
-                <p className="text-white">{cycleData[personalYear].theme}</p>
+                  <p className="text-white">
+                    {personalYear ? cycleData[personalYear].theme : 'Your personal year will appear here.'}
+                  </p>
               </div>
               <div>
                 <h4 className="text-sm font-semibold text-cyan-400 mb-1">
                   Energy
                 </h4>
-                <p className="text-white/70">
-                  {cycleData[personalYear].energy}
-                </p>
+                  <p className="text-white/70">
+                    {personalYear ? cycleData[personalYear].energy : 'We will show your energy once available.'}
+                  </p>
               </div>
               <div>
                 <h4 className="text-sm font-semibold text-cyan-400 mb-1">
                   Advice
                 </h4>
-                <p className="text-white/70">
-                  {cycleData[personalYear].advice}
-                </p>
+                  <p className="text-white/70">
+                    {personalYear ? cycleData[personalYear].advice : 'Start by completing your numerology profile.'}
+                  </p>
               </div>
             </div>
           </div>
@@ -243,7 +256,7 @@ export function PersonalCycleCalculator() {
               </div>
               <div>
                 <h3 className="font-semibold text-white">
-                  Personal Month {personalMonth}
+                  Personal Month {personalMonth ?? '–'}
                 </h3>
                 <p className="text-xs text-white/60">Monthly focus</p>
               </div>
@@ -255,7 +268,7 @@ export function PersonalCycleCalculator() {
                   Theme
                 </h4>
                 <p className="text-sm text-white/80">
-                  {cycleData[personalMonth].theme}
+                  {personalMonth ? cycleData[personalMonth].theme : 'Your monthly focus will appear here.'}
                 </p>
               </div>
               <div>
@@ -263,7 +276,7 @@ export function PersonalCycleCalculator() {
                   Advice
                 </h4>
                 <p className="text-sm text-white/70">
-                  {cycleData[personalMonth].advice}
+                  {personalMonth ? cycleData[personalMonth].advice : 'Check back after your profile is calculated.'}
                 </p>
               </div>
             </div>
@@ -291,7 +304,7 @@ export function PersonalCycleCalculator() {
               </div>
               <div>
                 <h3 className="font-semibold text-white">
-                  Personal Day {personalDay}
+                  Personal Day {personalDay ?? '–'}
                 </h3>
                 <p className="text-xs text-white/60">Today's energy</p>
               </div>
@@ -303,7 +316,7 @@ export function PersonalCycleCalculator() {
                   Theme
                 </h4>
                 <p className="text-sm text-white/80">
-                  {cycleData[personalDay].theme}
+                  {personalDay ? cycleData[personalDay].theme : 'Your daily energy will appear here.'}
                 </p>
               </div>
               <div>
@@ -311,7 +324,7 @@ export function PersonalCycleCalculator() {
                   Advice
                 </h4>
                 <p className="text-sm text-white/70">
-                  {cycleData[personalDay].advice}
+                  {personalDay ? cycleData[personalDay].advice : 'We will show personalized advice once available.'}
                 </p>
               </div>
             </div>

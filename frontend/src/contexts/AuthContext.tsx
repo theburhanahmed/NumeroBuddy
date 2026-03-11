@@ -1,6 +1,7 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI, userAPI } from '../lib/api-client';
+import { numerologyAPI, NumerologyProfile as ApiNumerologyProfile } from '../lib/numerology-api';
 
 interface User {
   id: string;
@@ -55,15 +56,28 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
         }
 
         const storedUser = localStorage.getItem('user');
+        const storedProfile =
+          localStorage.getItem('numerobuddy_profile') || localStorage.getItem('numerai_profile');
         const accessToken = localStorage.getItem('access_token');
 
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
-          const birthDate = parsedUser.date_of_birth || parsedUser.birthDate;
-          if (birthDate) {
-            const profile = calculateNumerologyProfile(birthDate);
-            setNumerologyProfile(profile);
+          if (storedProfile) {
+            try {
+              const parsedProfile = JSON.parse(storedProfile) as NumerologyProfile;
+              setNumerologyProfile(parsedProfile);
+            } catch {
+              // Ignore malformed cached profile
+            }
+          } else if (accessToken) {
+            // Fallback: fetch real numerology profile from API
+            const apiProfile = await safeFetchNumerologyProfile();
+            if (apiProfile) {
+              setNumerologyProfile(apiProfile);
+              localStorage.setItem('numerobuddy_profile', JSON.stringify(apiProfile));
+              localStorage.removeItem('numerai_profile');
+            }
           }
           setIsLoading(false);
           return;
@@ -74,11 +88,11 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
           const profileUser = (response as any).data;
           setUser(profileUser);
           localStorage.setItem('user', JSON.stringify(profileUser));
-          const birthDate = profileUser.date_of_birth || profileUser.birthDate;
-          if (birthDate) {
-            const profile = calculateNumerologyProfile(birthDate);
-            setNumerologyProfile(profile);
-            localStorage.setItem('numerai_profile', JSON.stringify(profile));
+          const apiProfile = await safeFetchNumerologyProfile();
+          if (apiProfile) {
+            setNumerologyProfile(apiProfile);
+            localStorage.setItem('numerobuddy_profile', JSON.stringify(apiProfile));
+            localStorage.removeItem('numerai_profile');
           }
         }
       } catch (error) {
@@ -88,6 +102,7 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
           localStorage.removeItem('refresh_token');
           localStorage.removeItem('user');
           localStorage.removeItem('numerai_profile');
+          localStorage.removeItem('numerobuddy_profile');
         }
       } finally {
         setIsLoading(false);
@@ -96,24 +111,23 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
 
     hydrate();
   }, []);
-  const calculateNumerologyProfile = (birthDate: string): NumerologyProfile => {
-    // Simple mock calculation - in production, use real numerology algorithms
-    const date = new Date(birthDate);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    const lifePath = (day + month + year) % 9 || 9;
-    const destiny = day * month % 9 || 9;
-    const soulUrge = (month + year) % 9 || 9;
-    const personality = (day + year) % 9 || 9;
-    const birthDay = day % 9 || 9;
-    return {
-      lifePath,
-      destiny,
-      soulUrge,
-      personality,
-      birthDay
-    };
+
+  const mapApiProfile = (profile: ApiNumerologyProfile): NumerologyProfile => ({
+    lifePath: profile.life_path_number,
+    destiny: profile.destiny_number,
+    soulUrge: profile.soul_urge_number,
+    personality: profile.personality_number,
+    birthDay: profile.attitude_number,
+  });
+
+  const safeFetchNumerologyProfile = async (): Promise<NumerologyProfile | null> => {
+    try {
+      const apiProfile = await numerologyAPI.getNumerologyProfile();
+      if (!apiProfile) return null;
+      return mapApiProfile(apiProfile);
+    } catch {
+      return null;
+    }
   };
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -128,14 +142,11 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
       }
 
       setUser(authUser);
-
-      const birthDate = authUser.date_of_birth || authUser.birthDate;
-      if (birthDate) {
-        const profile = calculateNumerologyProfile(birthDate);
-        setNumerologyProfile(profile);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('numerai_profile', JSON.stringify(profile));
-        }
+      const apiProfile = await safeFetchNumerologyProfile();
+      if (apiProfile && typeof window !== 'undefined') {
+        setNumerologyProfile(apiProfile);
+        localStorage.setItem('numerobuddy_profile', JSON.stringify(apiProfile));
+        localStorage.removeItem('numerai_profile');
       }
     } catch (error: any) {
       const message = error?.message || 'Login failed';
@@ -188,6 +199,7 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
         localStorage.removeItem('numerai_profile');
+        localStorage.removeItem('numerobuddy_profile');
       }
       navigate('/login');
       setIsLoading(false);
@@ -197,18 +209,22 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
     if (!user) return;
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
       const updatedUser = {
         ...user,
-        ...data
+        ...data,
       };
       setUser(updatedUser);
-      localStorage.setItem('numerai_user', JSON.stringify(updatedUser));
-      // Recalculate profile if birth date changed
-      if (data.birthDate) {
-        const profile = calculateNumerologyProfile(data.birthDate);
-        setNumerologyProfile(profile);
-        localStorage.setItem('numerai_profile', JSON.stringify(profile));
+      localStorage.setItem('numerobuddy_user', JSON.stringify(updatedUser));
+      localStorage.removeItem('numerai_user');
+
+      // If birth date changed or no profile yet, refresh numerology profile from API
+      if (data.birthDate || data.date_of_birth || !numerologyProfile) {
+        const apiProfile = await safeFetchNumerologyProfile();
+        if (apiProfile) {
+          setNumerologyProfile(apiProfile);
+          localStorage.setItem('numerobuddy_profile', JSON.stringify(apiProfile));
+          localStorage.removeItem('numerai_profile');
+        }
       }
     } finally {
       setIsLoading(false);
@@ -221,7 +237,8 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
       hasCompletedOnboarding: true
     };
     setUser(updatedUser);
-    localStorage.setItem('numerai_user', JSON.stringify(updatedUser));
+    localStorage.setItem('numerobuddy_user', JSON.stringify(updatedUser));
+    localStorage.removeItem('numerai_user');
   };
   return (
     <AuthContext.Provider

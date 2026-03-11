@@ -128,7 +128,7 @@ export function HowItWorksPreview() {
             size="lg"
             onClick={() => navigate('/how-it-works')}
             icon={<ArrowRightIcon className="w-5 h-5" />}
-            ariaLabel="Learn more about how NumerAI works">
+            ariaLabel="Learn more about how numerobuddy works">
 
             See Full Process
           </TouchOptimizedButton>

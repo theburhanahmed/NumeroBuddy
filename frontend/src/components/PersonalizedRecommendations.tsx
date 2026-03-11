@@ -25,7 +25,7 @@ const recommendations: Recommendation[] = [
   type: 'reading',
   title: 'Your Daily Reading Awaits',
   description:
-  'Today is a powerful day for your Life Path 7. Discover what the cosmos has in store.',
+  'Open your daily reading to see what the numbers reveal for you today.',
   action: 'Get Reading',
   route: '/daily-readings',
   icon: <SparklesIcon className="w-6 h-6" />,
@@ -37,7 +37,7 @@ const recommendations: Recommendation[] = [
   type: 'compatibility',
   title: 'Check Compatibility',
   description:
-  'You have 2 pending compatibility analyses. See how your numbers align with others.',
+  'Explore how your numbers align with partners, friends, or collaborators.',
   action: 'Check Now',
   route: '/compatibility',
   icon: <HeartIcon className="w-6 h-6" />,
@@ -49,7 +49,7 @@ const recommendations: Recommendation[] = [
   type: 'forecast',
   title: 'Monthly Forecast Available',
   description:
-  'Your Personal Year 5 forecast for this month is ready. Plan ahead with cosmic guidance.',
+  'View predictive numerology insights to plan the month ahead with confidence.',
   action: 'View Forecast',
   route: '/forecasts',
   icon: <TrendingUpIcon className="w-6 h-6" />,

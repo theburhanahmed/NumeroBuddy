@@ -7,7 +7,7 @@ export function VideoExplainer() {
   // Placeholder video - replace with actual video URL
   const videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
   const thumbnailUrl =
-  'https://via.placeholder.com/1280x720/1a2942/00d4ff?text=NumerAI+Explainer+Video';
+  'https://via.placeholder.com/1280x720/1a2942/00d4ff?text=numerobuddy+Explainer+Video';
   return (
     <section className="relative py-20 px-4 md:px-6">
       <div className="max-w-5xl mx-auto">
@@ -49,14 +49,14 @@ export function VideoExplainer() {
           </motion.div>
 
           <h2 className="text-4xl md:text-5xl font-['Playfair_Display'] font-bold text-white mb-6">
-            See NumerAI
+            See numerobuddy
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
               In Action
             </span>
           </h2>
 
           <p className="text-xl text-white/70 max-w-2xl mx-auto">
-            Watch this 2-minute video to discover how NumerAI can transform your
+            Watch this 2-minute video to discover how numerobuddy can transform your
             life through the power of numerology
           </p>
         </motion.div>
@@ -89,7 +89,7 @@ export function VideoExplainer() {
                   {/* Thumbnail image */}
                   <img
                   src={thumbnailUrl}
-                  alt="NumerAI explainer video thumbnail"
+                  alt="numerobuddy explainer video thumbnail"
                   className="w-full h-full object-cover" />
 
 
@@ -121,7 +121,7 @@ export function VideoExplainer() {
               <div className="relative w-full h-full">
                   <iframe
                   src={`${videoUrl}?autoplay=1`}
-                  title="NumerAI Explainer Video"
+                  title="numerobuddy Explainer Video"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   className="w-full h-full" />

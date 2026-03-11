@@ -90,7 +90,7 @@ export function OnboardingModal() {
               </motion.div>
 
               <h2 className="text-3xl font-['Playfair_Display'] font-bold text-white mb-4">
-                Welcome to NumerAI
+                Welcome to numerobuddy
               </h2>
 
               <p className="text-white/70 mb-8 leading-relaxed">

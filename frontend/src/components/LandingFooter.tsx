@@ -95,7 +95,7 @@ export function LandingFooter() {
                 <SparklesIcon className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold font-['Playfair_Display'] text-white">
-                NumerAI
+                numerobuddy
               </span>
             </div>
             <p className="text-white/70 leading-relaxed mb-6">
@@ -225,7 +225,7 @@ export function LandingFooter() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-cyan-500/20 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-white/60 text-sm text-center sm:text-left">
-            © 2024 NumerAI. All rights reserved.
+            © 2024 numerobuddy. All rights reserved.
           </p>
           <p className="text-white/60 text-sm text-center sm:text-right">
             Made with ✨ and cosmic energy

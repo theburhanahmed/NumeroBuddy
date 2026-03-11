@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -7,35 +7,62 @@ import {
   BookmarkIcon,
   ShareIcon,
   ChevronLeftIcon,
-  ChevronRightIcon } from
-'lucide-react';
+  ChevronRightIcon,
+} from 'lucide-react';
 import { GlassBackground } from '../components/GlassBackground';
+import { numerologyAPI } from '../lib/numerology-api';
+
+interface DailyReadingResponse {
+  reading_date: string;
+  personal_day_number: number;
+  lucky_number?: number;
+  lucky_numbers?: number[];
+  lucky_color?: string;
+  affirmation?: string;
+  theme?: string;
+  message?: string;
+  guidance?: string[];
+}
+
 export function DailyReadingsGlass() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const todayReading = {
-    date: selectedDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }),
-    personalDay: 7,
-    theme: 'Introspection and Spiritual Growth',
-    message:
-    'Today is a powerful day for inner reflection and spiritual development. Your Personal Day 7 energy encourages you to step back from the noise of daily life and connect with your deeper wisdom. This is an excellent time for meditation, journaling, or any activity that helps you understand yourself better.',
-    guidance: [
-    'Spend time in quiet contemplation or meditation',
-    'Trust your intuition when making decisions',
-    'Seek knowledge through reading or learning',
-    'Avoid making major commitments today'],
+  const [reading, setReading] = useState<DailyReadingResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    luckyNumbers: [7, 16, 25, 34],
-    color: 'Purple',
-    affirmation:
-    'I trust my inner wisdom and embrace the journey of self-discovery.'
-  };
+  useEffect(() => {
+    const fetchReading = async () => {
+      setIsLoading(true);
+      setError(null);
+      setReading(null);
+      try {
+        const isoDate = selectedDate.toISOString().split('T')[0];
+        const data = await numerologyAPI.getDailyReading({ date: isoDate });
+        setReading(data as DailyReadingResponse);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load daily reading.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReading();
+  }, [selectedDate]);
+
+  const displayDate = selectedDate.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const luckyNumbers: number[] = reading?.lucky_numbers
+    ? reading.lucky_numbers
+    : reading?.lucky_number
+    ? [reading.lucky_number]
+    : [];
   const changeDate = (days: number) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + days);
@@ -130,9 +157,7 @@ export function DailyReadingsGlass() {
 
             <div className="px-8 py-4 rounded-2xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 flex items-center gap-3">
               <CalendarIcon className="w-5 h-5 text-cyan-400" />
-              <span className="text-white font-semibold">
-                {todayReading.date}
-              </span>
+              <span className="text-white font-semibold">{displayDate}</span>
             </div>
 
             <button
@@ -163,10 +188,10 @@ export function DailyReadingsGlass() {
                 Personal Day Number
               </div>
               <div className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-purple-400 to-indigo-600 mb-2">
-                {todayReading.personalDay}
+                {reading?.personal_day_number ?? '–'}
               </div>
               <div className="text-xl text-white font-serif">
-                {todayReading.theme}
+                {reading?.theme || 'Your daily numerology insight will appear here.'}
               </div>
             </div>
           </motion.div>
@@ -189,22 +214,35 @@ export function DailyReadingsGlass() {
             <h2 className="text-2xl font-serif text-white mb-4">
               Today's Message
             </h2>
-            <p className="text-white/80 leading-relaxed mb-6">
-              {todayReading.message}
-            </p>
+            {isLoading && (
+              <p className="text-white/60 leading-relaxed mb-6">
+                Loading your daily reading...
+              </p>
+            )}
+            {error && !isLoading && (
+              <p className="text-red-400 leading-relaxed mb-6">{error}</p>
+            )}
+            {!isLoading && !error && (
+              <p className="text-white/80 leading-relaxed mb-6">
+                {reading?.message ||
+                  'Once your numerology profile is ready, you will see a personalized daily message here.'}
+              </p>
+            )}
 
             <h3 className="text-xl font-serif text-white mb-4">
               Guidance for Today
             </h3>
             <ul className="space-y-3">
-              {todayReading.guidance.map((item, index) =>
-              <li key={index} className="flex items-start gap-3">
+              {(reading?.guidance || [
+                'Check back after your numerology profile is generated.',
+              ]).map((item, index) => (
+                <li key={index} className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <SparklesIcon className="w-3 h-3 text-purple-400" />
                   </div>
                   <span className="text-white/80">{item}</span>
                 </li>
-              )}
+              ))}
             </ul>
           </motion.div>
 
@@ -229,14 +267,19 @@ export function DailyReadingsGlass() {
                 Lucky Numbers
               </h3>
               <div className="flex flex-wrap gap-2">
-                {todayReading.luckyNumbers.map((num) =>
-                <div
-                  key={num}
-                  className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg">
-
+                {luckyNumbers.length === 0 && (
+                  <p className="text-sm text-white/60">
+                    Lucky numbers will appear here once available.
+                  </p>
+                )}
+                {luckyNumbers.map((num) => (
+                  <div
+                    key={num}
+                    className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg"
+                  >
                     {num}
                   </div>
-                )}
+                ))}
               </div>
             </motion.div>
 
@@ -261,7 +304,7 @@ export function DailyReadingsGlass() {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-purple-500 shadow-lg" />
                 <span className="text-white font-semibold">
-                  {todayReading.color}
+                  {reading?.lucky_color || 'Coming soon'}
                 </span>
               </div>
             </motion.div>
@@ -285,7 +328,7 @@ export function DailyReadingsGlass() {
                 Affirmation
               </h3>
               <p className="text-white/80 italic leading-relaxed">
-                "{todayReading.affirmation}"
+                "{reading?.affirmation || 'I am open to the guidance of the numbers in my life.'}"
               </p>
             </motion.div>
           </div>

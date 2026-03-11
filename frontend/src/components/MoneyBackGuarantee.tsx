@@ -50,7 +50,7 @@ export function MoneyBackGuarantee() {
             </h3>
 
             <p className="text-lg text-white/80 mb-8 max-w-2xl">
-              Try NumerAI risk-free. If you're not completely satisfied with
+              Try numerobuddy risk-free. If you're not completely satisfied with
               your Premium or Enterprise plan within 30 days, we'll refund your
               payment—no questions asked.
             </p>

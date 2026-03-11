@@ -92,7 +92,7 @@ export function AppNavbar() {
                   <SparklesIcon className="w-6 h-6 text-white" />
                 </div>
                 <span className="text-xl font-bold font-['Playfair_Display'] text-white hidden sm:inline">
-                  NumerAI
+                  numerobuddy
                 </span>
               </motion.button>
 

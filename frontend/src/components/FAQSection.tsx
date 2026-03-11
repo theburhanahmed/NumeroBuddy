@@ -18,12 +18,12 @@ const faqs: FAQItem[] = [
   'Our AI is trained on extensive numerological databases and validated against traditional numerology practices. Users report 98% satisfaction with accuracy. The AI continuously learns and improves, combining ancient wisdom with pattern recognition to provide increasingly precise insights.'
 },
 {
-  question: 'What makes NumerAI different from other numerology apps?',
+  question: 'What makes numerobuddy different from other numerology apps?',
   answer:
-  'NumerAI uniquely combines AI technology with traditional numerology, offering 24/7 chat support, interactive 3D visualizations, and personalized daily guidance. Our platform is designed by numerology experts and built with cutting-edge technology for the most comprehensive experience available.'
+  'numerobuddy uniquely combines AI technology with traditional numerology, offering 24/7 chat support, interactive 3D visualizations, and personalized daily guidance. Our platform is designed by numerology experts and built with cutting-edge technology for the most comprehensive experience available.'
 },
 {
-  question: 'Can I try NumerAI before subscribing?',
+  question: 'Can I try numerobuddy before subscribing?',
   answer:
   'Yes! We offer a free plan that includes basic readings, 3 daily insights, and community access. You can explore the platform and experience the quality of our insights before upgrading to Premium for unlimited access.'
 },
@@ -38,7 +38,7 @@ const faqs: FAQItem[] = [
   'Absolutely. We use bank-level SSL encryption to protect your data. Your information is never shared with third parties, and you can delete your account and all associated data at any time. Privacy and security are our top priorities.'
 },
 {
-  question: 'Can I use NumerAI for relationship compatibility?',
+  question: 'Can I use numerobuddy for relationship compatibility?',
   answer:
   'Yes! Our Compatibility Checker analyzes the numerological dynamics between two people, providing insights for romantic relationships, friendships, and business partnerships. It examines Life Path numbers, Destiny numbers, and other key factors to show areas of harmony and potential challenges.'
 },
@@ -170,7 +170,7 @@ export function FAQSection() {
           </h2>
 
           <p className="text-xl text-white/70 max-w-2xl mx-auto">
-            Everything you need to know about NumerAI and numerology
+            Everything you need to know about numerobuddy and numerology
           </p>
         </motion.div>
 
