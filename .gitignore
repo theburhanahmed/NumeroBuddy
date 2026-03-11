@@ -56,6 +56,9 @@ __pycache__
 backend/venv/
 frontend/node_modules/
 
+# local frontend backups
+frontend_backup_*/
+
 # Deployment configs with sensitive data
 deploy/digitalocean/deploy-config.env
 **/.env.production

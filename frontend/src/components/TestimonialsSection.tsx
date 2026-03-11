@@ -10,42 +10,48 @@ interface Testimonial {
   text: string;
   lifePath?: number;
 }
-const testimonials: Testimonial[] = [{
+const testimonials: Testimonial[] = [
+{
   name: 'Sarah Chen',
   role: 'Life Coach',
   avatar: '👩‍💼',
   rating: 5,
   lifePath: 7,
   text: "NumerAI's insights helped me understand my life purpose with incredible clarity. The AI chat feature is like having a personal numerologist available 24/7."
-}, {
+},
+{
   name: 'Marcus Rodriguez',
   role: 'Entrepreneur',
   avatar: '👨‍💻',
   rating: 5,
   lifePath: 8,
   text: 'The compatibility checker saved my business partnership. Understanding our numerological dynamics helped us work together more effectively.'
-}, {
+},
+{
   name: 'Priya Sharma',
   role: 'Spiritual Guide',
   avatar: '🧘‍♀️',
   rating: 5,
   lifePath: 9,
   text: 'As a professional numerologist, I was skeptical of AI. But NumerAI combines ancient wisdom with modern technology beautifully. Highly recommend!'
-}, {
+},
+{
   name: 'James Wilson',
   role: 'Software Engineer',
   avatar: '👨‍🔬',
   rating: 5,
   lifePath: 5,
   text: 'The accuracy is mind-blowing. The daily readings have become part of my morning routine, and the birth chart visualization is stunning.'
-}, {
+},
+{
   name: 'Elena Popov',
   role: 'Artist',
   avatar: '🎨',
   rating: 5,
   lifePath: 3,
   text: 'NumerAI helped me find my creative flow again. The remedies section with crystal recommendations was exactly what I needed.'
-}, {
+},
+{
   name: 'David Kim',
   role: 'Financial Advisor',
   avatar: '💼',
@@ -53,30 +59,43 @@ const testimonials: Testimonial[] = [{
   lifePath: 4,
   text: 'I use NumerAI for timing major decisions. The forecasts have been remarkably accurate, and the interface is beautiful and intuitive.'
 }];
+
 export function TestimonialsSection() {
-  return <section className="relative py-20 px-4 md:px-6">
+  return (
+    <section className="relative py-20 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} viewport={{
-        once: true
-      }} className="text-center mb-16">
-          <motion.div initial={{
-          opacity: 0,
-          scale: 0.9
-        }} whileInView={{
-          opacity: 1,
-          scale: 1
-        }} viewport={{
-          once: true
-        }} transition={{
-          delay: 0.1
-        }} className="inline-block mb-6">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0
+          }}
+          viewport={{
+            once: true
+          }}
+          className="text-center mb-16">
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              scale: 0.9
+            }}
+            whileInView={{
+              opacity: 1,
+              scale: 1
+            }}
+            viewport={{
+              once: true
+            }}
+            transition={{
+              delay: 0.1
+            }}
+            className="inline-block mb-6">
+
             <span className="px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-semibold backdrop-blur-xl">
               ⭐ Trusted by Thousands
             </span>
@@ -97,17 +116,24 @@ export function TestimonialsSection() {
 
         {/* Testimonials Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testimonials.map((testimonial, index) => <motion.div key={testimonial.name} initial={{
-          opacity: 0,
-          y: 20
-        }} whileInView={{
-          opacity: 1,
-          y: 0
-        }} viewport={{
-          once: true
-        }} transition={{
-          delay: index * 0.1
-        }}>
+          {testimonials.map((testimonial, index) =>
+          <motion.div
+            key={testimonial.name}
+            initial={{
+              opacity: 0,
+              y: 20
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0
+            }}
+            viewport={{
+              once: true
+            }}
+            transition={{
+              delay: index * 0.1
+            }}>
+
               <SpaceCard variant="premium" className="p-6 h-full flex flex-col">
                 {/* Quote Icon */}
                 <div className="mb-4">
@@ -116,7 +142,12 @@ export function TestimonialsSection() {
 
                 {/* Rating */}
                 <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => <StarIcon key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
+                  {[...Array(testimonial.rating)].map((_, i) =>
+                <StarIcon
+                  key={i}
+                  className="w-4 h-4 fill-amber-400 text-amber-400" />
+
+                )}
                 </div>
 
                 {/* Testimonial Text */}
@@ -137,57 +168,81 @@ export function TestimonialsSection() {
                       {testimonial.role}
                     </div>
                   </div>
-                  {testimonial.lifePath && <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-indigo-600/20 flex items-center justify-center border border-purple-400/30">
+                  {testimonial.lifePath &&
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-indigo-600/20 flex items-center justify-center border border-purple-400/30">
                       <span className="text-sm font-bold text-purple-300">
                         {testimonial.lifePath}
                       </span>
-                    </div>}
+                    </div>
+                }
                 </div>
               </SpaceCard>
-            </motion.div>)}
+            </motion.div>
+          )}
         </div>
 
         {/* Stats Row */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} viewport={{
-        once: true
-      }} transition={{
-        delay: 0.3
-      }} className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
-          {[{
-          value: '50K+',
-          label: 'Happy Users'
-        }, {
-          value: '500K+',
-          label: 'Readings Generated'
-        }, {
-          value: '4.9/5',
-          label: 'Average Rating'
-        }, {
-          value: '98%',
-          label: 'Satisfaction Rate'
-        }].map((stat, index) => <motion.div key={stat.label} initial={{
-          opacity: 0,
-          scale: 0.9
-        }} whileInView={{
-          opacity: 1,
-          scale: 1
-        }} viewport={{
-          once: true
-        }} transition={{
-          delay: 0.4 + index * 0.1
-        }} className="text-center">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0
+          }}
+          viewport={{
+            once: true
+          }}
+          transition={{
+            delay: 0.3
+          }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
+
+          {[
+          {
+            value: '50K+',
+            label: 'Happy Users'
+          },
+          {
+            value: '500K+',
+            label: 'Readings Generated'
+          },
+          {
+            value: '4.9/5',
+            label: 'Average Rating'
+          },
+          {
+            value: '98%',
+            label: 'Satisfaction Rate'
+          }].
+          map((stat, index) =>
+          <motion.div
+            key={stat.label}
+            initial={{
+              opacity: 0,
+              scale: 0.9
+            }}
+            whileInView={{
+              opacity: 1,
+              scale: 1
+            }}
+            viewport={{
+              once: true
+            }}
+            transition={{
+              delay: 0.4 + index * 0.1
+            }}
+            className="text-center">
+
               <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-2">
                 {stat.value}
               </div>
               <div className="text-sm text-white/60">{stat.label}</div>
-            </motion.div>)}
+            </motion.div>
+          )}
         </motion.div>
       </div>
-    </section>;
+    </section>);
+
 }

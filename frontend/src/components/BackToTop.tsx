@@ -26,35 +26,52 @@ export function BackToTop() {
       behavior: 'smooth'
     });
   };
-  return <AnimatePresence>
-      {isVisible && <motion.button initial={{
-      opacity: 0,
-      scale: 0.8,
-      y: 20
-    }} animate={{
-      opacity: 1,
-      scale: 1,
-      y: 0
-    }} exit={{
-      opacity: 0,
-      scale: 0.8,
-      y: 20
-    }} onClick={scrollToTop} className="fixed bottom-8 right-8 z-50 p-4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 border border-cyan-400/50" whileHover={{
-      scale: 1.1,
-      y: -4
-    }} whileTap={{
-      scale: 0.9
-    }} aria-label="Back to top">
+  return (
+    <AnimatePresence>
+      {isVisible &&
+      <motion.button
+        initial={{
+          opacity: 0,
+          scale: 0.8,
+          y: 20
+        }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+          y: 0
+        }}
+        exit={{
+          opacity: 0,
+          scale: 0.8,
+          y: 20
+        }}
+        onClick={scrollToTop}
+        className="fixed bottom-8 right-8 z-50 p-4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 border border-cyan-400/50"
+        whileHover={{
+          scale: 1.1,
+          y: -4
+        }}
+        whileTap={{
+          scale: 0.9
+        }}
+        aria-label="Back to top">
+
           <ArrowUpIcon className="w-6 h-6" />
 
           {/* Floating animation */}
-          <motion.div className="absolute inset-0 rounded-full" animate={{
-        y: [0, -4, 0]
-      }} transition={{
-        duration: 2,
-        repeat: Infinity,
-        ease: 'easeInOut'
-      }} />
-        </motion.button>}
-    </AnimatePresence>;
+          <motion.div
+          className="absolute inset-0 rounded-full"
+          animate={{
+            y: [0, -4, 0]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: 'easeInOut'
+          }} />
+
+        </motion.button>
+      }
+    </AnimatePresence>);
+
 }

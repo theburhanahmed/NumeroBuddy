@@ -1,13 +1,11 @@
-'use client';
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { SparklesIcon, ArrowRightIcon } from 'lucide-react';
 import { SpaceCard } from './SpaceCard';
 import { TouchOptimizedButton } from './TouchOptimizedButton';
 export function InteractiveDemo() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [birthDate, setBirthDate] = useState('');
   const [lifePathNumber, setLifePathNumber] = useState<number | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -104,29 +102,41 @@ export function InteractiveDemo() {
       color: 'from-green-500 to-cyan-600'
     }
   };
-  return <section className="relative py-20 px-4 md:px-6">
+  return (
+    <section className="relative py-20 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} viewport={{
-        once: true
-      }} className="text-center mb-12">
-          <motion.div initial={{
-          opacity: 0,
-          scale: 0.9
-        }} whileInView={{
-          opacity: 1,
-          scale: 1
-        }} viewport={{
-          once: true
-        }} transition={{
-          delay: 0.1
-        }} className="inline-block mb-6">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0
+          }}
+          viewport={{
+            once: true
+          }}
+          className="text-center mb-12">
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              scale: 0.9
+            }}
+            whileInView={{
+              opacity: 1,
+              scale: 1
+            }}
+            viewport={{
+              once: true
+            }}
+            transition={{
+              delay: 0.1
+            }}
+            className="inline-block mb-6">
+
             <span className="px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 rounded-full text-cyan-400 text-sm font-semibold backdrop-blur-xl">
               ✨ Try It Now
             </span>
@@ -146,27 +156,56 @@ export function InteractiveDemo() {
         </motion.div>
 
         {/* Interactive Calculator */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} viewport={{
-        once: true
-      }} transition={{
-        delay: 0.2
-      }}>
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0
+          }}
+          viewport={{
+            once: true
+          }}
+          transition={{
+            delay: 0.2
+          }}>
+
           <SpaceCard variant="premium" className="p-8 md:p-12">
             {!lifePathNumber ?
-          // Input form
-          <div className="max-w-md mx-auto">
-                <label htmlFor="birthdate" className="block text-white font-semibold mb-3 text-center">
+            // Input form
+            <div className="max-w-md mx-auto">
+                <label
+                htmlFor="birthdate"
+                className="block text-white font-semibold mb-3 text-center">
+
                   Enter Your Birth Date
                 </label>
-                <input id="birthdate" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} max={new Date().toISOString().split('T')[0]} className="w-full px-4 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/30 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors mb-6" />
+                <input
+                id="birthdate"
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                className="w-full px-4 py-3 bg-[#1a2942]/60 backdrop-blur-xl border border-cyan-500/30 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors mb-6" />
 
-                <TouchOptimizedButton variant="primary" size="lg" onClick={() => calculateLifePath(birthDate)} disabled={!birthDate || isCalculating} className="w-full" icon={isCalculating ? <SparklesIcon className="w-5 h-5 animate-spin" /> : <SparklesIcon className="w-5 h-5" />} ariaLabel="Calculate your Life Path number">
+
+                <TouchOptimizedButton
+                variant="primary"
+                size="lg"
+                onClick={() => calculateLifePath(birthDate)}
+                disabled={!birthDate || isCalculating}
+                className="w-full"
+                icon={
+                isCalculating ?
+                <SparklesIcon className="w-5 h-5 animate-spin" /> :
+
+                <SparklesIcon className="w-5 h-5" />
+
+                }
+                ariaLabel="Calculate your Life Path number">
+
                   {isCalculating ? 'Calculating...' : 'Calculate My Life Path'}
                 </TouchOptimizedButton>
 
@@ -174,137 +213,200 @@ export function InteractiveDemo() {
                   Your data is never stored or shared
                 </p>
               </div> :
-          // Result display
-          <motion.div initial={{
-            opacity: 0,
-            scale: 0.9
-          }} animate={{
-            opacity: 1,
-            scale: 1
-          }} transition={{
-            duration: 0.5
-          }} className="text-center">
+
+            // Result display
+            <motion.div
+              initial={{
+                opacity: 0,
+                scale: 0.9
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1
+              }}
+              transition={{
+                duration: 0.5
+              }}
+              className="text-center">
+
                 {/* Life Path Number */}
-                <motion.div initial={{
-              scale: 0
-            }} animate={{
-              scale: 1
-            }} transition={{
-              delay: 0.2,
-              type: 'spring',
-              stiffness: 200
-            }} className={`w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br ${lifePathMeanings[lifePathNumber].color} flex items-center justify-center shadow-2xl`}>
+                <motion.div
+                initial={{
+                  scale: 0
+                }}
+                animate={{
+                  scale: 1
+                }}
+                transition={{
+                  delay: 0.2,
+                  type: 'spring',
+                  stiffness: 200
+                }}
+                className={`w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br ${lifePathMeanings[lifePathNumber].color} flex items-center justify-center shadow-2xl`}>
+
                   <span className="text-6xl font-bold text-white">
                     {lifePathNumber}
                   </span>
                 </motion.div>
 
                 {/* Title */}
-                <motion.h3 initial={{
-              opacity: 0,
-              y: 20
-            }} animate={{
-              opacity: 1,
-              y: 0
-            }} transition={{
-              delay: 0.4
-            }} className="text-3xl font-['Playfair_Display'] font-bold text-white mb-3">
+                <motion.h3
+                initial={{
+                  opacity: 0,
+                  y: 20
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0
+                }}
+                transition={{
+                  delay: 0.4
+                }}
+                className="text-3xl font-['Playfair_Display'] font-bold text-white mb-3">
+
                   {lifePathMeanings[lifePathNumber].title}
                 </motion.h3>
 
                 {/* Description */}
-                <motion.p initial={{
-              opacity: 0,
-              y: 20
-            }} animate={{
-              opacity: 1,
-              y: 0
-            }} transition={{
-              delay: 0.5
-            }} className="text-lg text-white/70 mb-8 max-w-md mx-auto">
+                <motion.p
+                initial={{
+                  opacity: 0,
+                  y: 20
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0
+                }}
+                transition={{
+                  delay: 0.5
+                }}
+                className="text-lg text-white/70 mb-8 max-w-md mx-auto">
+
                   {lifePathMeanings[lifePathNumber].description}
                 </motion.p>
 
                 {/* CTA */}
-                <motion.div initial={{
-              opacity: 0,
-              y: 20
-            }} animate={{
-              opacity: 1,
-              y: 0
-            }} transition={{
-              delay: 0.6
-            }} className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <TouchOptimizedButton variant="primary" size="lg" onClick={() => router.push('/signup')} icon={<ArrowRightIcon className="w-5 h-5" />} ariaLabel="Get your full reading">
+                <motion.div
+                initial={{
+                  opacity: 0,
+                  y: 20
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0
+                }}
+                transition={{
+                  delay: 0.6
+                }}
+                className="flex flex-col sm:flex-row gap-4 justify-center">
+
+                  <TouchOptimizedButton
+                  variant="primary"
+                  size="lg"
+                  onClick={() => navigate('/signup')}
+                  icon={<ArrowRightIcon className="w-5 h-5" />}
+                  ariaLabel="Get your full reading">
+
                     Get Full Reading
                   </TouchOptimizedButton>
 
-                  <TouchOptimizedButton variant="secondary" size="lg" onClick={() => {
-                setLifePathNumber(null);
-                setBirthDate('');
-              }} ariaLabel="Try another date">
+                  <TouchOptimizedButton
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => {
+                    setLifePathNumber(null);
+                    setBirthDate('');
+                  }}
+                  ariaLabel="Try another date">
+
                     Try Another Date
                   </TouchOptimizedButton>
                 </motion.div>
 
                 {/* Teaser */}
-                <motion.div initial={{
-              opacity: 0
-            }} animate={{
-              opacity: 1
-            }} transition={{
-              delay: 0.8
-            }} className="mt-8 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
+                <motion.div
+                initial={{
+                  opacity: 0
+                }}
+                animate={{
+                  opacity: 1
+                }}
+                transition={{
+                  delay: 0.8
+                }}
+                className="mt-8 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
+
                   <p className="text-sm text-cyan-300">
                     ✨ This is just the beginning! Sign up for your complete
                     numerology profile including Destiny, Soul Urge, and
                     Personality numbers.
                   </p>
                 </motion.div>
-              </motion.div>}
+              </motion.div>
+            }
           </SpaceCard>
         </motion.div>
 
         {/* Why it matters */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} viewport={{
-        once: true
-      }} transition={{
-        delay: 0.4
-      }} className="grid sm:grid-cols-3 gap-6 mt-12">
-          {[{
-          icon: '🎯',
-          title: 'Life Purpose',
-          desc: 'Understand your core mission'
-        }, {
-          icon: '💪',
-          title: 'Strengths',
-          desc: 'Discover your natural talents'
-        }, {
-          icon: '🌟',
-          title: 'Growth Path',
-          desc: 'Navigate challenges with clarity'
-        }].map((item, index) => <motion.div key={item.title} initial={{
-          opacity: 0,
-          y: 20
-        }} whileInView={{
-          opacity: 1,
-          y: 0
-        }} viewport={{
-          once: true
-        }} transition={{
-          delay: 0.5 + index * 0.1
-        }} className="text-center">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0
+          }}
+          viewport={{
+            once: true
+          }}
+          transition={{
+            delay: 0.4
+          }}
+          className="grid sm:grid-cols-3 gap-6 mt-12">
+
+          {[
+          {
+            icon: '🎯',
+            title: 'Life Purpose',
+            desc: 'Understand your core mission'
+          },
+          {
+            icon: '💪',
+            title: 'Strengths',
+            desc: 'Discover your natural talents'
+          },
+          {
+            icon: '🌟',
+            title: 'Growth Path',
+            desc: 'Navigate challenges with clarity'
+          }].
+          map((item, index) =>
+          <motion.div
+            key={item.title}
+            initial={{
+              opacity: 0,
+              y: 20
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0
+            }}
+            viewport={{
+              once: true
+            }}
+            transition={{
+              delay: 0.5 + index * 0.1
+            }}
+            className="text-center">
+
               <div className="text-4xl mb-3">{item.icon}</div>
               <h4 className="text-white font-semibold mb-2">{item.title}</h4>
               <p className="text-sm text-white/60">{item.desc}</p>
-            </motion.div>)}
+            </motion.div>
+          )}
         </motion.div>
       </div>
-    </section>;
+    </section>);
+
 }

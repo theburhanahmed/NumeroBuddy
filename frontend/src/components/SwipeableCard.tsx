@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion';
-import { useIsMobile } from '@/hooks/use-media-query';
+import { useIsMobile } from '../hooks/useMediaQuery';
 interface SwipeableCardProps {
   children: React.ReactNode;
   onSwipeLeft?: () => void;
@@ -37,20 +37,35 @@ export function SwipeableCard({
     // Non-swipeable version for desktop
     return <div className={className}>{children}</div>;
   }
-  return <motion.div className={className} style={{
-    x,
-    rotate,
-    opacity
-  }} drag="x" dragConstraints={{
-    left: 0,
-    right: 0
-  }} dragElastic={0.7} onDragEnd={handleDragEnd} animate={exitX !== 0 ? {
-    x: exitX
-  } : {}} transition={{
-    type: 'spring',
-    stiffness: 300,
-    damping: 30
-  }}>
+  return (
+    <motion.div
+      className={className}
+      style={{
+        x,
+        rotate,
+        opacity
+      }}
+      drag="x"
+      dragConstraints={{
+        left: 0,
+        right: 0
+      }}
+      dragElastic={0.7}
+      onDragEnd={handleDragEnd}
+      animate={
+      exitX !== 0 ?
+      {
+        x: exitX
+      } :
+      {}
+      }
+      transition={{
+        type: 'spring',
+        stiffness: 300,
+        damping: 30
+      }}>
+
       {children}
-    </motion.div>;
+    </motion.div>);
+
 }

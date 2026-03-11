@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button, buttonVariants } from './button';
-import { cn } from '@/lib/utils';
+import { cn } from '../../utils/cn';
 import { MenuToggleIcon } from './menu-toggle-icon';
-import { useScroll } from '@/hooks/use-scroll';
+import { useScroll } from '../../hooks/useScroll';
 import { SparklesIcon } from 'lucide-react';
 export function Header() {
   const [open, setOpen] = useState(false);

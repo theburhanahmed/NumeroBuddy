@@ -1,5 +1,5 @@
 import React, { lazy } from 'react';
-import { useIsMobile, useIsTablet } from '@/hooks/use-media-query';
+import { useIsMobile, useIsTablet } from '../hooks/useMediaQuery';
 interface ResponsiveCosmicImageProps {
   src: string;
   alt: string;
@@ -22,9 +22,18 @@ export function ResponsiveCosmicImage({
 }: ResponsiveCosmicImageProps) {
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
-  const imageSrc = isMobile && mobileSrc ? mobileSrc : isTablet && tabletSrc ? tabletSrc : src;
-  return <img src={imageSrc} alt={alt} loading={loading} className={className} style={{
-    maxWidth: '100%',
-    height: 'auto'
-  }} />;
+  const imageSrc =
+  isMobile && mobileSrc ? mobileSrc : isTablet && tabletSrc ? tabletSrc : src;
+  return (
+    <img
+      src={imageSrc}
+      alt={alt}
+      loading={loading}
+      className={className}
+      style={{
+        maxWidth: '100%',
+        height: 'auto'
+      }} />);
+
+
 }
