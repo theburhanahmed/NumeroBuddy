@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -8,47 +8,54 @@ import {
   AlertCircleIcon } from
 'lucide-react';
 import { GlassBackground } from '../components/GlassBackground';
+import { numerologyAPI } from '../lib/numerology-api';
 export function ForecastsGlass() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'year' | 'month' | 'day'>('year');
-  const personalYear = {
-    number: 5,
-    theme: 'Change and Freedom',
-    description:
-    'This is a year of significant change, freedom, and adventure. Expect unexpected opportunities and the need to adapt quickly to new circumstances.',
-    months: [
-    {
-      month: 'January',
-      number: 6,
-      theme: 'Responsibility'
-    },
-    {
-      month: 'February',
-      number: 7,
-      theme: 'Introspection'
-    },
-    {
-      month: 'March',
-      number: 8,
-      theme: 'Achievement'
-    },
-    {
-      month: 'April',
-      number: 9,
-      theme: 'Completion'
-    },
-    {
-      month: 'May',
-      number: 1,
-      theme: 'New Beginnings'
-    },
-    {
-      month: 'June',
-      number: 2,
-      theme: 'Partnership'
-    }]
+  const [birthChart, setBirthChart] = useState<any | null>(null);
+  const [daily, setDaily] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  };
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const [bc, dr] = await Promise.all([
+          numerologyAPI.getBirthChart(),
+          numerologyAPI.getDailyReading({ date: new Date().toISOString().split('T')[0] }),
+        ]);
+        setBirthChart(bc);
+        setDaily(dr);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load forecasts.');
+        setBirthChart(null);
+        setDaily(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const yearNumber = birthChart?.profile?.personal_year_number;
+  const monthNumber = birthChart?.profile?.personal_month_number;
+  const dayNumber = daily?.personal_day_number;
+
+  const yearText = useMemo(() => {
+    const interp = birthChart?.interpretations?.personal_year_number;
+    return interp?.description || interp?.summary || interp?.meaning || 'No personal year interpretation available.';
+  }, [birthChart]);
+
+  const monthText = useMemo(() => {
+    const interp = birthChart?.interpretations?.personal_month_number;
+    return interp?.description || interp?.summary || interp?.meaning || 'No personal month interpretation available.';
+  }, [birthChart]);
+
+  const dayText = useMemo(() => {
+    return daily?.actionable_tip || daily?.message || daily?.warning || 'No personal day guidance available.';
+  }, [daily]);
   return (
     <div className="relative min-h-screen bg-[#0a1628] overflow-hidden">
       <GlassBackground starCount={60} />
@@ -80,6 +87,12 @@ export function ForecastsGlass() {
         </motion.nav>
 
         <div className="max-w-5xl mx-auto px-8 py-12">
+          {isLoading && (
+            <div className="text-center text-white/60 mb-8">Loading forecasts...</div>
+          )}
+          {error && !isLoading && (
+            <div className="text-center text-red-400 mb-8">{error}</div>
+          )}
           {/* Header */}
           <motion.div
             initial={{
@@ -143,14 +156,12 @@ export function ForecastsGlass() {
               <div className="text-center mb-12">
                 <div className="inline-block p-8 rounded-3xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-400/30 backdrop-blur-xl">
                   <div className="text-sm text-white/60 mb-2">
-                    2024 Personal Year
+                    Personal Year
                   </div>
                   <div className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-green-400 to-emerald-600 mb-2">
-                    {personalYear.number}
+                    {yearNumber ?? '–'}
                   </div>
-                  <div className="text-xl text-white font-serif">
-                    {personalYear.theme}
-                  </div>
+                  <div className="text-xl text-white font-serif">Year theme</div>
                 </div>
               </div>
 
@@ -160,43 +171,20 @@ export function ForecastsGlass() {
                   Year Overview
                 </h2>
                 <p className="text-white/80 leading-relaxed">
-                  {personalYear.description}
+                  {yearText}
                 </p>
               </div>
 
-              {/* Monthly Breakdown */}
-              <div>
-                <h2 className="text-2xl font-serif text-white mb-6">
-                  Monthly Cycles
+              {/* Monthly Number */}
+              <div className="p-8 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
+                <h2 className="text-2xl font-serif text-white mb-4">
+                  Current Personal Month
                 </h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {personalYear.months.map((month, index) =>
-                <motion.div
-                  key={month.month}
-                  initial={{
-                    opacity: 0,
-                    y: 20
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0
-                  }}
-                  transition={{
-                    delay: 0.3 + index * 0.05
-                  }}
-                  className="p-6 rounded-2xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all">
-
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-white">
-                          {month.month}
-                        </h3>
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold shadow-lg">
-                          {month.number}
-                        </div>
-                      </div>
-                      <p className="text-white/70">{month.theme}</p>
-                    </motion.div>
-                )}
+                <div className="flex items-center justify-between">
+                  <div className="text-white/70">{monthText}</div>
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                    {monthNumber ?? '–'}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -218,18 +206,13 @@ export function ForecastsGlass() {
 
               <CalendarIcon className="w-16 h-16 text-cyan-400 mx-auto mb-6" />
               <h2 className="text-3xl font-serif text-white mb-4">
-                December 2024
+                Personal Month
               </h2>
               <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-cyan-600 mb-4">
-                3
+                {monthNumber ?? '–'}
               </div>
-              <p className="text-xl text-white/80 mb-6">
-                Month of Creativity and Expression
-              </p>
               <p className="text-white/70 max-w-2xl mx-auto leading-relaxed">
-                This month brings opportunities for creative expression and
-                social connection. Focus on communication, artistic pursuits,
-                and enjoying life's pleasures.
+                {monthText}
               </p>
             </motion.div>
           }
@@ -251,13 +234,10 @@ export function ForecastsGlass() {
               <TrendingUpIcon className="w-16 h-16 text-purple-400 mx-auto mb-6" />
               <h2 className="text-3xl font-serif text-white mb-4">Today</h2>
               <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-purple-400 to-indigo-600 mb-4">
-                7
+                {dayNumber ?? '–'}
               </div>
-              <p className="text-xl text-white/80 mb-6">Day of Introspection</p>
               <p className="text-white/70 max-w-2xl mx-auto leading-relaxed mb-8">
-                Today is ideal for reflection, meditation, and inner work. Trust
-                your intuition and seek deeper understanding of yourself and
-                your path.
+                {dayText}
               </p>
               <button
               onClick={() => navigate('/daily-readings')}

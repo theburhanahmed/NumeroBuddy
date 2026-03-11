@@ -14,99 +14,8 @@ export function BlogGlass() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const categories = [
-  {
-    id: 'all',
-    name: 'All Posts',
-    count: 24
-  },
-  {
-    id: 'numerology',
-    name: 'Numerology Basics',
-    count: 8
-  },
-  {
-    id: 'life-path',
-    name: 'Life Path',
-    count: 6
-  },
-  {
-    id: 'relationships',
-    name: 'Relationships',
-    count: 5
-  },
-  {
-    id: 'career',
-    name: 'Career & Money',
-    count: 5
-  }];
-
-  const featuredPost = {
-    title: 'Understanding Your Life Path Number: A Complete Guide',
-    excerpt:
-    'Discover the profound meaning behind your Life Path number and how it shapes your destiny, relationships, and life purpose.',
-    image:
-    'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=800&h=400&fit=crop',
-    category: 'Numerology Basics',
-    date: 'Dec 15, 2023',
-    readTime: '8 min read',
-    author: 'Sarah Chen'
-  };
-  const posts = [
-  {
-    title: 'The Power of Master Numbers: 11, 22, and 33',
-    excerpt:
-    'Master numbers carry special significance in numerology. Learn what it means if you have one.',
-    category: 'Numerology Basics',
-    date: 'Dec 12, 2023',
-    readTime: '6 min read',
-    color: 'from-cyan-400 to-blue-600'
-  },
-  {
-    title: 'Compatibility by the Numbers: Finding Your Perfect Match',
-    excerpt:
-    'Explore how numerology can reveal deep insights about relationship compatibility and harmony.',
-    category: 'Relationships',
-    date: 'Dec 10, 2023',
-    readTime: '7 min read',
-    color: 'from-pink-500 to-rose-600'
-  },
-  {
-    title: 'Career Success Through Your Destiny Number',
-    excerpt:
-    'Your Destiny number reveals your natural talents and ideal career path. Discover yours.',
-    category: 'Career & Money',
-    date: 'Dec 8, 2023',
-    readTime: '5 min read',
-    color: 'from-green-500 to-emerald-600'
-  },
-  {
-    title: "Personal Year Cycles: Navigating Life's Rhythms",
-    excerpt:
-    'Learn how to use Personal Year numbers to make better decisions and plan for the future.',
-    category: 'Life Path',
-    date: 'Dec 5, 2023',
-    readTime: '9 min read',
-    color: 'from-purple-500 to-indigo-600'
-  },
-  {
-    title: 'Name Numerology: The Hidden Power of Your Name',
-    excerpt:
-    'Your name carries vibrational energy. Discover what your name reveals about your personality.',
-    category: 'Numerology Basics',
-    date: 'Dec 3, 2023',
-    readTime: '6 min read',
-    color: 'from-amber-500 to-orange-600'
-  },
-  {
-    title: 'Soul Urge Number: Understanding Your Inner Desires',
-    excerpt:
-    'Uncover your deepest motivations and what truly drives you at a soul level.',
-    category: 'Life Path',
-    date: 'Dec 1, 2023',
-    readTime: '7 min read',
-    color: 'from-blue-500 to-cyan-600'
-  }];
+  const categories: { id: string; name: string }[] = [];
+  const posts: any[] = [];
 
   return (
     <GlassPageLayout showNav={true} starCount={80}>
@@ -228,57 +137,12 @@ export function BlogGlass() {
           }}
           className="mb-20">
 
-          <div className="flex items-center gap-2 mb-6">
-            <TrendingUpIcon className="w-5 h-5 text-cyan-400" />
-            <h2 className="text-xl font-semibold text-white">
-              Featured Article
-            </h2>
-          </div>
-
-          <div className="group relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-purple-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative overflow-hidden rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all">
-              <div className="grid md:grid-cols-2 gap-8 p-8">
-                {/* Content */}
-                <div className="flex flex-col justify-center">
-                  <div className="inline-block mb-4">
-                    <span className="px-3 py-1 bg-cyan-500/20 border border-cyan-400/30 rounded-full text-cyan-400 text-xs font-semibold">
-                      {featuredPost.category}
-                    </span>
-                  </div>
-                  <h3 className="text-3xl font-serif text-white mb-4 group-hover:text-cyan-400 transition-colors">
-                    {featuredPost.title}
-                  </h3>
-                  <p className="text-white/70 leading-relaxed mb-6">
-                    {featuredPost.excerpt}
-                  </p>
-                  <div className="flex items-center gap-6 text-sm text-white/60 mb-6">
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4" />
-                      {featuredPost.date}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ClockIcon className="w-4 h-4" />
-                      {featuredPost.readTime}
-                    </div>
-                  </div>
-                  <button className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">
-                    Read Article
-                    <ArrowRightIcon className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Image */}
-                <div className="relative h-64 md:h-auto rounded-2xl overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-purple-600/20" />
-                  <img
-                    src={featuredPost.image}
-                    alt={featuredPost.title}
-                    className="w-full h-full object-cover" />
-
-                </div>
-              </div>
-            </div>
+          <div className="p-10 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 text-center">
+            <TrendingUpIcon className="w-10 h-10 text-cyan-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-serif text-white mb-2">Content Hub</h2>
+            <p className="text-white/70">
+              Blog content will appear here once it’s connected to the backend.
+            </p>
           </div>
         </motion.div>
 
@@ -299,60 +163,8 @@ export function BlogGlass() {
           <h2 className="text-2xl font-serif text-white mb-8">
             Recent Articles
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post, index) =>
-            <motion.div
-              key={post.title}
-              initial={{
-                opacity: 0,
-                y: 20
-              }}
-              animate={{
-                opacity: 1,
-                y: 0
-              }}
-              transition={{
-                delay: 0.6 + index * 0.1
-              }}
-              className="group relative cursor-pointer">
-
-                <div
-                className={`absolute inset-0 bg-gradient-to-br ${post.color} opacity-0 group-hover:opacity-10 rounded-3xl blur-xl transition-opacity`} />
-
-                <div className="relative p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all h-full flex flex-col">
-                  {/* Category Badge */}
-                  <div className="mb-4">
-                    <span
-                    className={`px-3 py-1 bg-gradient-to-r ${post.color} bg-opacity-20 border border-current rounded-full text-xs font-semibold`}>
-
-                      {post.category}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-xl font-serif text-white mb-3 group-hover:text-cyan-400 transition-colors">
-                    {post.title}
-                  </h3>
-
-                  {/* Excerpt */}
-                  <p className="text-white/60 text-sm leading-relaxed mb-4 flex-1">
-                    {post.excerpt}
-                  </p>
-
-                  {/* Meta */}
-                  <div className="flex items-center justify-between text-xs text-white/50 pt-4 border-t border-cyan-500/10">
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="w-3 h-3" />
-                      {post.date}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <ClockIcon className="w-3 h-3" />
-                      {post.readTime}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+          <div className="text-white/60">
+            No articles yet.
           </div>
         </motion.div>
 

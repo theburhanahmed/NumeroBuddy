@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -18,15 +18,20 @@ export function LifePathAnalysisGlass() {
   const navigate = useNavigate();
   const [lifePathNumber, setLifePathNumber] = useState<number | null>(null);
   const [profile, setProfile] = useState<NumerologyProfile | null>(null);
+  const [analysis, setAnalysis] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const data = await numerologyAPI.getNumerologyProfile();
-        setProfile(data);
-        setLifePathNumber(data?.life_path_number ?? null);
+        const [p, a] = await Promise.all([
+          numerologyAPI.getNumerologyProfile(),
+          numerologyAPI.getLifePathAnalysis(),
+        ]);
+        setProfile(p);
+        setLifePathNumber(p?.life_path_number ?? null);
+        setAnalysis(a);
       } catch (e: any) {
         setError(e?.message || 'Unable to load numerology profile.');
       } finally {
@@ -36,48 +41,27 @@ export function LifePathAnalysisGlass() {
 
     loadProfile();
   }, []);
-  const lifePathData: {
-    [key: number]: any;
-  } = {
-    7: {
-      title: 'The Seeker',
-      tagline: 'Your path is one of spiritual wisdom and inner truth',
-      description:
-      'As a Life Path 7, you are a natural seeker of truth and wisdom. Your analytical mind and spiritual depth set you apart, making you a profound thinker who questions the mysteries of life.',
+  const interpretation = analysis?.interpretation;
+  const data = useMemo(() => {
+    if (!lifePathNumber) return null;
+    const text =
+      interpretation?.description ||
+      interpretation?.summary ||
+      interpretation?.meaning ||
+      '';
+    return {
+      title: interpretation?.title || 'Life Path',
+      tagline: interpretation?.tagline || '',
+      description: text || 'No interpretation available.',
       color: 'from-purple-500 to-indigo-600',
-      strengths: [
-      'Deep analytical thinking and problem-solving abilities',
-      'Strong intuition and spiritual awareness',
-      'Natural researcher with love for knowledge',
-      'Ability to see beyond surface appearances',
-      'Independent and self-sufficient nature'],
-
-      challenges: [
-      'Tendency towards isolation and overthinking',
-      'Difficulty trusting others and opening up emotionally',
-      'Can be overly critical or perfectionist',
-      'May struggle with practical, mundane tasks',
-      'Risk of becoming too detached from reality'],
-
-      career: [
-      'Research scientist or academic',
-      'Spiritual teacher or counselor',
-      'Psychologist or therapist',
-      'Data analyst or programmer',
-      'Writer or philosopher',
-      'Detective or investigator'],
-
-      relationships:
-      'You need a partner who respects your need for solitude and intellectual depth. Look for someone who can engage in meaningful conversations and understands your spiritual nature.',
-      famous: [
-      'Elon Musk',
-      'Stephen Hawking',
-      'Princess Diana',
-      'Leonardo DiCaprio']
-
-    }
-  };
-  const data = lifePathNumber != null ? lifePathData[lifePathNumber] : null;
+      strengths: Array.isArray(interpretation?.strengths) ? interpretation.strengths : [],
+      challenges: Array.isArray(interpretation?.challenges) ? interpretation.challenges : [],
+      career: Array.isArray(interpretation?.careers) ? interpretation.careers : [],
+      relationships: interpretation?.relationships || '',
+      famous: Array.isArray(interpretation?.famous_people) ? interpretation.famous_people : [],
+      pinnacle_cycles: Array.isArray(analysis?.pinnacle_cycles) ? analysis.pinnacle_cycles : [],
+    };
+  }, [analysis, interpretation, lifePathNumber]);
 
   if (isLoading) {
     return (
@@ -188,7 +172,9 @@ export function LifePathAnalysisGlass() {
             <h1 className="text-4xl md:text-5xl font-serif text-white mb-4">
               Life Path {lifePathNumber}: {data.title}
             </h1>
-            <p className="text-xl text-cyan-400 mb-6">{data.tagline}</p>
+            {data.tagline && (
+              <p className="text-xl text-cyan-400 mb-6">{data.tagline}</p>
+            )}
             <p className="text-white/70 max-w-3xl mx-auto leading-relaxed">
               {data.description}
             </p>
@@ -223,6 +209,9 @@ export function LifePathAnalysisGlass() {
                 </div>
 
                 <ul className="space-y-4">
+                  {data.strengths.length === 0 && (
+                    <li className="text-white/70">No strengths data available.</li>
+                  )}
                   {data.strengths.map((strength: string, index: number) =>
                   <motion.li
                     key={index}
@@ -278,6 +267,9 @@ export function LifePathAnalysisGlass() {
                 </div>
 
                 <ul className="space-y-4">
+                  {data.challenges.length === 0 && (
+                    <li className="text-white/70">No challenges data available.</li>
+                  )}
                   {data.challenges.map((challenge: string, index: number) =>
                   <motion.li
                     key={index}
@@ -334,6 +326,9 @@ export function LifePathAnalysisGlass() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
+                {data.career.length === 0 && (
+                  <div className="text-white/70 col-span-2">No career suggestions available.</div>
+                )}
                 {data.career.map((career: string, index: number) =>
                 <motion.div
                   key={index}
@@ -381,7 +376,7 @@ export function LifePathAnalysisGlass() {
               </div>
 
               <p className="text-white/80 leading-relaxed mb-6">
-                {data.relationships}
+                {data.relationships || 'No relationship guidance available.'}
               </p>
 
               <button
@@ -412,6 +407,9 @@ export function LifePathAnalysisGlass() {
               Famous Life Path {lifePathNumber}s
             </h2>
             <div className="flex flex-wrap justify-center gap-4">
+              {data.famous.length === 0 && (
+                <div className="text-white/70">No examples available.</div>
+              )}
               {data.famous.map((person: string, index: number) =>
               <motion.div
                 key={index}
@@ -433,6 +431,31 @@ export function LifePathAnalysisGlass() {
               )}
             </div>
           </motion.div>
+
+          {/* Pinnacle Cycles */}
+          {data.pinnacle_cycles.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.85 }}
+              className="mt-16 p-8 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20"
+            >
+              <h2 className="text-2xl font-serif text-white mb-6">Pinnacle Cycles</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                {data.pinnacle_cycles.map((c: any, idx: number) => (
+                  <div key={idx} className="p-4 rounded-2xl bg-[#0a1628]/40 border border-cyan-500/10">
+                    <div className="text-white font-semibold mb-1">
+                      Cycle {c.cycle_number ?? idx + 1}{' '}
+                      {typeof c.start_age === 'number' && typeof c.end_age === 'number'
+                        ? `(${c.start_age}–${c.end_age})`
+                        : ''}
+                    </div>
+                    <div className="text-white/70 text-sm">{c.description || ''}</div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           {/* CTA */}
           <motion.div

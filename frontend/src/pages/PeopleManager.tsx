@@ -1,40 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { UsersIcon, PlusIcon, EditIcon, TrashIcon } from 'lucide-react';
 import { CosmicPageLayout } from '../components/CosmicPageLayout';
 import { SpaceCard } from '../components/SpaceCard';
 import { TouchOptimizedButton } from '../components/TouchOptimizedButton';
 import { CrystalNumerologyCube } from '../components/CrystalNumerologyCube';
+import { peopleAPI, Person } from '../lib/people-api';
 export function PeopleManager() {
-  const [people] = useState([
-  {
-    id: 1,
-    name: 'Sarah Johnson',
-    relationship: 'Partner',
-    birthDate: '1990-05-15',
-    lifePathNumber: 7,
-    compatibility: 85,
-    avatar: '👩'
-  },
-  {
-    id: 2,
-    name: 'Michael Chen',
-    relationship: 'Best Friend',
-    birthDate: '1988-11-22',
-    lifePathNumber: 3,
-    compatibility: 78,
-    avatar: '👨'
-  },
-  {
-    id: 3,
-    name: 'Emma Williams',
-    relationship: 'Colleague',
-    birthDate: '1992-03-08',
-    lifePathNumber: 5,
-    compatibility: 72,
-    avatar: '👩‍💼'
-  }]
-  );
+  const [people, setPeople] = useState<Person[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await peopleAPI.list();
+        setPeople(Array.isArray(res) ? res : []);
+      } catch (e: any) {
+        setError(e?.message || 'Unable to load people.');
+        setPeople([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
   return (
     <CosmicPageLayout>
       <motion.div
@@ -99,6 +91,15 @@ export function PeopleManager() {
       </motion.div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {isLoading && (
+          <div className="text-white/60">Loading people…</div>
+        )}
+        {error && !isLoading && (
+          <div className="text-red-400">{error}</div>
+        )}
+        {!isLoading && !error && people.length === 0 && (
+          <div className="text-white/60">No people added yet.</div>
+        )}
         {people.map((person, index) =>
         <motion.div
           key={person.id}
@@ -119,7 +120,7 @@ export function PeopleManager() {
 
             <SpaceCard variant="default" className="p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="text-5xl">{person.avatar}</div>
+                <div className="text-5xl">👤</div>
                 <div className="flex gap-2">
                   <button
                   className="w-8 h-8 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 flex items-center justify-center text-cyan-400 transition-colors"
@@ -140,47 +141,13 @@ export function PeopleManager() {
                 {person.name}
               </h3>
               <p className="text-cyan-400 text-sm mb-4">
-                {person.relationship}
+                {person.relationship || '—'}
               </p>
 
               <div className="space-y-3 mb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-white/70">Life Path:</span>
-                  <div className="flex items-center gap-2">
-                    <CrystalNumerologyCube
-                    number={person.lifePathNumber}
-                    size="sm"
-                    color="cyan" />
-
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
                   <span className="text-sm text-white/70">Birth Date:</span>
-                  <span className="text-sm text-white">{person.birthDate}</span>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-cyan-500/20">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-white/70">Compatibility:</span>
-                  <span className="text-lg font-bold text-white">
-                    {person.compatibility}%
-                  </span>
-                </div>
-                <div className="h-2 bg-[#0a1628]/60 rounded-full overflow-hidden">
-                  <motion.div
-                  initial={{
-                    width: 0
-                  }}
-                  animate={{
-                    width: `${person.compatibility}%`
-                  }}
-                  transition={{
-                    delay: 0.3 + index * 0.1,
-                    duration: 0.8
-                  }}
-                  className={`h-full ${person.compatibility >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' : person.compatibility >= 60 ? 'bg-gradient-to-r from-yellow-500 to-orange-600' : 'bg-gradient-to-r from-orange-500 to-red-600'}`} />
-
+                  <span className="text-sm text-white">{person.birth_date || '—'}</span>
                 </div>
               </div>
 

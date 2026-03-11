@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,16 +12,28 @@ import {
   SaveIcon } from
 'lucide-react';
 import { GlassBackground } from '../components/GlassBackground';
+import { useAuth } from '../contexts/AuthContext';
 export function SettingsGlass() {
   const navigate = useNavigate();
+  const { user, updateProfile, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<
     'profile' | 'notifications' | 'privacy' | 'billing'>(
     'profile');
   const [profile, setProfile] = useState({
-    name: 'Sarah Chen',
-    email: 'sarah@example.com',
-    birthDate: '1990-07-15'
+    name: '',
+    email: '',
+    birthDate: '',
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setProfile({
+      name: user?.full_name || '',
+      email: user?.email || '',
+      birthDate: (user as any)?.date_of_birth || (user as any)?.birthDate || '',
+    });
+  }, [user]);
   const tabs = [
   {
     id: 'profile' as const,
@@ -201,9 +213,30 @@ export function SettingsGlass() {
                       </p>
                     </div>
 
-                    <button className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/30 transition-all flex items-center justify-center gap-2">
+                    {saveError && (
+                      <p className="text-sm text-red-400">{saveError}</p>
+                    )}
+                    <button
+                      onClick={async () => {
+                        setIsSaving(true);
+                        setSaveError(null);
+                        try {
+                          await updateProfile({
+                            full_name: profile.name,
+                            email: profile.email,
+                            date_of_birth: profile.birthDate,
+                          } as any);
+                        } catch (e: any) {
+                          setSaveError(e?.message || 'Unable to save changes.');
+                        } finally {
+                          setIsSaving(false);
+                        }
+                      }}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/30 transition-all flex items-center justify-center gap-2"
+                      disabled={isSaving}
+                    >
                       <SaveIcon className="w-5 h-5" />
-                      Save Changes
+                      {isSaving ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 }
@@ -329,7 +362,10 @@ export function SettingsGlass() {
             }}
             className="mt-8 text-center">
 
-            <button className="px-8 py-3 rounded-full border border-red-400/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all flex items-center gap-2 mx-auto">
+            <button
+              onClick={logout}
+              className="px-8 py-3 rounded-full border border-red-400/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all flex items-center gap-2 mx-auto"
+            >
               <LogOutIcon className="w-5 h-5" />
               Sign Out
             </button>

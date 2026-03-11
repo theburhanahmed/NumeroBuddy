@@ -6,8 +6,9 @@ export function VideoExplainer() {
   const [isPlaying, setIsPlaying] = useState(false);
   // Placeholder video - replace with actual video URL
   const videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+  // Use a stable local-ish thumbnail (gradient background with text)
   const thumbnailUrl =
-  'https://via.placeholder.com/1280x720/1a2942/00d4ff?text=numerobuddy+Explainer+Video';
+    'https://images.pexels.com/photos/7130555/pexels-photo-7130555.jpeg?auto=compress&cs=tinysrgb&w=1280';
   return (
     <section className="relative py-20 px-4 md:px-6">
       <div className="max-w-5xl mx-auto">

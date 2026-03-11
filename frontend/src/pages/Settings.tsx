@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   UserIcon,
@@ -16,8 +16,11 @@ import { TouchOptimizedButton } from '../components/TouchOptimizedButton';
 import { CosmicTooltip } from '../components/CosmicTooltip';
 export function Settings() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
+  const [form, setForm] = useState({ full_name: '', email: '', date_of_birth: '' });
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const tabs = [
   {
     id: 'profile',
@@ -44,6 +47,14 @@ export function Settings() {
     logout();
     navigate('/login');
   };
+
+  useEffect(() => {
+    setForm({
+      full_name: (user as any)?.full_name || '',
+      email: (user as any)?.email || '',
+      date_of_birth: (user as any)?.date_of_birth || '',
+    });
+  }, [user]);
   return (
     <CosmicPageLayout>
       {/* Header */}
@@ -138,7 +149,8 @@ export function Settings() {
                     </label>
                     <input
                     type="text"
-                    defaultValue="Sarah Johnson"
+                    value={form.full_name}
+                    onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
                     className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-cyan-500/50 transition-colors" />
 
                   </div>
@@ -149,7 +161,8 @@ export function Settings() {
                     </label>
                     <input
                     type="email"
-                    defaultValue="sarah@example.com"
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                     className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-cyan-500/50 transition-colors" />
 
                   </div>
@@ -164,7 +177,8 @@ export function Settings() {
                     </label>
                     <input
                     type="date"
-                    defaultValue="1990-05-15"
+                    value={form.date_of_birth}
+                    onChange={(e) => setForm((f) => ({ ...f, date_of_birth: e.target.value }))}
                     className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-cyan-500/50 transition-colors" />
 
                   </div>
@@ -173,17 +187,36 @@ export function Settings() {
                     <TouchOptimizedButton
                     variant="primary"
                     icon={<SaveIcon className="w-5 h-5" />}
-                    ariaLabel="Save changes">
+                    ariaLabel="Save changes"
+                    onClick={async () => {
+                      setIsSaving(true);
+                      setSaveError(null);
+                      try {
+                        await updateProfile(form as any);
+                      } catch (e: any) {
+                        setSaveError(e?.message || 'Unable to save changes.');
+                      } finally {
+                        setIsSaving(false);
+                      }
+                    }}>
 
-                      Save Changes
+                      {isSaving ? 'Saving...' : 'Save Changes'}
                     </TouchOptimizedButton>
                     <TouchOptimizedButton
                     variant="secondary"
-                    ariaLabel="Cancel">
+                    ariaLabel="Cancel"
+                    onClick={() =>
+                      setForm({
+                        full_name: (user as any)?.full_name || '',
+                        email: (user as any)?.email || '',
+                        date_of_birth: (user as any)?.date_of_birth || '',
+                      })
+                    }>
 
                       Cancel
                     </TouchOptimizedButton>
                   </div>
+                  {saveError && <div className="text-sm text-red-400">{saveError}</div>}
                 </div>
               </div>
             }

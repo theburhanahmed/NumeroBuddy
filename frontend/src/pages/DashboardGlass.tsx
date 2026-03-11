@@ -20,43 +20,68 @@ import { AchievementBadges } from '../components/AchievementBadges';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { useAIChat } from '../contexts/AIChatContext';
+import { useAuth } from '../contexts/AuthContext';
+import { numerologyAPI, NumerologyProfile as ApiNumerologyProfile } from '../lib/numerology-api';
 export function DashboardGlass() {
   const navigate = useNavigate();
   const { openChat } = useAIChat();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<ApiNumerologyProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const p = await numerologyAPI.getNumerologyProfile();
+        setProfile(p);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load numerology profile.');
+        setProfile(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
   const coreNumbers = [
-  {
-    number: 7,
-    label: 'Life Path',
-    color: 'cyan' as const,
-    description: 'Your spiritual journey and life purpose',
-    insight: 'Seeker of truth and wisdom',
-    action: () => navigate('/life-path')
-  },
-  {
-    number: 3,
-    label: 'Destiny',
-    color: 'purple' as const,
-    description: 'Your natural talents and potential',
-    insight: 'Creative communicator',
-    action: () => navigate('/report')
-  },
-  {
-    number: 5,
-    label: 'Soul Urge',
-    color: 'blue' as const,
-    description: 'Your inner desires and motivations',
-    insight: 'Freedom and adventure',
-    action: () => navigate('/report')
-  },
-  {
-    number: 9,
-    label: 'Personality',
-    color: 'pink' as const,
-    description: 'How others perceive you',
-    insight: 'Compassionate leader',
-    action: () => navigate('/report')
-  }];
+    {
+      number: profile?.life_path_number,
+      label: 'Life Path',
+      color: 'cyan' as const,
+      description: 'Your spiritual journey and life purpose',
+      insight: 'Life path',
+      action: () => navigate('/life-path'),
+    },
+    {
+      number: profile?.destiny_number,
+      label: 'Destiny',
+      color: 'purple' as const,
+      description: 'Your natural talents and potential',
+      insight: 'Destiny',
+      action: () => navigate('/report'),
+    },
+    {
+      number: profile?.soul_urge_number,
+      label: 'Soul Urge',
+      color: 'blue' as const,
+      description: 'Your inner desires and motivations',
+      insight: 'Soul urge',
+      action: () => navigate('/report'),
+    },
+    {
+      number: profile?.personality_number,
+      label: 'Personality',
+      color: 'pink' as const,
+      description: 'How others perceive you',
+      insight: 'Personality',
+      action: () => navigate('/report'),
+    },
+  ];
 
   const quickActions = [
   {
@@ -111,7 +136,7 @@ export function DashboardGlass() {
             className="mb-12">
 
             <h1 className="text-4xl md:text-5xl font-serif text-white mb-2">
-              Welcome Back, Sarah
+              Welcome back{user?.full_name ? `, ${user.full_name}` : ''}
             </h1>
             <p className="text-white/70 text-lg">
               Your cosmic dashboard awaits
@@ -165,6 +190,12 @@ export function DashboardGlass() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {isLoading && (
+                <div className="lg:col-span-4 text-white/60">Loading your core numbers...</div>
+              )}
+              {error && !isLoading && (
+                <div className="lg:col-span-4 text-red-400">{error}</div>
+              )}
               {coreNumbers.map((item, index) =>
               <Suspense key={item.label} fallback={<LoadingSpinner />}>
                   <motion.button
@@ -197,7 +228,7 @@ export function DashboardGlass() {
                       {/* Crystal Cube */}
                       <div className="mb-4">
                         <CrystalNumerologyCube
-                        number={item.number}
+                        number={item.number ?? 0}
                         size={isMobile ? 'sm' : 'md'}
                         color={item.color} />
 
@@ -210,7 +241,7 @@ export function DashboardGlass() {
 
                       {/* Insight */}
                       <p className="text-cyan-400 text-sm font-medium mb-3 text-center">
-                        {item.insight}
+                        {item.number ? item.insight : '—'}
                       </p>
 
                       {/* Description */}

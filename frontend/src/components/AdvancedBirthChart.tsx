@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   DownloadIcon,
@@ -10,6 +10,7 @@ import {
 'lucide-react';
 import { SpaceCard } from './SpaceCard';
 import { TouchOptimizedButton } from './TouchOptimizedButton';
+import { numerologyAPI } from '../lib/numerology-api';
 interface NumberDetail {
   number: number;
   name: string;
@@ -17,61 +18,61 @@ interface NumberDetail {
   keywords: string[];
   color: string;
 }
-const numberDetails: {
-  [key: number]: NumberDetail;
-} = {
-  7: {
-    number: 7,
-    name: 'Life Path',
-    meaning: 'The Seeker - Your spiritual journey and life purpose',
-    keywords: ['Analytical', 'Spiritual', 'Introspective', 'Wise'],
-    color: 'from-cyan-400 to-blue-600'
-  },
-  3: {
-    number: 3,
-    name: 'Destiny',
-    meaning: 'The Creative - Your natural talents and life mission',
-    keywords: ['Expressive', 'Optimistic', 'Artistic', 'Social'],
-    color: 'from-purple-500 to-indigo-600'
-  },
-  5: {
-    number: 5,
-    name: 'Soul Urge',
-    meaning: 'The Freedom Seeker - Your inner desires and motivations',
-    keywords: ['Adventurous', 'Versatile', 'Dynamic', 'Curious'],
-    color: 'from-blue-500 to-cyan-600'
-  },
-  9: {
-    number: 9,
-    name: 'Personality',
-    meaning: 'The Humanitarian - How others perceive you',
-    keywords: ['Compassionate', 'Idealistic', 'Generous', 'Wise'],
-    color: 'from-pink-500 to-rose-600'
-  },
-  8: {
-    number: 8,
-    name: 'Expression',
-    meaning: 'The Powerhouse - Your natural abilities and talents',
-    keywords: ['Ambitious', 'Authoritative', 'Successful', 'Material'],
-    color: 'from-amber-500 to-orange-600'
-  },
-  11: {
-    number: 11,
-    name: 'Maturity',
-    meaning: 'The Illuminator - Your potential in later life',
-    keywords: ['Intuitive', 'Inspirational', 'Visionary', 'Spiritual'],
-    color: 'from-green-500 to-emerald-600'
-  }
-};
 export function AdvancedBirthChart() {
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const [rotation, setRotation] = useState(0);
   const [zoom, setZoom] = useState(1);
-  const numbers = [7, 3, 5, 9, 8, 11];
-  const handleDownload = () => {
-    // TODO: Implement actual download functionality
-    alert('Download feature coming soon!');
-  };
+  const [birthChart, setBirthChart] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const bc = await numerologyAPI.getBirthChart();
+        setBirthChart(bc);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load birth chart.');
+        setBirthChart(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const numberDetails = useMemo(() => {
+    const p = birthChart?.profile;
+    const interp = birthChart?.interpretations || {};
+    const mk = (num: number | undefined, name: string, color: string, interpKey: string): NumberDetail | null => {
+      if (typeof num !== 'number') return null;
+      const i = interp?.[interpKey];
+      const meaning = i?.title || i?.summary || i?.meaning || i?.description || 'No interpretation available.';
+      const keywords = Array.isArray(i?.keywords) ? i.keywords : [];
+      return { number: num, name, meaning, keywords, color };
+    };
+
+    const list = [
+      mk(p?.life_path_number, 'Life Path', 'from-cyan-400 to-blue-600', 'life_path_number'),
+      mk(p?.destiny_number, 'Destiny', 'from-purple-500 to-indigo-600', 'destiny_number'),
+      mk(p?.soul_urge_number, 'Soul Urge', 'from-blue-500 to-cyan-600', 'soul_urge_number'),
+      mk(p?.personality_number, 'Personality', 'from-pink-500 to-rose-600', 'personality_number'),
+      mk(p?.attitude_number, 'Attitude', 'from-amber-500 to-orange-600', 'attitude_number'),
+      mk(p?.maturity_number, 'Maturity', 'from-green-500 to-emerald-600', 'maturity_number'),
+    ].filter(Boolean) as NumberDetail[];
+
+    const map: Record<number, NumberDetail> = {};
+    list.forEach((d) => {
+      map[d.number] = d;
+    });
+    return map;
+  }, [birthChart]);
+
+  const numbers = useMemo(() => Object.keys(numberDetails).map((k) => Number(k)), [numberDetails]);
+
+  const handleDownload = () => {};
   const handleZoomIn = () => setZoom(Math.min(zoom + 0.2, 2));
   const handleZoomOut = () => setZoom(Math.max(zoom - 0.2, 0.6));
   const handleRotate = () => setRotation((rotation + 60) % 360);
@@ -121,6 +122,8 @@ export function AdvancedBirthChart() {
             </button>
           </div>
         </div>
+        {isLoading && <div className="text-white/60 mb-6">Loading chart…</div>}
+        {error && !isLoading && <div className="text-red-400 mb-6">{error}</div>}
 
         {/* Interactive Chart */}
         <div className="relative aspect-square max-w-2xl mx-auto mb-8">
@@ -333,14 +336,18 @@ export function AdvancedBirthChart() {
                     Key Traits
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {numberDetails[selectedNumber].keywords.map((keyword) =>
+                    {(numberDetails[selectedNumber].keywords || []).length === 0 ? (
+                      <span className="text-white/60 text-sm">No keywords available.</span>
+                    ) : (
+                      numberDetails[selectedNumber].keywords.map((keyword) =>
                   <span
                     key={keyword}
                     className="px-3 py-1 bg-cyan-500/20 border border-cyan-400/30 rounded-full text-cyan-300 text-sm">
 
                         {keyword}
                       </span>
-                  )}
+                      )
+                    )}
                   </div>
                 </div>
 

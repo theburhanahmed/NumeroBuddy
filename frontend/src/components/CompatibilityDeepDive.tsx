@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   HeartIcon,
@@ -8,82 +8,34 @@ import {
   Users2Icon } from
 'lucide-react';
 import { SpaceCard } from './SpaceCard';
-interface CompatibilityScore {
-  category: string;
-  score: number;
-  description: string;
-  icon: React.ReactNode;
-  color: string;
-}
-interface Person {
-  name: string;
-  lifePath: number;
-  destiny: number;
-  soulUrge: number;
-}
+import { numerologyAPI } from '../lib/numerology-api';
 export function CompatibilityDeepDive() {
-  const [person1] = useState<Person>({
-    name: 'You',
-    lifePath: 7,
-    destiny: 3,
-    soulUrge: 5
-  });
-  const [person2] = useState<Person>({
-    name: 'Sarah',
-    lifePath: 3,
-    destiny: 6,
-    soulUrge: 9
-  });
-  const overallScore = 85;
-  const scores: CompatibilityScore[] = [
-  {
-    category: 'Romantic Chemistry',
-    score: 92,
-    description:
-    'Strong emotional and physical attraction. Your numbers create magnetic energy.',
-    icon: <HeartIcon className="w-5 h-5" />,
-    color: 'from-pink-500 to-rose-600'
-  },
-  {
-    category: 'Communication',
-    score: 78,
-    description:
-    'Good understanding but requires effort. Practice active listening.',
-    icon: <Users2Icon className="w-5 h-5" />,
-    color: 'from-blue-500 to-cyan-600'
-  },
-  {
-    category: 'Life Goals',
-    score: 85,
-    description:
-    "Aligned visions for the future. You support each other's dreams.",
-    icon: <TrendingUpIcon className="w-5 h-5" />,
-    color: 'from-green-500 to-emerald-600'
-  },
-  {
-    category: 'Conflict Resolution',
-    score: 70,
-    description: 'Different approaches to problems. Compromise is key.',
-    icon: <AlertTriangleIcon className="w-5 h-5" />,
-    color: 'from-amber-500 to-orange-600'
-  }];
+  const [latest, setLatest] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const strengths = [
-  "Creative synergy - You inspire each other's artistic expression",
-  'Emotional depth - Both value meaningful connections',
-  'Growth mindset - You challenge each other to evolve',
-  'Spiritual alignment - Shared interest in deeper meaning'];
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await numerologyAPI.getCompatibilityHistory({ page: 1, page_size: 1 });
+        const item = res?.results?.[0] || null;
+        setLatest(item);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load compatibility history.');
+        setLatest(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
 
-  const challenges = [
-  "Different communication styles - You're introspective, they're expressive",
-  'Pace of life - You need solitude, they thrive in social settings',
-  'Decision making - Analytical vs intuitive approaches'];
-
-  const advice = [
-  'Schedule regular "deep talk" sessions to maintain connection',
-  "Respect each other's need for alone time and social time",
-  'Combine your analytical mind with their creative intuition for balanced decisions',
-  'Create shared rituals that honor both your spiritual and social needs'];
+  const overallScore = latest?.compatibility_score;
+  const strengths = useMemo(() => (Array.isArray(latest?.strengths) ? latest.strengths : []), [latest]);
+  const challenges = useMemo(() => (Array.isArray(latest?.challenges) ? latest.challenges : []), [latest]);
+  const advice = useMemo(() => (Array.isArray(latest?.advice) ? latest.advice : []), [latest]);
 
   return (
     <div className="space-y-6">
@@ -133,7 +85,7 @@ export function CompatibilityDeepDive() {
                   }}
                   animate={{
                     strokeDashoffset:
-                    2 * Math.PI * 70 * (1 - overallScore / 100)
+                    2 * Math.PI * 70 * (1 - (typeof overallScore === 'number' ? overallScore : 0) / 100)
                   }}
                   transition={{
                     duration: 1.5,
@@ -172,7 +124,7 @@ export function CompatibilityDeepDive() {
                     }}
                     className="text-5xl font-bold text-white">
 
-                    {overallScore}
+                    {typeof overallScore === 'number' ? overallScore : '–'}
                   </motion.div>
                   <div className="text-sm text-white/60">out of 100</div>
                 </div>
@@ -182,101 +134,21 @@ export function CompatibilityDeepDive() {
             {/* Names */}
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="text-xl font-semibold text-white">
-                {person1.name}
+                You
               </div>
               <HeartIcon className="w-6 h-6 text-pink-400" />
               <div className="text-xl font-semibold text-white">
-                {person2.name}
+                {latest?.partner_name || 'Partner'}
               </div>
             </div>
 
             {/* Overall Assessment */}
-            <p className="text-white/70 max-w-md mx-auto">
-              <span className="text-green-400 font-semibold">
-                Highly Compatible!
-              </span>{' '}
-              Your cosmic energies create a strong foundation for a meaningful
-              relationship.
-            </p>
-          </div>
-        </SpaceCard>
-      </motion.div>
-
-      {/* Detailed Scores */}
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: 20
-        }}
-        animate={{
-          opacity: 1,
-          y: 0
-        }}
-        transition={{
-          delay: 0.2
-        }}>
-
-        <SpaceCard variant="premium" className="p-6">
-          <h3 className="text-xl font-['Playfair_Display'] font-bold text-white mb-6">
-            Compatibility Breakdown
-          </h3>
-
-          <div className="space-y-6">
-            {scores.map((score, index) =>
-            <motion.div
-              key={score.category}
-              initial={{
-                opacity: 0,
-                x: -20
-              }}
-              animate={{
-                opacity: 1,
-                x: 0
-              }}
-              transition={{
-                delay: 0.3 + index * 0.1
-              }}>
-
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div
-                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${score.color} flex items-center justify-center text-white flex-shrink-0 shadow-lg`}>
-
-                    {score.icon}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-white">
-                        {score.category}
-                      </h4>
-                      <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">
-                        {score.score}%
-                      </span>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="h-2 bg-[#1a2942]/60 rounded-full overflow-hidden mb-2">
-                      <motion.div
-                      initial={{
-                        width: 0
-                      }}
-                      animate={{
-                        width: `${score.score}%`
-                      }}
-                      transition={{
-                        duration: 1,
-                        delay: 0.5 + index * 0.1
-                      }}
-                      className={`h-full bg-gradient-to-r ${score.color}`} />
-
-                    </div>
-
-                    <p className="text-sm text-white/60">{score.description}</p>
-                  </div>
-                </div>
-              </motion.div>
+            {isLoading && <p className="text-white/60">Loading latest compatibility check…</p>}
+            {error && !isLoading && <p className="text-red-400">{error}</p>}
+            {!isLoading && !error && !latest && (
+              <p className="text-white/70 max-w-md mx-auto">
+                No compatibility checks yet. Run one from the Compatibility page to see results here.
+              </p>
             )}
           </div>
         </SpaceCard>
@@ -307,6 +179,9 @@ export function CompatibilityDeepDive() {
             </div>
 
             <ul className="space-y-3">
+              {strengths.length === 0 && (
+                <li className="text-sm text-white/60">No strengths available.</li>
+              )}
               {strengths.map((strength, index) =>
               <motion.li
                 key={index}
@@ -354,6 +229,9 @@ export function CompatibilityDeepDive() {
             </div>
 
             <ul className="space-y-3">
+              {challenges.length === 0 && (
+                <li className="text-sm text-white/60">No challenges available.</li>
+              )}
               {challenges.map((challenge, index) =>
               <motion.li
                 key={index}
@@ -399,6 +277,9 @@ export function CompatibilityDeepDive() {
           </h3>
 
           <div className="space-y-3">
+            {advice.length === 0 && (
+              <div className="text-white/60">No advice available.</div>
+            )}
             {advice.map((tip, index) =>
             <motion.div
               key={index}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useMemo, useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -20,43 +20,36 @@ export function BirthChartGlass() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const coreNumbers = [
-  {
-    number: 7,
-    label: 'Life Path',
-    color: 'purple' as const,
-    description: "Your life's purpose and journey"
-  },
-  {
-    number: 3,
-    label: 'Destiny',
-    color: 'blue' as const,
-    description: 'Your ultimate life goal'
-  },
-  {
-    number: 5,
-    label: 'Soul Urge',
-    color: 'cyan' as const,
-    description: 'Your inner desires and motivations'
-  },
-  {
-    number: 9,
-    label: 'Personality',
-    color: 'pink' as const,
-    description: 'How others perceive you'
-  },
-  {
-    number: 11,
-    label: 'Expression',
-    color: 'green' as const,
-    description: 'Your natural talents and abilities'
-  },
-  {
-    number: 4,
-    label: 'Maturity',
-    color: 'amber' as const,
-    description: 'Your later life direction'
-  }];
+  const [birthChart, setBirthChart] = useState<any | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await numerologyAPI.getBirthChart();
+        setBirthChart(data);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load birth chart.');
+        setBirthChart(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const coreNumbers = useMemo(() => {
+    const p = birthChart?.profile;
+    return [
+      { number: p?.life_path_number, label: 'Life Path', color: 'purple' as const, description: "Your life's purpose and journey" },
+      { number: p?.destiny_number, label: 'Destiny', color: 'blue' as const, description: 'Your ultimate life goal' },
+      { number: p?.soul_urge_number, label: 'Soul Urge', color: 'cyan' as const, description: 'Your inner desires and motivations' },
+      { number: p?.personality_number, label: 'Personality', color: 'pink' as const, description: 'How others perceive you' },
+      { number: p?.attitude_number, label: 'Attitude', color: 'green' as const, description: 'Your outward approach to life' },
+      { number: p?.maturity_number, label: 'Maturity', color: 'amber' as const, description: 'Your later life direction' },
+    ].filter((x) => typeof x.number === 'number');
+  }, [birthChart]);
 
   return (
     <div className="relative min-h-screen bg-[#0a1628] overflow-hidden">
@@ -203,7 +196,7 @@ export function BirthChartGlass() {
 
                         <div className="relative">
                           <CrystalNumerologyCube
-                            number={item.number}
+                            number={item.number ?? 0}
                             size="md"
                             color={item.color} />
 

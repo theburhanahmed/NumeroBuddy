@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   GemIcon,
@@ -11,118 +11,82 @@ import {
 import { CosmicPageLayout } from '../components/CosmicPageLayout';
 import { SpaceCard } from '../components/SpaceCard';
 import { CosmicTooltip } from '../components/CosmicTooltip';
+import { numerologyAPI } from '../lib/numerology-api';
 export function Remedies() {
-  const remedyCategories = [
-  {
-    icon: <GemIcon className="w-6 h-6" />,
-    title: 'Crystals & Gemstones',
-    description: 'Harness the power of crystals aligned with your numbers',
-    color: 'from-purple-500 to-indigo-600',
-    remedies: [
-    {
-      name: 'Amethyst',
-      benefit: 'Enhances spiritual awareness and intuition',
-      number: 7
-    },
-    {
-      name: 'Citrine',
-      benefit: 'Attracts abundance and creativity',
-      number: 3
-    },
-    {
-      name: 'Rose Quartz',
-      benefit: 'Opens heart chakra and promotes love',
-      number: 6
-    }]
+  const [remedies, setRemedies] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  },
-  {
-    icon: <SparklesIcon className="w-6 h-6" />,
-    title: 'Colors & Vibrations',
-    description: 'Align your energy with cosmic color frequencies',
-    color: 'from-cyan-400 to-blue-600',
-    remedies: [
-    {
-      name: 'Violet & Purple',
-      benefit: 'Spiritual growth and wisdom',
-      number: 7
-    },
-    {
-      name: 'Yellow & Gold',
-      benefit: 'Joy, creativity, and self-expression',
-      number: 3
-    },
-    {
-      name: 'Blue & Silver',
-      benefit: 'Communication and clarity',
-      number: 5
-    }]
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const [p, r] = await Promise.all([
+          numerologyAPI.getNumerologyProfile(),
+          numerologyAPI.getRemedies(),
+        ]);
+        setProfile(p);
+        setRemedies(Array.isArray(r) ? r : []);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load remedies.');
+        setRemedies([]);
+        setProfile(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
 
-  },
-  {
-    icon: <LeafIcon className="w-6 h-6" />,
-    title: 'Herbs & Aromatherapy',
-    description: 'Natural remedies for balancing your energy',
-    color: 'from-green-500 to-emerald-600',
-    remedies: [
-    {
-      name: 'Lavender',
-      benefit: 'Calms mind and enhances meditation',
-      number: 7
-    },
-    {
-      name: 'Rosemary',
-      benefit: 'Boosts mental clarity and memory',
-      number: 5
-    },
-    {
-      name: 'Jasmine',
-      benefit: 'Promotes love and emotional healing',
-      number: 6
-    }]
+  const remedyCategories = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    remedies.forEach((r) => {
+      const key = r.remedy_type || 'other';
+      groups[key] = groups[key] || [];
+      groups[key].push(r);
+    });
 
-  },
-  {
-    icon: <HeartIcon className="w-6 h-6" />,
-    title: 'Mantras & Affirmations',
-    description: 'Powerful words to align with your cosmic purpose',
-    color: 'from-pink-500 to-rose-600',
-    remedies: [
-    {
-      name: 'Om Shanti',
-      benefit: 'Peace and spiritual connection',
-      number: 7
-    },
-    {
-      name: 'I Am Creative',
-      benefit: 'Unlocks creative potential',
-      number: 3
-    },
-    {
-      name: 'I Am Free',
-      benefit: 'Embraces change and adventure',
-      number: 5
-    }]
+    const mapType = (t: string) => {
+      switch (t) {
+        case 'gemstone':
+          return {
+            icon: <GemIcon className="w-6 h-6" />,
+            title: 'Crystals & Gemstones',
+            description: 'Personalized gemstone suggestions from your profile',
+            color: 'from-purple-500 to-indigo-600',
+          };
+        case 'color':
+          return {
+            icon: <SparklesIcon className="w-6 h-6" />,
+            title: 'Colors & Vibrations',
+            description: 'Color remedies aligned to your numerology',
+            color: 'from-cyan-400 to-blue-600',
+          };
+        case 'ritual':
+          return {
+            icon: <LeafIcon className="w-6 h-6" />,
+            title: 'Rituals & Practices',
+            description: 'Daily practices recommended for your journey',
+            color: 'from-green-500 to-emerald-600',
+          };
+        default:
+          return {
+            icon: <HeartIcon className="w-6 h-6" />,
+            title: 'Other Remedies',
+            description: 'Additional personalized suggestions',
+            color: 'from-pink-500 to-rose-600',
+          };
+      }
+    };
 
-  }];
-
-  const dailyPractices = [
-  {
-    icon: <SunIcon className="w-6 h-6" />,
-    title: 'Morning Ritual',
-    time: '6:00 AM - 8:00 AM',
-    practice:
-    'Meditate on your Life Path number. Visualize its energy flowing through you.',
-    color: 'from-yellow-400 to-orange-600'
-  },
-  {
-    icon: <MoonIcon className="w-6 h-6" />,
-    title: 'Evening Reflection',
-    time: '8:00 PM - 10:00 PM',
-    practice:
-    'Journal about how your numbers manifested today. Express gratitude.',
-    color: 'from-indigo-500 to-purple-600'
-  }];
+    return Object.entries(groups).map(([type, items]) => ({
+      type,
+      ...mapType(type),
+      remedies: items,
+    }));
+  }, [remedies]);
 
   return (
     <CosmicPageLayout>
@@ -167,12 +131,19 @@ export function Remedies() {
         className="mb-8">
 
         <SpaceCard variant="premium" className="p-6 md:p-8">
-          <p className="text-lg text-white/80 leading-relaxed">
-            Based on your Life Path number 7, these remedies are specifically
-            chosen to enhance your spiritual journey, deepen your intuition, and
-            help you maintain balance in your life. Incorporate these practices
-            to align with your cosmic purpose.
-          </p>
+          {isLoading && (
+            <p className="text-lg text-white/60 leading-relaxed">Loading your remedies...</p>
+          )}
+          {error && !isLoading && (
+            <p className="text-lg text-red-400 leading-relaxed">{error}</p>
+          )}
+          {!isLoading && !error && (
+            <p className="text-lg text-white/80 leading-relaxed">
+              {profile?.life_path_number
+                ? `These remedies are personalized to your Life Path number ${profile.life_path_number}.`
+                : 'These remedies are personalized to your numerology profile.'}
+            </p>
+          )}
         </SpaceCard>
       </motion.div>
 
@@ -195,6 +166,11 @@ export function Remedies() {
           Remedy Categories
         </h2>
         <div className="space-y-6">
+          {!isLoading && !error && remedyCategories.length === 0 && (
+            <SpaceCard variant="default" className="p-6">
+              <p className="text-white/70">No remedies available yet.</p>
+            </SpaceCard>
+          )}
           {remedyCategories.map((category, index) =>
           <motion.div
             key={category.title}
@@ -231,20 +207,23 @@ export function Remedies() {
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
-                  {category.remedies.map((remedy) =>
+                  {category.remedies.map((remedy: any) =>
                 <div
-                  key={remedy.name}
+                  key={remedy.id || remedy.title}
                   className="p-4 bg-[#0a1628]/40 rounded-xl border border-cyan-500/10">
 
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-semibold text-white">
-                          {remedy.name}
+                          {remedy.title}
                         </h4>
                         <span className="text-xs px-2 py-1 bg-cyan-500/20 rounded-full text-cyan-400">
-                          #{remedy.number}
+                          {remedy.remedy_type}
                         </span>
                       </div>
-                      <p className="text-sm text-white/70">{remedy.benefit}</p>
+                      <p className="text-sm text-white/70">{remedy.description}</p>
+                      {remedy.recommendation && (
+                        <p className="text-xs text-white/60 mt-2">{remedy.recommendation}</p>
+                      )}
                     </div>
                 )}
                 </div>
@@ -254,60 +233,6 @@ export function Remedies() {
         </div>
       </motion.div>
 
-      {/* Daily Practices */}
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: 20
-        }}
-        animate={{
-          opacity: 1,
-          y: 0
-        }}
-        transition={{
-          delay: 0.6
-        }}>
-
-        <h2 className="text-2xl font-['Playfair_Display'] font-bold text-white mb-6">
-          Daily Practices
-        </h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {dailyPractices.map((practice, index) =>
-          <motion.div
-            key={practice.title}
-            initial={{
-              opacity: 0,
-              y: 20
-            }}
-            animate={{
-              opacity: 1,
-              y: 0
-            }}
-            transition={{
-              delay: 0.7 + index * 0.1
-            }}
-            whileHover={{
-              y: -4
-            }}>
-
-              <SpaceCard variant="default" className="p-6 h-full">
-                <div
-                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${practice.color} flex items-center justify-center text-white mb-4 shadow-lg`}>
-
-                  {practice.icon}
-                </div>
-                <h3 className="text-xl font-['Playfair_Display'] font-bold text-white mb-2">
-                  {practice.title}
-                </h3>
-                <p className="text-sm text-cyan-400 mb-3">{practice.time}</p>
-                <p className="text-white/70 leading-relaxed">
-                  {practice.practice}
-                </p>
-              </SpaceCard>
-            </motion.div>
-          )}
-        </div>
-      </motion.div>
     </CosmicPageLayout>);
 
 }

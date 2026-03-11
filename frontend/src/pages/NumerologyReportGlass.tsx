@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -10,51 +10,85 @@ import {
   ChevronUpIcon } from
 'lucide-react';
 import { GlassBackground } from '../components/GlassBackground';
+import { numerologyAPI } from '../lib/numerology-api';
+import { useAuth } from '../contexts/AuthContext';
 export function NumerologyReportGlass() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [expandedSection, setExpandedSection] = useState<string | null>(
     'life-path'
   );
-  const reportSections = [
-  {
-    id: 'life-path',
-    title: 'Life Path Number',
-    number: 7,
-    color: 'from-purple-500 to-indigo-600',
-    summary:
-    'The Seeker - Your path is one of spiritual wisdom and inner truth',
-    content:
-    'As a Life Path 7, you are a natural seeker of truth and wisdom. Your analytical mind and spiritual depth set you apart, making you a profound thinker who questions the mysteries of life. You possess exceptional intuition and a desire to understand the deeper meaning behind everything.'
-  },
-  {
-    id: 'destiny',
-    title: 'Destiny Number',
-    number: 3,
-    color: 'from-blue-500 to-cyan-600',
-    summary:
-    'The Creative Communicator - Your ultimate life goal involves expression',
-    content:
-    "Your Destiny Number 3 reveals that your life's purpose is centered around creative expression and communication. You are meant to inspire others through your words, art, or presence. Your natural charisma and optimism are gifts to share with the world."
-  },
-  {
-    id: 'soul-urge',
-    title: 'Soul Urge Number',
-    number: 5,
-    color: 'from-cyan-500 to-blue-600',
-    summary:
-    'The Freedom Seeker - Your inner desires crave adventure and change',
-    content:
-    'Deep within, you crave freedom, adventure, and variety. Your Soul Urge Number 5 shows that you are motivated by experiences, travel, and the excitement of the unknown. You need constant stimulation and the ability to explore life on your own terms.'
-  },
-  {
-    id: 'personality',
-    title: 'Personality Number',
-    number: 9,
-    color: 'from-pink-500 to-rose-600',
-    summary: 'The Humanitarian - Others see you as compassionate and wise',
-    content:
-    'Your Personality Number 9 means others perceive you as compassionate, wise, and humanitarian. You project an aura of understanding and acceptance. People are drawn to your warmth and your ability to see the bigger picture in any situation.'
-  }];
+  const [birthChart, setBirthChart] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await numerologyAPI.getBirthChart();
+        setBirthChart(data);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load report.');
+        setBirthChart(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const reportSections = useMemo(() => {
+    const profile = birthChart?.profile;
+    const interpretations = birthChart?.interpretations || {};
+
+    const getText = (interp: any, fallback: string) => {
+      if (!interp) return fallback;
+      if (typeof interp === 'string') return interp;
+      return (
+        interp?.summary ||
+        interp?.meaning ||
+        interp?.description ||
+        fallback
+      );
+    };
+
+    return [
+      {
+        id: 'life-path',
+        title: 'Life Path Number',
+        number: profile?.life_path_number,
+        color: 'from-purple-500 to-indigo-600',
+        summary: getText(interpretations.life_path_number, 'No interpretation available.'),
+        content: getText(interpretations.life_path_number, 'No interpretation available.'),
+      },
+      {
+        id: 'destiny',
+        title: 'Destiny Number',
+        number: profile?.destiny_number,
+        color: 'from-blue-500 to-cyan-600',
+        summary: getText(interpretations.destiny_number, 'No interpretation available.'),
+        content: getText(interpretations.destiny_number, 'No interpretation available.'),
+      },
+      {
+        id: 'soul-urge',
+        title: 'Soul Urge Number',
+        number: profile?.soul_urge_number,
+        color: 'from-cyan-500 to-blue-600',
+        summary: getText(interpretations.soul_urge_number, 'No interpretation available.'),
+        content: getText(interpretations.soul_urge_number, 'No interpretation available.'),
+      },
+      {
+        id: 'personality',
+        title: 'Personality Number',
+        number: profile?.personality_number,
+        color: 'from-pink-500 to-rose-600',
+        summary: getText(interpretations.personality_number, 'No interpretation available.'),
+        content: getText(interpretations.personality_number, 'No interpretation available.'),
+      },
+    ];
+  }, [birthChart]);
 
   const toggleSection = (id: string) => {
     setExpandedSection(expandedSection === id ? null : id);
@@ -118,8 +152,12 @@ export function NumerologyReportGlass() {
             <h1 className="text-4xl md:text-5xl font-serif text-white mb-4">
               Complete Numerology Report
             </h1>
-            <p className="text-xl text-white/70 mb-2">Sarah Chen</p>
-            <p className="text-white/60">Born: July 15, 1990</p>
+            <p className="text-xl text-white/70 mb-2">
+              {user?.full_name || 'Your profile'}
+            </p>
+            <p className="text-white/60">
+              {user?.date_of_birth ? `Born: ${user.date_of_birth}` : ''}
+            </p>
           </motion.div>
 
           {/* Summary Card */}
@@ -140,6 +178,12 @@ export function NumerologyReportGlass() {
             <h2 className="text-2xl font-serif text-white mb-6 text-center">
               Your Core Numbers
             </h2>
+            {isLoading && (
+              <div className="text-center text-white/60">Loading report...</div>
+            )}
+            {error && !isLoading && (
+              <div className="text-center text-red-400">{error}</div>
+            )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {reportSections.map((section, index) =>
               <motion.div
@@ -160,7 +204,7 @@ export function NumerologyReportGlass() {
                   <div
                   className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${section.color} flex items-center justify-center text-white font-bold text-2xl mx-auto mb-3 shadow-lg`}>
 
-                    {section.number}
+                    {section.number ?? '–'}
                   </div>
                   <div className="text-sm text-white font-semibold">
                     {section.title.split(' ')[0]}
@@ -268,50 +312,9 @@ export function NumerologyReportGlass() {
             <h2 className="text-2xl font-serif text-white mb-6">
               Key Insights
             </h2>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <SparklesIcon className="w-3 h-3 text-green-400" />
-                </div>
-                <div>
-                  <h4 className="text-white font-semibold mb-1">
-                    Your Greatest Strength
-                  </h4>
-                  <p className="text-white/70 text-sm">
-                    Deep intuition combined with analytical thinking allows you
-                    to understand complex situations others miss.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <SparklesIcon className="w-3 h-3 text-amber-400" />
-                </div>
-                <div>
-                  <h4 className="text-white font-semibold mb-1">
-                    Area for Growth
-                  </h4>
-                  <p className="text-white/70 text-sm">
-                    Learning to balance your need for solitude with meaningful
-                    social connections will enhance your life journey.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <SparklesIcon className="w-3 h-3 text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="text-white font-semibold mb-1">
-                    Life Purpose
-                  </h4>
-                  <p className="text-white/70 text-sm">
-                    You are here to seek truth, share wisdom, and help others
-                    understand the deeper meaning of their experiences.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <p className="text-white/70 text-sm leading-relaxed">
+              Insights are generated from your real numerology interpretations. Expand the sections above to read the full details for each core number.
+            </p>
           </motion.div>
 
           {/* CTA */}

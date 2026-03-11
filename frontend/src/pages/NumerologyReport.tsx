@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   StarIcon,
@@ -14,65 +14,52 @@ import { CosmicTooltip } from '../components/CosmicTooltip';
 import { CrystalNumerologyCube } from '../components/CrystalNumerologyCube';
 import { CosmicSkeletonLoader } from '../components/CosmicSkeletonLoader';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
+import { numerologyAPI } from '../lib/numerology-api';
 export function NumerologyReport() {
   const [numbersRef, numbersVisible] = useIntersectionObserver({
     threshold: 0.1
   });
-  const coreNumbers = [
-  {
-    number: 7,
-    label: 'Life Path',
-    color: 'cyan' as const,
-    description: "Your life's journey and purpose"
-  },
-  {
-    number: 3,
-    label: 'Destiny',
-    color: 'purple' as const,
-    description: 'Your ultimate potential'
-  },
-  {
-    number: 5,
-    label: 'Soul Urge',
-    color: 'blue' as const,
-    description: 'Your inner desires'
-  },
-  {
-    number: 9,
-    label: 'Personality',
-    color: 'pink' as const,
-    description: 'How others see you'
-  }];
+  const [birthChart, setBirthChart] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const insights = [
-  {
-    icon: <TrendingUpIcon className="w-6 h-6" />,
-    title: 'Life Path Analysis',
-    content:
-    'Your Life Path number 7 indicates a journey of spiritual growth and inner wisdom. You are naturally introspective and seek deeper meaning in life.',
-    color: 'from-cyan-400 to-blue-600'
-  },
-  {
-    icon: <StarIcon className="w-6 h-6" />,
-    title: 'Destiny Insights',
-    content:
-    'With Destiny number 3, you are meant to express yourself creatively and inspire others through your unique talents and joyful energy.',
-    color: 'from-purple-500 to-pink-600'
-  },
-  {
-    icon: <HeartIcon className="w-6 h-6" />,
-    title: 'Soul Purpose',
-    content:
-    'Soul Urge number 5 reveals your deep desire for freedom, adventure, and experiencing life to its fullest through diverse experiences.',
-    color: 'from-pink-500 to-rose-600'
-  },
-  {
-    icon: <SparklesIcon className="w-6 h-6" />,
-    title: 'Personal Expression',
-    content:
-    'Personality number 9 shows you as compassionate, humanitarian, and someone who naturally attracts others with your wisdom and generosity.',
-    color: 'from-green-500 to-emerald-600'
-  }];
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await numerologyAPI.getBirthChart();
+        setBirthChart(data);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load report.');
+        setBirthChart(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const coreNumbers = useMemo(() => {
+    const p = birthChart?.profile;
+    return [
+      { number: p?.life_path_number, label: 'Life Path', color: 'cyan' as const, description: "Your life's journey and purpose" },
+      { number: p?.destiny_number, label: 'Destiny', color: 'purple' as const, description: 'Your ultimate potential' },
+      { number: p?.soul_urge_number, label: 'Soul Urge', color: 'blue' as const, description: 'Your inner desires' },
+      { number: p?.personality_number, label: 'Personality', color: 'pink' as const, description: 'How others see you' },
+    ].filter((x) => typeof x.number === 'number');
+  }, [birthChart]);
+
+  const insights = useMemo(() => {
+    const interp = birthChart?.interpretations || {};
+    const getText = (i: any) => i?.description || i?.summary || i?.meaning || 'No interpretation available.';
+    return [
+      { icon: <TrendingUpIcon className="w-6 h-6" />, title: 'Life Path Analysis', content: getText(interp.life_path_number), color: 'from-cyan-400 to-blue-600' },
+      { icon: <StarIcon className="w-6 h-6" />, title: 'Destiny Insights', content: getText(interp.destiny_number), color: 'from-purple-500 to-pink-600' },
+      { icon: <HeartIcon className="w-6 h-6" />, title: 'Soul Purpose', content: getText(interp.soul_urge_number), color: 'from-pink-500 to-rose-600' },
+      { icon: <SparklesIcon className="w-6 h-6" />, title: 'Personal Expression', content: getText(interp.personality_number), color: 'from-green-500 to-emerald-600' },
+    ];
+  }, [birthChart]);
 
   return (
     <CosmicPageLayout>
@@ -136,6 +123,12 @@ export function NumerologyReport() {
 
           {numbersVisible ?
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {isLoading && (
+                <div className="col-span-2 lg:col-span-4 text-white/60">Loading...</div>
+              )}
+              {error && !isLoading && (
+                <div className="col-span-2 lg:col-span-4 text-red-400">{error}</div>
+              )}
               {coreNumbers.map((item, index) =>
             <Suspense
               key={item.label}
@@ -156,7 +149,7 @@ export function NumerologyReport() {
                 className="flex flex-col items-center text-center">
 
                     <CrystalNumerologyCube
-                  number={item.number}
+                  number={item.number ?? 0}
                   size="md"
                   color={item.color} />
 
@@ -250,23 +243,15 @@ export function NumerologyReport() {
             Compatibility Insights
           </h2>
           <p className="text-white/70 mb-6">
-            Based on your core numbers, you are most compatible with Life Path
-            numbers 3, 5, and 9. These numbers complement your spiritual nature
-            and desire for meaningful connections.
+            Run a real compatibility check to see results based on your profile and a partner’s details.
           </p>
-          <div className="grid md:grid-cols-3 gap-4">
-            {[3, 5, 9].map((num) =>
-            <div
-              key={num}
-              className="p-4 bg-gradient-to-br from-cyan-500/10 to-blue-600/10 rounded-xl border border-cyan-500/20 text-center">
-
-                <div className="text-3xl font-bold text-cyan-400 mb-2">
-                  {num}
-                </div>
-                <p className="text-sm text-white/70">High Compatibility</p>
-              </div>
-            )}
-          </div>
+          <TouchOptimizedButton
+            variant="primary"
+            ariaLabel="Check compatibility"
+            onClick={() => (window.location.href = '/compatibility')}
+          >
+            Check Compatibility
+          </TouchOptimizedButton>
         </SpaceCard>
       </motion.div>
     </CosmicPageLayout>);

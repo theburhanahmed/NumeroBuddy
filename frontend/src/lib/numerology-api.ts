@@ -22,6 +22,32 @@ export interface DailyReadingParams {
   date?: string;
 }
 
+export interface DashboardInsight {
+  type: string;
+  title: string;
+  description: string;
+  priority?: string;
+  category?: string;
+}
+
+export interface DashboardActivityItem {
+  type: string;
+  id: string;
+  title: string;
+  description?: string;
+  timestamp?: string;
+  path?: string;
+}
+
+export interface DashboardRecommendation {
+  type: string;
+  title: string;
+  description: string;
+  path?: string;
+  priority?: string;
+  category?: string;
+}
+
 export const numerologyAPI = {
   async getHealth() {
     const response = await apiClient.get('/api/v1/health/');
@@ -38,8 +64,41 @@ export const numerologyAPI = {
     return response.data;
   },
 
+  async getLoShuGrid(params?: { enhanced?: boolean }) {
+    const response = await apiClient.get('/api/v1/numerology/lo-shu-grid/', {
+      params,
+    });
+    return response.data;
+  },
+
+  async getLifePathAnalysis() {
+    const response = await apiClient.get('/api/v1/numerology/life-path-analysis/');
+    return response.data;
+  },
+
+  async getFullReport() {
+    const response = await apiClient.get('/api/v1/numerology/full-report/');
+    return response.data;
+  },
+
   async getDailyReading(params: DailyReadingParams = {}) {
     const response = await apiClient.get('/api/v1/numerology/daily-reading/', {
+      params,
+    });
+    return response.data;
+  },
+
+  async checkCompatibility(data: {
+    partner_name: string;
+    partner_birth_date: string;
+    relationship_type?: string;
+  }) {
+    const response = await apiClient.post('/api/v1/numerology/compatibility-check/', data);
+    return response.data;
+  },
+
+  async getCompatibilityHistory(params?: { page?: number; page_size?: number }) {
+    const response = await apiClient.get('/api/v1/numerology/compatibility-history/', {
       params,
     });
     return response.data;
@@ -55,6 +114,43 @@ export const numerologyAPI = {
   async getRemedies() {
     const response = await apiClient.get('/api/v1/numerology/remedies/');
     return response.data;
+  },
+
+  async getDashboardInsights(): Promise<{ insights: DashboardInsight[]; count: number }> {
+    const response = await apiClient.get('/api/v1/numerology/dashboard/insights/');
+    return response.data as { insights: DashboardInsight[]; count: number };
+  },
+
+  async getDashboardActivity(params?: {
+    limit?: number;
+    types?: string[];
+  }): Promise<{ activities: DashboardActivityItem[]; count: number }> {
+    const response = await apiClient.get('/api/v1/numerology/dashboard/activity/', {
+      params: {
+        limit: params?.limit,
+        ...(params?.types?.length ? { types: params.types } : {}),
+      },
+      paramsSerializer: {
+        // Axios v1 supports custom serializer. Keep it simple: repeat types.
+        serialize: (p: any) => {
+          const parts: string[] = [];
+          Object.entries(p || {}).forEach(([k, v]) => {
+            if (Array.isArray(v)) {
+              v.forEach((vv) => parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(String(vv))}`));
+            } else if (v !== undefined && v !== null) {
+              parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`);
+            }
+          });
+          return parts.join('&');
+        },
+      } as any,
+    });
+    return response.data as { activities: DashboardActivityItem[]; count: number };
+  },
+
+  async getDashboardRecommendations(): Promise<{ recommendations: DashboardRecommendation[]; count: number }> {
+    const response = await apiClient.get('/api/v1/numerology/dashboard/recommendations/');
+    return response.data as { recommendations: DashboardRecommendation[]; count: number };
   },
 };
 

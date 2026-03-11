@@ -9,54 +9,33 @@ import {
 import { CosmicPageLayout } from '../components/CosmicPageLayout';
 import { SpaceCard } from '../components/SpaceCard';
 import { TouchOptimizedButton } from '../components/TouchOptimizedButton';
-import { CrystalNumerologyCube } from '../components/CrystalNumerologyCube';
+import { numerologyAPI } from '../lib/numerology-api';
 export function CompatibilityChecker() {
-  const [yourNumber, setYourNumber] = useState(7);
-  const [partnerNumber, setPartnerNumber] = useState(3);
+  const [partnerName, setPartnerName] = useState('');
+  const [partnerBirthDate, setPartnerBirthDate] = useState('');
   const [showResults, setShowResults] = useState(false);
-  const calculateCompatibility = () => {
-    setShowResults(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any | null>(null);
+
+  const calculateCompatibility = async () => {
+    setIsLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const data = await numerologyAPI.checkCompatibility({
+        partner_name: partnerName,
+        partner_birth_date: partnerBirthDate,
+      });
+      setResult(data);
+      setShowResults(true);
+    } catch (err: any) {
+      setError(err?.message || 'Unable to check compatibility.');
+      setShowResults(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
-  const compatibilityScore = 85;
-  const compatibilityLevel =
-  compatibilityScore >= 80 ?
-  'Excellent' :
-  compatibilityScore >= 60 ?
-  'Good' :
-  'Moderate';
-  const aspects = [
-  {
-    icon: <HeartIcon className="w-6 h-6" />,
-    title: 'Emotional Connection',
-    score: 90,
-    description:
-    'Deep emotional understanding and mutual respect. You both value meaningful conversations.',
-    color: 'from-pink-500 to-rose-600'
-  },
-  {
-    icon: <UsersIcon className="w-6 h-6" />,
-    title: 'Communication',
-    score: 85,
-    description:
-    "Strong communication flow. You complement each other's communication styles beautifully.",
-    color: 'from-cyan-400 to-blue-600'
-  },
-  {
-    icon: <SparklesIcon className="w-6 h-6" />,
-    title: 'Shared Values',
-    score: 80,
-    description:
-    'Similar life philosophies and goals. Your values align in important areas.',
-    color: 'from-purple-500 to-indigo-600'
-  },
-  {
-    icon: <TrendingUpIcon className="w-6 h-6" />,
-    title: 'Growth Potential',
-    score: 88,
-    description:
-    'You inspire each other to grow. This relationship has excellent long-term potential.',
-    color: 'from-green-500 to-emerald-600'
-  }];
 
   return (
     <CosmicPageLayout>
@@ -102,64 +81,41 @@ export function CompatibilityChecker() {
 
         <SpaceCard variant="premium" className="p-6 md:p-8">
           <h2 className="text-2xl font-['Playfair_Display'] font-bold text-white mb-6">
-            Enter Life Path Numbers
+            Enter Partner Details
           </h2>
 
           <div className="grid md:grid-cols-2 gap-8 mb-8">
-            {/* Your Number */}
-            <div className="text-center">
-              <label className="block text-sm font-medium text-white mb-4">
-                Your Life Path Number
+            <div>
+              <label className="block text-sm font-medium text-white mb-2">
+                Partner Name
               </label>
-              <div className="flex justify-center mb-4">
-                <CrystalNumerologyCube
-                  number={yourNumber}
-                  size="md"
-                  color="cyan" />
-
-              </div>
               <input
-                type="range"
-                min="1"
-                max="9"
-                value={yourNumber}
-                onChange={(e) => setYourNumber(parseInt(e.target.value))}
-                className="w-full h-2 bg-cyan-500/20 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
-
-              <div className="flex justify-between text-xs text-white/60 mt-2">
-                <span>1</span>
-                <span>5</span>
-                <span>9</span>
-              </div>
+                type="text"
+                value={partnerName}
+                onChange={(e) => setPartnerName(e.target.value)}
+                className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-cyan-400 transition-colors"
+                placeholder="Enter full name"
+                required
+              />
             </div>
 
-            {/* Partner Number */}
-            <div className="text-center">
-              <label className="block text-sm font-medium text-white mb-4">
-                Partner's Life Path Number
+            <div>
+              <label className="block text-sm font-medium text-white mb-2">
+                Partner Birth Date
               </label>
-              <div className="flex justify-center mb-4">
-                <CrystalNumerologyCube
-                  number={partnerNumber}
-                  size="md"
-                  color="pink" />
-
-              </div>
               <input
-                type="range"
-                min="1"
-                max="9"
-                value={partnerNumber}
-                onChange={(e) => setPartnerNumber(parseInt(e.target.value))}
-                className="w-full h-2 bg-pink-500/20 rounded-lg appearance-none cursor-pointer accent-pink-500" />
-
-              <div className="flex justify-between text-xs text-white/60 mt-2">
-                <span>1</span>
-                <span>5</span>
-                <span>9</span>
-              </div>
+                type="date"
+                value={partnerBirthDate}
+                onChange={(e) => setPartnerBirthDate(e.target.value)}
+                className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors"
+                required
+              />
             </div>
           </div>
+
+          {error && (
+            <p className="text-red-400 text-sm mb-4">{error}</p>
+          )}
 
           <TouchOptimizedButton
             variant="primary"
@@ -169,7 +125,7 @@ export function CompatibilityChecker() {
             icon={<SparklesIcon className="w-5 h-5" />}
             ariaLabel="Check compatibility">
 
-            Check Compatibility
+            {isLoading ? 'Checking...' : 'Check Compatibility'}
           </TouchOptimizedButton>
         </SpaceCard>
       </motion.div>
@@ -215,97 +171,13 @@ export function CompatibilityChecker() {
                 className="mb-6">
 
                   <div className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-600 mb-2">
-                    {compatibilityScore}%
-                  </div>
-                  <div className="text-xl text-white/80">
-                    {compatibilityLevel} Match
+                    {result?.compatibility_score ?? '–'}%
                   </div>
                 </motion.div>
                 <p className="text-white/70 max-w-2xl mx-auto leading-relaxed">
-                  Life Path {yourNumber} and {partnerNumber} create a harmonious
-                  and balanced partnership. Your energies complement each other
-                  beautifully, fostering growth and mutual understanding.
+                  {result?.partner_name ? `Compatibility with ${result.partner_name}.` : ''}
                 </p>
               </SpaceCard>
-            </motion.div>
-
-            {/* Detailed Aspects */}
-            <motion.div
-            initial={{
-              opacity: 0,
-              y: 20
-            }}
-            animate={{
-              opacity: 1,
-              y: 0
-            }}
-            transition={{
-              delay: 0.4
-            }}>
-
-              <h2 className="text-2xl font-['Playfair_Display'] font-bold text-white mb-6">
-                Compatibility Breakdown
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {aspects.map((aspect, index) =>
-              <motion.div
-                key={aspect.title}
-                initial={{
-                  opacity: 0,
-                  y: 20
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0
-                }}
-                transition={{
-                  delay: 0.5 + index * 0.1
-                }}
-                whileHover={{
-                  y: -4
-                }}>
-
-                    <SpaceCard variant="default" className="p-6 h-full">
-                      <div className="flex items-start justify-between mb-4">
-                        <div
-                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${aspect.color} flex items-center justify-center text-white shadow-lg`}>
-
-                          {aspect.icon}
-                        </div>
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-cyan-400">
-                            {aspect.score}
-                          </div>
-                          <div className="text-xs text-white/60">/ 100</div>
-                        </div>
-                      </div>
-                      <h3 className="text-xl font-['Playfair_Display'] font-bold text-white mb-2">
-                        {aspect.title}
-                      </h3>
-                      <p className="text-white/70 leading-relaxed">
-                        {aspect.description}
-                      </p>
-
-                      {/* Progress Bar */}
-                      <div className="mt-4 h-2 bg-[#0a1628]/60 rounded-full overflow-hidden">
-                        <motion.div
-                      initial={{
-                        width: 0
-                      }}
-                      animate={{
-                        width: `${aspect.score}%`
-                      }}
-                      transition={{
-                        delay: 0.6 + index * 0.1,
-                        duration: 0.8
-                      }}
-                      className={`h-full bg-gradient-to-r ${aspect.color}`} />
-
-                      </div>
-                    </SpaceCard>
-                  </motion.div>
-              )}
-              </div>
             </motion.div>
 
             {/* Advice Section */}
@@ -329,20 +201,16 @@ export function CompatibilityChecker() {
                 </h3>
                 <div className="space-y-4 text-white/70">
                   <p className="leading-relaxed">
-                    <strong className="text-white">Strengths:</strong> Your
-                    combination brings together spiritual depth and creative
-                    expression. You inspire each other to explore new ideas and
-                    perspectives.
+                    <strong className="text-white">Strengths:</strong>{' '}
+                    {Array.isArray(result?.strengths) ? result.strengths.join(' • ') : '—'}
                   </p>
                   <p className="leading-relaxed">
-                    <strong className="text-white">Growth Areas:</strong>{' '}
-                    Balance alone time with quality time together. The 7 needs
-                    solitude while the 3 thrives on social interaction.
+                    <strong className="text-white">Challenges:</strong>{' '}
+                    {Array.isArray(result?.challenges) ? result.challenges.join(' • ') : '—'}
                   </p>
                   <p className="leading-relaxed">
-                    <strong className="text-white">Tips:</strong> Communicate
-                    openly about your needs. Create rituals that honor both your
-                    introspective and expressive natures.
+                    <strong className="text-white">Advice:</strong>{' '}
+                    {Array.isArray(result?.advice) ? result.advice.join(' • ') : '—'}
                   </p>
                 </div>
               </SpaceCard>

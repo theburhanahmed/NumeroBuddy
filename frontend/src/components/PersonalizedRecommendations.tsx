@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -8,6 +8,7 @@ import {
   BookOpenIcon,
   ArrowRightIcon } from
 'lucide-react';
+import { numerologyAPI, DashboardRecommendation } from '../lib/numerology-api';
 interface Recommendation {
   id: string;
   type: 'reading' | 'compatibility' | 'forecast' | 'learning';
@@ -19,58 +20,75 @@ interface Recommendation {
   color: string;
   priority: 'high' | 'medium' | 'low';
 }
-const recommendations: Recommendation[] = [
-{
-  id: '1',
-  type: 'reading',
-  title: 'Your Daily Reading Awaits',
-  description:
-  'Open your daily reading to see what the numbers reveal for you today.',
-  action: 'Get Reading',
-  route: '/daily-readings',
-  icon: <SparklesIcon className="w-6 h-6" />,
-  color: 'from-cyan-400 to-blue-600',
-  priority: 'high'
-},
-{
-  id: '2',
-  type: 'compatibility',
-  title: 'Check Compatibility',
-  description:
-  'Explore how your numbers align with partners, friends, or collaborators.',
-  action: 'Check Now',
-  route: '/compatibility',
-  icon: <HeartIcon className="w-6 h-6" />,
-  color: 'from-pink-500 to-rose-600',
-  priority: 'medium'
-},
-{
-  id: '3',
-  type: 'forecast',
-  title: 'Monthly Forecast Available',
-  description:
-  'View predictive numerology insights to plan the month ahead with confidence.',
-  action: 'View Forecast',
-  route: '/forecasts',
-  icon: <TrendingUpIcon className="w-6 h-6" />,
-  color: 'from-purple-500 to-indigo-600',
-  priority: 'medium'
-},
-{
-  id: '4',
-  type: 'learning',
-  title: 'Learn About Master Numbers',
-  description:
-  'Deepen your understanding of Master Numbers 11, 22, and 33 in our latest blog post.',
-  action: 'Read Article',
-  route: '/blog',
-  icon: <BookOpenIcon className="w-6 h-6" />,
-  color: 'from-green-500 to-emerald-600',
-  priority: 'low'
-}];
-
 export function PersonalizedRecommendations() {
   const navigate = useNavigate();
+  const [items, setItems] = useState<DashboardRecommendation[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await numerologyAPI.getDashboardRecommendations();
+        setItems(res.recommendations || []);
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load recommendations.');
+        setItems([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const recommendations: Recommendation[] = useMemo(() => {
+    const map = (rec: DashboardRecommendation, idx: number): Recommendation => {
+      const type = rec.category === 'remedies'
+        ? 'learning'
+        : rec.category === 'readings'
+        ? 'reading'
+        : rec.category === 'timing'
+        ? 'forecast'
+        : rec.category === 'reports'
+        ? 'learning'
+        : 'learning';
+
+      const icon =
+        type === 'reading'
+          ? <SparklesIcon className="w-6 h-6" />
+          : type === 'forecast'
+          ? <TrendingUpIcon className="w-6 h-6" />
+          : type === 'compatibility'
+          ? <HeartIcon className="w-6 h-6" />
+          : <BookOpenIcon className="w-6 h-6" />;
+
+      const color =
+        type === 'reading'
+          ? 'from-cyan-400 to-blue-600'
+          : type === 'forecast'
+          ? 'from-purple-500 to-indigo-600'
+          : type === 'compatibility'
+          ? 'from-pink-500 to-rose-600'
+          : 'from-green-500 to-emerald-600';
+
+      return {
+        id: String(idx),
+        type,
+        title: rec.title,
+        description: rec.description,
+        action: rec.path ? 'Open' : 'Learn More',
+        route: rec.path || '/dashboard',
+        icon,
+        color,
+        priority: (rec.priority as any) || 'medium',
+      };
+    };
+
+    return (items || []).map(map);
+  }, [items]);
+
   return (
     <div className="p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
       {/* Header */}
@@ -85,7 +103,16 @@ export function PersonalizedRecommendations() {
 
       {/* Recommendations Grid */}
       <div className="grid md:grid-cols-2 gap-4">
-        {recommendations.map((rec, index) =>
+        {isLoading && (
+          <div className="text-white/60">Loading recommendations...</div>
+        )}
+        {error && !isLoading && (
+          <div className="text-red-400">{error}</div>
+        )}
+        {!isLoading && !error && recommendations.length === 0 && (
+          <div className="text-white/60">No recommendations yet.</div>
+        )}
+        {!isLoading && !error && recommendations.map((rec, index) =>
         <motion.div
           key={rec.id}
           initial={{
