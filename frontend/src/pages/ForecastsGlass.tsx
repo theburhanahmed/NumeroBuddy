@@ -7,6 +7,7 @@ import {
   CalendarIcon,
   AlertCircleIcon } from
 'lucide-react';
+import { AppNavbar } from '../components/AppNavbar';
 import { GlassBackground } from '../components/GlassBackground';
 import { numerologyAPI } from '../lib/numerology-api';
 export function ForecastsGlass() {
@@ -61,32 +62,10 @@ export function ForecastsGlass() {
       <GlassBackground starCount={60} />
 
       <div className="relative z-10">
-        {/* Top Navigation */}
-        <motion.nav
-          initial={{
-            opacity: 0,
-            y: -20
-          }}
-          animate={{
-            opacity: 1,
-            y: 0
-          }}
-          className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        
+        <AppNavbar />
 
-          <div
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate('/dashboard')}>
-
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
-              <SparklesIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white font-semibold text-lg tracking-wide">
-              NUMEROBUDDY
-            </span>
-          </div>
-        </motion.nav>
-
-        <div className="max-w-5xl mx-auto px-8 py-12">
+        <div className="max-w-5xl mx-auto px-8 py-8 pt-24">
           {isLoading && (
             <div className="text-center text-white/60 mb-8">Loading forecasts...</div>
           )}

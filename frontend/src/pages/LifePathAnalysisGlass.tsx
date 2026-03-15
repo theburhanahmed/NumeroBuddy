@@ -11,6 +11,7 @@ import {
   DownloadIcon,
   ShareIcon } from
 'lucide-react';
+import { AppNavbar } from '../components/AppNavbar';
 import { GlassBackground } from '../components/GlassBackground';
 import { numerologyAPI, NumerologyProfile } from '../lib/numerology-api';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -102,44 +103,11 @@ export function LifePathAnalysisGlass() {
       <GlassBackground starCount={60} />
 
       <div className="relative z-10">
-        {/* Top Navigation */}
-        <motion.nav
-          initial={{
-            opacity: 0,
-            y: -20
-          }}
-          animate={{
-            opacity: 1,
-            y: 0
-          }}
-          className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
-
-          <div
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate('/dashboard')}>
-
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
-              <SparklesIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white font-semibold text-lg tracking-wide">
-              NUMEROBUDDY
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button className="px-4 py-2 rounded-full border border-cyan-400/30 bg-transparent text-white hover:bg-cyan-500/10 transition-all flex items-center gap-2">
-              <ShareIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Share</span>
-            </button>
-            <button className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/30 transition-all flex items-center gap-2">
-              <DownloadIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Download PDF</span>
-            </button>
-          </div>
-        </motion.nav>
+        
+        <AppNavbar />
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-8 py-12">
+        <div className="max-w-7xl mx-auto px-8 py-8 pt-24">
           {/* Header */}
           <motion.div
             initial={{

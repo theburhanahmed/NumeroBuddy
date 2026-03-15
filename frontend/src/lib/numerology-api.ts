@@ -48,6 +48,25 @@ export interface DashboardRecommendation {
   category?: string;
 }
 
+export interface AchievementData {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
+  color?: string;
+  unlocked: boolean;
+  progress?: number;
+  maxProgress?: number;
+  unlockedDate?: string;
+}
+
+export interface PlatformStats {
+  users_online: number;
+  readings_today: number;
+  satisfaction_rate: number;
+  avg_response_time: number;
+}
+
 export const numerologyAPI = {
   async getHealth() {
     const response = await apiClient.get('/api/v1/health/');
@@ -151,6 +170,21 @@ export const numerologyAPI = {
   async getDashboardRecommendations(): Promise<{ recommendations: DashboardRecommendation[]; count: number }> {
     const response = await apiClient.get('/api/v1/numerology/dashboard/recommendations/');
     return response.data as { recommendations: DashboardRecommendation[]; count: number };
+  },
+
+  async getAchievements(): Promise<{ achievements: AchievementData[] }> {
+    const response = await apiClient.get('/api/v1/rewards/achievements/');
+    return response.data;
+  },
+
+  async getPlatformStats(): Promise<PlatformStats> {
+    const response = await apiClient.get('/api/v1/analytics/platform-stats/');
+    return response.data;
+  },
+
+  async getExperts() {
+    const response = await apiClient.get('/api/v1/experts/');
+    return response.data;
   },
 };
 

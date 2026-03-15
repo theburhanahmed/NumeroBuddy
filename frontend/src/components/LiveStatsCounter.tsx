@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { numerologyAPI, PlatformStats } from '../lib/numerology-api';
 import { motion } from 'framer-motion';
 import { UsersIcon, SparklesIcon, TrendingUpIcon, ZapIcon } from 'lucide-react';
 interface Stat {
@@ -43,29 +44,37 @@ function AnimatedCounter({
 }
 export function LiveStatsCounter() {
   const [isVisible, setIsVisible] = useState(false);
+  const [statsData, setStatsData] = useState<PlatformStats | null>(null);
+
+  useEffect(() => {
+    numerologyAPI.getPlatformStats()
+      .then(data => setStatsData(data))
+      .catch(err => console.error("Failed to fetch platform stats", err));
+  }, []);
+
   const stats: Stat[] = [
   {
     icon: <UsersIcon className="w-6 h-6" />,
-    value: 1247,
+    value: statsData?.users_online || 0,
     label: 'Users Online',
     color: 'from-cyan-400 to-blue-600'
   },
   {
     icon: <SparklesIcon className="w-6 h-6" />,
-    value: 342,
+    value: statsData?.readings_today || 0,
     label: 'Readings Today',
     color: 'from-purple-500 to-indigo-600'
   },
   {
     icon: <TrendingUpIcon className="w-6 h-6" />,
-    value: 98,
+    value: statsData?.satisfaction_rate || 0,
     suffix: '%',
     label: 'Satisfaction Rate',
     color: 'from-green-500 to-emerald-600'
   },
   {
     icon: <ZapIcon className="w-6 h-6" />,
-    value: 3,
+    value: statsData?.avg_response_time || 0,
     suffix: 's',
     label: 'Avg Response Time',
     color: 'from-amber-500 to-orange-600'

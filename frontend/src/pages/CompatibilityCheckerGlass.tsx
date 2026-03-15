@@ -9,9 +9,12 @@ import {
   TrendingUpIcon,
   AlertCircleIcon,
   CheckCircleIcon,
-  RefreshCwIcon } from
+  RefreshCwIcon,
+  Loader2Icon } from
 'lucide-react';
+import { AppNavbar } from '../components/AppNavbar';
 import { GlassBackground } from '../components/GlassBackground';
+import { numerologyAPI } from '../lib/numerology-api';
 export function CompatibilityCheckerGlass() {
   const navigate = useNavigate();
   const [step, setStep] = useState<'input' | 'results'>('input');
@@ -23,52 +26,52 @@ export function CompatibilityCheckerGlass() {
     name: '',
     birthDate: ''
   });
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  React.useEffect(() => {
+    numerologyAPI.getNumerologyProfile().then(profile => {
+      if (profile) {
+        setPerson1({
+          name: profile.full_name || '',
+          birthDate: profile.birth_date || ''
+        });
+      }
+    }).catch(err => console.error("Failed to fetch user profile", err));
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep('results');
+    if (!person2.name || !person2.birthDate) {
+      setError("Please fill out the second person's details.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await numerologyAPI.checkCompatibility({
+        partner_name: person2.name,
+        partner_birth_date: person2.birthDate,
+        relationship_type: 'romantic'
+      });
+      setResult(data);
+      setStep('results');
+    } catch (err: any) {
+      setError(err?.response?.data?.error || "Failed to check compatibility.");
+    } finally {
+      setLoading(false);
+    }
   };
-  const compatibilityScore = null;
   return (
     <div className="relative min-h-screen bg-[#0a1628] overflow-hidden">
       <GlassBackground starCount={60} />
 
       <div className="relative z-10">
-        {/* Top Navigation */}
-        <motion.nav
-          initial={{
-            opacity: 0,
-            y: -20
-          }}
-          animate={{
-            opacity: 1,
-            y: 0
-          }}
-          className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        
+        <AppNavbar />
 
-          <div
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate('/dashboard')}>
-
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
-              <SparklesIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white font-semibold text-lg tracking-wide">
-              NUMEROBUDDY
-            </span>
-          </div>
-
-          {step === 'results' &&
-          <button
-            onClick={() => setStep('input')}
-            className="px-4 py-2 rounded-full border border-cyan-400/30 bg-transparent text-white hover:bg-cyan-500/10 transition-all flex items-center gap-2">
-
-              <RefreshCwIcon className="w-4 h-4" />
-              New Check
-            </button>
-          }
-        </motion.nav>
-
-        <div className="max-w-5xl mx-auto px-8 py-12">
+        <div className="max-w-5xl mx-auto px-8 py-8 pt-24">
           <AnimatePresence mode="wait">
             {step === 'input' ?
             <motion.div
@@ -147,14 +150,9 @@ export function CompatibilityCheckerGlass() {
                           <input
                           type="text"
                           value={person1.name}
-                          onChange={(e) =>
-                          setPerson1({
-                            ...person1,
-                            name: e.target.value
-                          })
-                          }
-                          placeholder="Enter name"
-                          className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-cyan-400 transition-colors"
+                          disabled
+                          placeholder="Loading..."
+                          className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white/70 placeholder:text-white/40 focus:outline-none transition-colors"
                           required />
 
                         </div>
@@ -170,14 +168,8 @@ export function CompatibilityCheckerGlass() {
                             <input
                             type="date"
                             value={person1.birthDate}
-                            onChange={(e) =>
-                            setPerson1({
-                              ...person1,
-                              birthDate: e.target.value
-                            })
-                            }
-                            max={new Date().toISOString().split('T')[0]}
-                            className="w-full pl-12 pr-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors"
+                            disabled
+                            className="w-full pl-12 pr-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white/70 focus:outline-none transition-colors"
                             required />
 
                           </div>
@@ -256,6 +248,12 @@ export function CompatibilityCheckerGlass() {
                     </motion.div>
                   </div>
 
+                  {error && (
+                    <div className="p-4 bg-red-500/20 border border-red-500/40 rounded-xl text-red-200 text-sm text-center">
+                      {error}
+                    </div>
+                  )}
+
                   <motion.button
                   initial={{
                     opacity: 0,
@@ -269,9 +267,14 @@ export function CompatibilityCheckerGlass() {
                     delay: 0.5
                   }}
                   type="submit"
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-semibold shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 transition-all text-lg">
-
-                    Check Compatibility
+                  disabled={loading}
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-semibold shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 transition-all text-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3">
+                    
+                    {loading ? (
+                       <><Loader2Icon className="w-5 h-5 animate-spin"/> Calculating Cosmic Bond...</>
+                    ) : (
+                       "Check Compatibility"
+                    )}
                   </motion.button>
                 </form>
               </motion.div> :
@@ -298,9 +301,12 @@ export function CompatibilityCheckerGlass() {
                   </div>
 
                   <h2 className="text-3xl font-serif text-white mb-2">
-                    {person1.name || 'Person 1'} & {person2.name || 'Person 2'}
+                    {person1.name || 'You'} & {person2.name || 'Partner'}
                   </h2>
-                  <p className="text-xl text-pink-400">
+                  <p className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-600">
+                    Compatibility Score: {result?.compatibility_score || 0}%
+                  </p>
+                  <p className="text-md text-pink-400/80 mt-2">
                     Explore how your numbers interact across key areas of your relationship.
                   </p>
                 </div>
@@ -384,17 +390,15 @@ export function CompatibilityCheckerGlass() {
                     </div>
 
                     <ul className="space-y-3">
-                      {[
-                    'Deep intellectual connection and stimulating conversations',
-                    'Complementary energies that balance each other',
-                    'Shared spiritual interests and growth mindset',
-                    'Strong creative collaboration potential'].
-                    map((strength, i) =>
+                      {(result?.strengths || []).map((strength: string, i: number) =>
                     <li key={i} className="flex items-start gap-3">
                           <CheckCircleIcon className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                           <span className="text-white/80">{strength}</span>
                         </li>
                     )}
+                      {(!result?.strengths || result.strengths.length === 0) && (
+                        <p className="text-white/60 text-sm">No specific strengths listed.</p>
+                      )}
                     </ul>
                   </motion.div>
 
@@ -422,17 +426,15 @@ export function CompatibilityCheckerGlass() {
                     </div>
 
                     <ul className="space-y-3">
-                      {[
-                    'Need for personal space vs. togetherness balance',
-                    'Different communication styles require patience',
-                    'Practical matters may need extra attention',
-                    'Emotional expression differences to navigate'].
-                    map((challenge, i) =>
+                      {(result?.challenges || []).map((challenge: string, i: number) =>
                     <li key={i} className="flex items-start gap-3">
                           <AlertCircleIcon className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                           <span className="text-white/80">{challenge}</span>
                         </li>
                     )}
+                      {(!result?.challenges || result.challenges.length === 0) && (
+                        <p className="text-white/60 text-sm">No specific areas to nurture listed.</p>
+                      )}
                     </ul>
                   </motion.div>
                 </div>
@@ -456,12 +458,7 @@ export function CompatibilityCheckerGlass() {
                     Cosmic Guidance
                   </h3>
                   <p className="text-white/80 leading-relaxed text-center max-w-3xl mx-auto">
-                    This is a highly compatible pairing with strong potential
-                    for a deep, meaningful connection. The key to success lies
-                    in honoring each other's unique qualities while building on
-                    your shared spiritual and intellectual interests. Regular
-                    communication and mutual respect for personal space will
-                    help this relationship flourish.
+                    {result?.advice || "No specific advice generated for this match. Remember to communicate openly and respect each other's boundaries."}
                   </p>
                 </motion.div>
               </motion.div>

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { numerologyAPI, AchievementData } from '../lib/numerology-api';
 import {
   TrophyIcon,
   StarIcon,
@@ -9,23 +10,16 @@ import {
   CrownIcon,
   XIcon } from
 'lucide-react';
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ReactNode;
-  color: string;
-  unlocked: boolean;
-  progress?: number;
-  maxProgress?: number;
-  unlockedDate?: string;
+interface Achievement extends AchievementData {
+  iconNode?: React.ReactNode;
 }
-const achievements: Achievement[] = [
+
+const DEFAULT_ACHIEVEMENTS: Achievement[] = [
 {
   id: '1',
   name: 'First Steps',
   description: 'Complete your first numerology reading',
-  icon: <StarIcon className="w-6 h-6" />,
+  iconNode: <StarIcon className="w-6 h-6" />,
   color: 'from-cyan-400 to-blue-600',
   unlocked: true,
   unlockedDate: '2024-01-15'
@@ -34,7 +28,7 @@ const achievements: Achievement[] = [
   id: '2',
   name: 'Streak Master',
   description: 'Maintain a 7-day reading streak',
-  icon: <ZapIcon className="w-6 h-6" />,
+  iconNode: <ZapIcon className="w-6 h-6" />,
   color: 'from-amber-500 to-orange-600',
   unlocked: true,
   unlockedDate: '2024-01-20'
@@ -43,7 +37,7 @@ const achievements: Achievement[] = [
   id: '3',
   name: 'Compatibility Expert',
   description: 'Check compatibility with 5 different people',
-  icon: <HeartIcon className="w-6 h-6" />,
+  iconNode: <HeartIcon className="w-6 h-6" />,
   color: 'from-pink-500 to-rose-600',
   unlocked: true,
   progress: 5,
@@ -54,7 +48,7 @@ const achievements: Achievement[] = [
   id: '4',
   name: 'Knowledge Seeker',
   description: 'Read 10 blog articles',
-  icon: <SparklesIcon className="w-6 h-6" />,
+  iconNode: <SparklesIcon className="w-6 h-6" />,
   color: 'from-purple-500 to-indigo-600',
   unlocked: false,
   progress: 6,
@@ -64,7 +58,7 @@ const achievements: Achievement[] = [
   id: '5',
   name: 'Cosmic Explorer',
   description: 'Unlock all core numerology insights',
-  icon: <TrophyIcon className="w-6 h-6" />,
+  iconNode: <TrophyIcon className="w-6 h-6" />,
   color: 'from-green-500 to-emerald-600',
   unlocked: false,
   progress: 15,
@@ -74,7 +68,7 @@ const achievements: Achievement[] = [
   id: '6',
   name: 'Master Numerologist',
   description: 'Complete 100 readings',
-  icon: <CrownIcon className="w-6 h-6" />,
+  iconNode: <CrownIcon className="w-6 h-6" />,
   color: 'from-yellow-500 to-amber-600',
   unlocked: false,
   progress: 24,
@@ -84,8 +78,31 @@ const achievements: Achievement[] = [
 export function AchievementBadges() {
   const [selectedAchievement, setSelectedAchievement] =
   useState<Achievement | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>(DEFAULT_ACHIEVEMENTS);
+
+  useEffect(() => {
+    numerologyAPI.getAchievements()
+      .then(res => {
+        if (res.achievements && res.achievements.length > 0) {
+           // Merge with defaults for icons and colors if necessary
+           const merged = res.achievements.map(a => {
+             const defaultMatch = DEFAULT_ACHIEVEMENTS.find(da => da.name === a.name || da.id === a.id);
+             return {
+               ...defaultMatch,
+               ...a,
+               iconNode: defaultMatch?.iconNode || <StarIcon className="w-6 h-6" />,
+               color: a.color || defaultMatch?.color || 'from-cyan-400 to-blue-600'
+             };
+           });
+           setAchievements(merged);
+        }
+      })
+      .catch(err => console.error("Failed to load achievements", err));
+  }, []);
+
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
-  const totalCount = achievements.length;
+  const totalCount = achievements.length || 1; 
+
   return (
     <>
       <div className="p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
@@ -150,7 +167,7 @@ export function AchievementBadges() {
               achievement.unlocked ? 'text-white' : 'text-white/30'
               }>
 
-                {achievement.icon}
+                {achievement.iconNode}
               </div>
 
               {/* Progress Ring for Locked Achievements */}
@@ -267,7 +284,7 @@ export function AchievementBadges() {
                 <div
                 className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${selectedAchievement.color} flex items-center justify-center text-white mx-auto mb-6 shadow-2xl ${!selectedAchievement.unlocked ? 'opacity-50' : ''}`}>
 
-                  <div className="text-3xl">{selectedAchievement.icon}</div>
+                  <div className="text-3xl">{selectedAchievement.iconNode}</div>
                 </div>
 
                 {/* Title */}

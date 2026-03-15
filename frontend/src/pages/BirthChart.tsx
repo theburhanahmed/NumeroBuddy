@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   StarIcon,
@@ -6,13 +6,15 @@ import {
   TriangleIcon,
   SquareIcon,
   InfoIcon,
-  XIcon } from
+  XIcon,
+  Loader2Icon } from
 'lucide-react';
 import { CosmicPageLayout } from '../components/CosmicPageLayout';
 import { SpaceCard } from '../components/SpaceCard';
 import { CrystalNumerologyCube } from '../components/CrystalNumerologyCube';
 import { CosmicTooltip } from '../components/CosmicTooltip';
 import { TouchOptimizedButton } from '../components/TouchOptimizedButton';
+import { numerologyAPI } from '../lib/numerology-api';
 // Lo Shu Grid configuration
 const loShuGrid = [
 {
@@ -63,33 +65,69 @@ const loShuGrid = [
 
 export function BirthChart() {
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-  // Mock user data - normally would come from context/props
-  const userNumbers = [1, 3, 5, 7, 9]; // Numbers present in user's chart
-  const additionalNumbers = [
+  const [profile, setProfile] = useState<any>(null);
+  const [loShuGridData, setLoShuGridData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      numerologyAPI.getNumerologyProfile(),
+      numerologyAPI.getLoShuGrid()
+    ]).then(([profileData, gridData]) => {
+      setProfile(profileData);
+      setLoShuGridData(gridData);
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, []);
+
+  const userNumbers = React.useMemo(() => {
+    if (!loShuGridData?.grid) return [];
+    return Object.entries(loShuGridData.grid)
+      .filter(([_, count]: any) => count > 0)
+      .map(([num]) => parseInt(num));
+  }, [loShuGridData]);
+
+  const additionalNumbers = profile ? [
   {
     label: 'Expression Number',
-    value: 11,
+    value: profile.destiny_number || 0,
     description: 'How you express yourself to the world',
     icon: <StarIcon className="w-5 h-5" />
   },
   {
     label: 'Maturity Number',
-    value: 4,
+    value: profile.maturity_number || 0,
     description: 'Your ultimate life goal',
     icon: <CircleIcon className="w-5 h-5" />
   },
   {
     label: 'Balance Number',
-    value: 6,
+    value: profile.balance_number || 0,
     description: 'How you handle challenges',
     icon: <TriangleIcon className="w-5 h-5" />
   },
   {
     label: 'Hidden Passion',
-    value: 8,
+    value: profile.hidden_passion_number || 0,
     description: 'Your secret strength',
     icon: <SquareIcon className="w-5 h-5" />
-  }];
+  }] : [];
+
+  if (loading) {
+    return (
+      <CosmicPageLayout>
+        <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh]">
+          <Loader2Icon className="w-12 h-12 text-cyan-400 animate-spin mb-4" />
+          <p className="text-white/60 font-['Playfair_Display'] text-xl">
+            Aligning the stars...
+          </p>
+        </div>
+      </CosmicPageLayout>
+    );
+  }
 
   return (
     <CosmicPageLayout>
@@ -329,21 +367,12 @@ export function BirthChart() {
                   </h3>
                   <div className="space-y-4 text-white/80 leading-relaxed">
                     <p>
-                      Your birth chart reveals a powerful combination of
-                      spiritual insight (Life Path 7) and creative expression
-                      (Destiny 3). This unique blend makes you a natural teacher
+                      Your birth chart reveals a powerful combination of spiritual insight
+                      and creative expression. This unique blend makes you a natural teacher
                       and communicator of deep wisdom.
                     </p>
                     <p>
-                      The Soul Urge 5 adds a desire for freedom and adventure,
-                      while Personality 9 shows your humanitarian nature.
-                      Together, these numbers create a complex and fascinating
-                      cosmic blueprint.
-                    </p>
-                    <p>
-                      Your Expression Number 11 is a Master Number, indicating
-                      heightened intuition and spiritual awareness. You are here
-                      to inspire and enlighten others through your unique gifts.
+                      {loShuGridData?.interpretation || "No interpretation available yet."}
                     </p>
                   </div>
                   <div className="mt-8 flex justify-center">

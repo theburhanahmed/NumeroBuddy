@@ -14,6 +14,7 @@ urlpatterns = [
     # Analytics retrieval endpoints
     path('personal/', views.get_personal_analytics, name='personal-analytics'),
     path('business/', views.get_business_analytics, name='business-analytics'),
+    path('platform-stats/', views.get_platform_stats, name='platform-stats'),
     path('funnels/<str:funnel_name>/', views.get_funnel_analytics, name='funnel-analytics'),
     path('ab-tests/<uuid:experiment_id>/', views.get_ab_test_results_view, name='ab-test-results'),
 ]

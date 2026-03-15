@@ -8,6 +8,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon } from
 'lucide-react';
+import { AppNavbar } from '../components/AppNavbar';
 import { GlassBackground } from '../components/GlassBackground';
 import { CrystalNumerologyCube } from '../components/CrystalNumerologyCube';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -56,56 +57,10 @@ export function BirthChartGlass() {
       <GlassBackground starCount={60} />
 
       <div className="relative z-10">
-        {/* Top Navigation */}
-        <motion.nav
-          initial={{
-            opacity: 0,
-            y: -20
-          }}
-          animate={{
-            opacity: 1,
-            y: 0
-          }}
-          className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        
+        <AppNavbar />
 
-          <div
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate('/dashboard')}>
-
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
-              <SparklesIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white font-semibold text-lg tracking-wide">
-              NUMEROBUDDY
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
-              <button
-                onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}
-                className="p-1 hover:bg-cyan-500/20 rounded transition-colors">
-
-                <ZoomOutIcon className="w-4 h-4 text-white" />
-              </button>
-              <span className="text-white text-sm px-2">
-                {Math.round(zoom * 100)}%
-              </span>
-              <button
-                onClick={() => setZoom(Math.min(2, zoom + 0.25))}
-                className="p-1 hover:bg-cyan-500/20 rounded transition-colors">
-
-                <ZoomInIcon className="w-4 h-4 text-white" />
-              </button>
-            </div>
-            <button className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/30 transition-all flex items-center gap-2">
-              <DownloadIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Download</span>
-            </button>
-          </div>
-        </motion.nav>
-
-        <div className="max-w-7xl mx-auto px-8 py-12">
+        <div className="max-w-7xl mx-auto px-8 py-8 pt-24">
           {/* Header */}
           <motion.div
             initial={{

@@ -9,6 +9,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from 'lucide-react';
+import { AppNavbar } from '../components/AppNavbar';
 import { GlassBackground } from '../components/GlassBackground';
 import { numerologyAPI } from '../lib/numerology-api';
 
@@ -73,46 +74,10 @@ export function DailyReadingsGlass() {
       <GlassBackground starCount={60} />
 
       <div className="relative z-10">
-        {/* Top Navigation */}
-        <motion.nav
-          initial={{
-            opacity: 0,
-            y: -20
-          }}
-          animate={{
-            opacity: 1,
-            y: 0
-          }}
-          className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        
+        <AppNavbar />
 
-          <div
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate('/dashboard')}>
-
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
-              <SparklesIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white font-semibold text-lg tracking-wide">
-              NUMEROBUDDY
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsBookmarked(!isBookmarked)}
-              className={`p-2 rounded-full transition-all ${isBookmarked ? 'bg-amber-500/20 text-amber-400' : 'bg-[#1a2942]/40 text-white/60 hover:text-white'}`}>
-
-              <BookmarkIcon
-                className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
-
-            </button>
-            <button className="p-2 rounded-full bg-[#1a2942]/40 text-white/60 hover:text-white transition-all">
-              <ShareIcon className="w-5 h-5" />
-            </button>
-          </div>
-        </motion.nav>
-
-        <div className="max-w-4xl mx-auto px-8 py-12">
+        <div className="max-w-4xl mx-auto px-8 py-8 pt-24">
           {/* Header */}
           <motion.div
             initial={{
