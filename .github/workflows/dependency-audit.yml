@@ -38,7 +38,7 @@ jobs:
           npm audit --audit-level=moderate || true
       
       - name: Upload audit reports
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dependency-audit-reports
           path: |
