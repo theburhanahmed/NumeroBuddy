@@ -15,7 +15,7 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       deploy: ${{ steps.filter.outputs.deploy }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -33,7 +33,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.backend == 'true'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -103,7 +103,7 @@ jobs:
           - 6379:6379
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -166,7 +166,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -194,7 +194,7 @@ jobs:
     needs: [changes, lint-frontend]
     if: needs.changes.outputs.frontend == 'true' && needs.lint-frontend.result == 'success'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -219,7 +219,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.deploy == 'true'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -238,7 +238,7 @@ jobs:
     name: Check Dependency Updates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -276,7 +276,7 @@ jobs:
       name: staging
       url: https://numerai-staging.onrender.com
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Deploy Backend to Render
         run: |
@@ -302,7 +302,7 @@ jobs:
       name: staging
       url: https://numerai-staging.onrender.com
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Deploy Frontend to Render
         run: |
@@ -328,7 +328,7 @@ jobs:
       name: production
       url: https://numerai.onrender.com
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Canary Deployment (Backend)
         run: |
@@ -369,7 +369,7 @@ jobs:
       name: production
       url: https://numerai.onrender.com
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       
       - name: Canary Deployment (Frontend)
         run: |
