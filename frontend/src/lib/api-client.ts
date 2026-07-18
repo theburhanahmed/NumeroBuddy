@@ -192,6 +192,21 @@ export const notificationsAPI = {
     apiClient.patch('/api/v1/notifications/preferences/', data),
 };
 
+export const aiChatAPI = {
+  sendMessage: (message: string, conversationId?: string) =>
+    apiClient.post('/api/v1/ai/chat/', { message, conversation_id: conversationId }),
+  getConversations: () =>
+    apiClient.get('/api/v1/ai/conversations/'),
+  getConversationMessages: (conversationId: string) =>
+    apiClient.get(`/api/v1/ai/conversations/${conversationId}/messages/`),
+  getCoPilotSuggestions: () =>
+    apiClient.post('/api/v1/ai-co-pilot/suggest/'),
+  analyzeCoPilotDecision: (data: { decision: string; options?: string[] }) =>
+    apiClient.post('/api/v1/ai-co-pilot/analyze-decision/', data),
+  getCoPilotInsights: () =>
+    apiClient.get('/api/v1/ai-co-pilot/insights/'),
+};
+
 export const userAPI = {
   getProfile: () =>
     cachedFetch(

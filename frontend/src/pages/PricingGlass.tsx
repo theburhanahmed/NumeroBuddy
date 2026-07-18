@@ -1,21 +1,56 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   CheckIcon,
   SparklesIcon,
   ZapIcon,
   CrownIcon,
-  XIcon } from
+  XIcon,
+  LoaderIcon } from
 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { GlassNav } from '../components/GlassNav';
 import { LandingFooter } from '../components/LandingFooter';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { paymentsAPI } from '../lib/api-client';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'sonner';
 export function PricingGlass() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const handleSelectPlan = async (planName: string, price: number) => {
+    if (price === 0) {
+      navigate('/signup');
+      return;
+    }
+    if (!user) {
+      navigate('/signup');
+      return;
+    }
+    setLoadingPlan(planName);
+    try {
+      const response = await paymentsAPI.createCheckoutSession(planName.toLowerCase());
+      const { checkout_url, url } = response.data;
+      const redirectUrl = checkout_url || url;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        toast.error('Unable to create checkout session. Please try again.');
+      }
+    } catch (error: any) {
+      const message = error?.response?.data?.error || error?.response?.data?.detail || 'Unable to start checkout. Please try again.';
+      toast.error(message);
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
   const plans = [
   {
     name: 'Free',
+    key: 'free',
     price: 0,
     period: 'forever',
     icon: <ZapIcon className="w-6 h-6" />,
@@ -37,6 +72,7 @@ export function PricingGlass() {
   },
   {
     name: 'Premium',
+    key: 'premium',
     price: 9.99,
     period: 'month',
     icon: <SparklesIcon className="w-6 h-6" />,
@@ -57,7 +93,8 @@ export function PricingGlass() {
     glowColor: 'cyan-500'
   },
   {
-    name: 'Enterprise',
+    name: 'Elite',
+    key: 'elite',
     price: 29.99,
     period: 'month',
     icon: <CrownIcon className="w-6 h-6" />,
@@ -246,10 +283,18 @@ export function PricingGlass() {
 
                   {/* CTA Button */}
                   <button
-                  onClick={() => navigate('/signup')}
-                  className={`w-full py-3 rounded-full font-semibold transition-all ${plan.popular ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50' : 'border border-cyan-400/30 bg-transparent text-white hover:bg-cyan-500/10'}`}>
+                  onClick={() => handleSelectPlan(plan.key, plan.price)}
+                  disabled={loadingPlan === plan.key}
+                  className={`w-full py-3 rounded-full font-semibold transition-all flex items-center justify-center gap-2 ${plan.popular ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50' : 'border border-cyan-400/30 bg-transparent text-white hover:bg-cyan-500/10'} ${loadingPlan === plan.key ? 'opacity-70 cursor-not-allowed' : ''}`}>
 
-                    {plan.price === 0 ? 'Start Free' : 'Get Started'}
+                    {loadingPlan === plan.key ? (
+                      <>
+                        <LoaderIcon className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      plan.price === 0 ? 'Start Free' : 'Get Started'
+                    )}
                   </button>
                 </div>
               </motion.div>

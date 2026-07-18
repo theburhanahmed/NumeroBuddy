@@ -30,6 +30,9 @@ import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
 import { CookiePolicy } from './pages/CookiePolicy';
 import { Disclaimer } from './pages/Disclaimer';
+import { AngelNumbers } from './pages/AngelNumbers';
+import { MonthlyReport } from './pages/MonthlyReport';
+import { AdvancedNumerology } from './pages/AdvancedNumerology';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { OnboardingModal } from './components/OnboardingModal';
@@ -151,6 +154,9 @@ export function AppRouter() {
         <Route path="/auspicious-dates" element={<ProtectedRoute><AuspiciousDates /></ProtectedRoute>} />
         <Route path="/vehicle-numerology" element={<ProtectedRoute><VehicleNumerology /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute><ReportHistory /></ProtectedRoute>} />
+        <Route path="/angel-numbers" element={<ProtectedRoute><AngelNumbers /></ProtectedRoute>} />
+        <Route path="/monthly-report" element={<ProtectedRoute><MonthlyReport /></ProtectedRoute>} />
+        <Route path="/advanced-numerology" element={<ProtectedRoute><AdvancedNumerology /></ProtectedRoute>} />
 
         {/* 404 - Catch all */}
         <Route path="*" element={<NotFoundPage />} />

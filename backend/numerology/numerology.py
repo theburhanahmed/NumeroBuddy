@@ -1064,6 +1064,452 @@ class NumerologyCalculator:
             'contributing_numbers': contributing_numbers,
         }
     
+    def calculate_rational_thought_number(self, full_name: str, birth_date: date) -> int:
+        """
+        Calculate Rational Thought Number.
+        
+        Formula: Sum of first name letter values + birth day, reduced to single digit.
+        This number reveals how you think and process information rationally.
+        """
+        first_name = full_name.strip().split()[0] if full_name.strip() else full_name
+        first_name_sum = self._sum_name(first_name)
+        birth_day = birth_date.day
+        total = first_name_sum + birth_day
+        return self._reduce_to_single_digit(total, preserve_master=True)
+
+    def calculate_bridge_numbers(self, full_name: str, birth_date: date) -> List[Dict[str, Any]]:
+        """
+        Calculate Bridge Numbers.
+        
+        Bridge Numbers show what you need to do to smooth the relationship
+        between your core numbers. They reveal how to bridge gaps in your personality.
+        
+        Bridge 1: |Life Path - Expression| (bridging life purpose and talents)
+        Bridge 2: |Expression - Soul Urge| (bridging talents and inner desires)
+        Bridge 3: |Soul Urge - Personality| (bridging desires and outer persona)
+        Bridge 4: |Personality - Life Path| (bridging persona and life purpose)
+        """
+        life_path = self.calculate_life_path_number(birth_date)
+        destiny = self.calculate_destiny_number(full_name)
+        soul_urge = self.calculate_soul_urge_number(full_name)
+        personality = self.calculate_personality_number(full_name)
+        
+        lp_r = self._reduce_to_single_digit(life_path, preserve_master=False)
+        dest_r = self._reduce_to_single_digit(destiny, preserve_master=False)
+        su_r = self._reduce_to_single_digit(soul_urge, preserve_master=False)
+        pn_r = self._reduce_to_single_digit(personality, preserve_master=False)
+
+        bridge_meanings = {
+            0: 'No bridge needed. These energies are already in harmony.',
+            1: 'Be more independent and assertive. Trust your own instincts more.',
+            2: 'Be more diplomatic and cooperative. Practice patience and sensitivity.',
+            3: 'Express yourself more creatively. Communicate your feelings openly.',
+            4: 'Build more structure and discipline. Focus on practical foundations.',
+            5: 'Embrace change and variety. Be more adventurous and flexible.',
+            6: 'Take on more responsibility. Focus on home, family, and service.',
+            7: 'Seek deeper knowledge and spiritual understanding. Trust your intuition.',
+            8: 'Develop stronger material goals. Focus on achievement and authority.',
+        }
+
+        bridges = []
+        pairs = [
+            (lp_r, dest_r, 'Life Path', 'Expression', 'life purpose and talents'),
+            (dest_r, su_r, 'Expression', 'Soul Urge', 'talents and inner desires'),
+            (su_r, pn_r, 'Soul Urge', 'Personality', 'inner desires and outer persona'),
+            (pn_r, lp_r, 'Personality', 'Life Path', 'outer persona and life purpose'),
+        ]
+        for i, (a, b, name_a, name_b, desc) in enumerate(pairs, 1):
+            bridge_val = abs(a - b)
+            bridges.append({
+                'bridge_number': i,
+                'value': bridge_val,
+                'between': f'{name_a} and {name_b}',
+                'description': f'Bridging your {desc}',
+                'advice': bridge_meanings.get(bridge_val, ''),
+            })
+        return bridges
+
+    def calculate_transit_letters(self, full_name: str, birth_date: date, target_year: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Calculate Transit Letters for a given year.
+        
+        Transit Letters are derived from the letters of your name and indicate
+        influences active during specific years of your life. Each letter governs
+        a number of years equal to its numeric value.
+        
+        Physical Transit: from first name
+        Mental Transit: from middle name(s)
+        Spiritual Transit: from last name
+        """
+        if target_year is None:
+            target_year = datetime.now().year
+        
+        age = target_year - birth_date.year
+        if age < 0:
+            age = 0
+        
+        names = full_name.strip().split()
+        if not names:
+            return {'physical': None, 'mental': None, 'spiritual': None, 'age': age, 'year': target_year}
+        
+        first_name = names[0]
+        middle_name = ' '.join(names[1:-1]) if len(names) > 2 else (names[1] if len(names) == 2 else names[0])
+        last_name = names[-1] if len(names) > 1 else names[0]
+        
+        def get_transit_letter(name_part: str, years_lived: int) -> Dict[str, Any]:
+            """Get the active transit letter for a given name part and age."""
+            letters = [c for c in name_part.upper() if c.isalpha()]
+            if not letters:
+                return {'letter': None, 'value': 0, 'years_remaining': 0}
+            
+            cumulative = 0
+            cycle_position = years_lived
+            while True:
+                for letter in letters:
+                    value = self._get_letter_value(letter)
+                    if value == 0:
+                        value = 1
+                    cumulative += value
+                    if cumulative > cycle_position:
+                        years_remaining = cumulative - cycle_position
+                        return {
+                            'letter': letter,
+                            'value': value,
+                            'years_remaining': years_remaining,
+                        }
+                if cumulative == 0:
+                    break
+                cycle_position -= cumulative
+                cumulative = 0
+            return {'letter': None, 'value': 0, 'years_remaining': 0}
+        
+        physical = get_transit_letter(first_name, age)
+        mental = get_transit_letter(middle_name, age)
+        spiritual = get_transit_letter(last_name, age)
+        
+        essence_sum = physical['value'] + mental['value'] + spiritual['value']
+        essence_number = self._reduce_to_single_digit(essence_sum, preserve_master=True)
+        
+        return {
+            'physical': physical,
+            'mental': mental,
+            'spiritual': spiritual,
+            'essence_number': essence_number,
+            'age': age,
+            'year': target_year,
+        }
+
+    def analyze_angel_numbers(self, number_sequence: str) -> Dict[str, Any]:
+        """
+        Analyze Angel Number sequences.
+        
+        Angel Numbers are repeating number patterns (111, 222, 333, etc.)
+        that carry spiritual messages and guidance.
+        """
+        angel_meanings = {
+            '111': {
+                'name': 'New Beginnings',
+                'message': 'Your thoughts are manifesting rapidly. Focus on what you want, not what you fear.',
+                'guidance': 'Start new projects, set intentions, align your thoughts with your desires.',
+                'chakra': 'Crown',
+                'element': 'Fire',
+            },
+            '222': {
+                'name': 'Balance & Partnership',
+                'message': 'Trust the process. Everything is coming together in divine timing.',
+                'guidance': 'Be patient, seek harmony, trust partnerships and collaborations.',
+                'chakra': 'Sacral',
+                'element': 'Water',
+            },
+            '333': {
+                'name': 'Divine Protection',
+                'message': 'Ascended Masters are near. You are being guided and protected.',
+                'guidance': 'Express yourself creatively, share your gifts, embrace joy.',
+                'chakra': 'Solar Plexus',
+                'element': 'Fire',
+            },
+            '444': {
+                'name': 'Foundation & Stability',
+                'message': 'Angels are surrounding you. You are building solid foundations.',
+                'guidance': 'Keep working hard, stay disciplined, your efforts will pay off.',
+                'chakra': 'Heart',
+                'element': 'Earth',
+            },
+            '555': {
+                'name': 'Major Changes',
+                'message': 'Significant life changes are approaching. Embrace the transformation.',
+                'guidance': 'Let go of the old, welcome change, stay positive through transitions.',
+                'chakra': 'Throat',
+                'element': 'Air',
+            },
+            '666': {
+                'name': 'Realignment',
+                'message': 'Refocus your thoughts from material to spiritual. Seek balance.',
+                'guidance': 'Nurture yourself and others, focus on service, release material worries.',
+                'chakra': 'Third Eye',
+                'element': 'Earth',
+            },
+            '777': {
+                'name': 'Spiritual Awakening',
+                'message': 'You are on the right path. Spiritual enlightenment is unfolding.',
+                'guidance': 'Deepen meditation, study esoteric knowledge, trust your intuition.',
+                'chakra': 'Crown',
+                'element': 'Water',
+            },
+            '888': {
+                'name': 'Abundance',
+                'message': 'Financial and material abundance is flowing into your life.',
+                'guidance': 'Prepare for prosperity, be generous, align with abundance mindset.',
+                'chakra': 'Root',
+                'element': 'Earth',
+            },
+            '999': {
+                'name': 'Completion',
+                'message': 'A major phase of your life is ending. Prepare for a new chapter.',
+                'guidance': 'Release what no longer serves you, forgive, complete unfinished business.',
+                'chakra': 'Crown',
+                'element': 'Fire',
+            },
+            '000': {
+                'name': 'Infinite Potential',
+                'message': 'You are one with the universe. Infinite possibilities await.',
+                'guidance': 'Meditate on oneness, connect with divine source, open to all possibilities.',
+                'chakra': 'Crown',
+                'element': 'Ether',
+            },
+            '1111': {
+                'name': 'Spiritual Gateway',
+                'message': 'A powerful portal of manifestation has opened. Your thoughts create reality instantly.',
+                'guidance': 'Be extremely mindful of your thoughts, set clear intentions, take aligned action.',
+                'chakra': 'Crown',
+                'element': 'Fire',
+            },
+            '1212': {
+                'name': 'Divine Order',
+                'message': 'Stay positive and focused. You are being guided to your highest path.',
+                'guidance': 'Keep faith, maintain optimism, trust that everything is in divine order.',
+                'chakra': 'Heart',
+                'element': 'Air',
+            },
+            '1010': {
+                'name': 'Personal Development',
+                'message': 'Focus on personal growth and spiritual development.',
+                'guidance': 'Step out of your comfort zone, trust your inner wisdom, evolve.',
+                'chakra': 'Solar Plexus',
+                'element': 'Fire',
+            },
+        }
+        
+        cleaned = ''.join(c for c in number_sequence if c.isdigit())
+        
+        detected = []
+        for pattern, meaning in angel_meanings.items():
+            if pattern in cleaned:
+                detected.append({
+                    'pattern': pattern,
+                    **meaning,
+                })
+        
+        single_digit = self._reduce_to_single_digit(
+            sum(int(d) for d in cleaned) if cleaned else 0, preserve_master=True
+        )
+        
+        return {
+            'input': number_sequence,
+            'detected_patterns': detected,
+            'reduced_number': single_digit,
+            'is_angel_number': len(detected) > 0,
+            'total_patterns_found': len(detected),
+        }
+
+    def analyze_repeated_numbers(self, full_name: str, birth_date: date) -> Dict[str, Any]:
+        """
+        Analyze repeated/intensified numbers across the entire numerology profile.
+        
+        When a number appears multiple times across different core calculations,
+        its energy is amplified. This analysis identifies overemphasized and
+        underemphasized numbers.
+        """
+        repeated_meanings = {
+            1: {
+                'trait': 'Leadership & Independence',
+                'overemphasis': 'May become domineering, self-centered, or stubbornly independent. Risk of isolation.',
+                'balanced': 'Natural leader with strong self-confidence and pioneering spirit.',
+                'remedy': 'Practice collaboration and active listening. Value others\' contributions.',
+            },
+            2: {
+                'trait': 'Cooperation & Sensitivity',
+                'overemphasis': 'May become overly dependent, indecisive, or hypersensitive to criticism.',
+                'balanced': 'Diplomatic mediator with deep empathy and partnering ability.',
+                'remedy': 'Build self-confidence. Make decisions independently when needed.',
+            },
+            3: {
+                'trait': 'Expression & Creativity',
+                'overemphasis': 'May scatter energy, become superficial, or talk without substance.',
+                'balanced': 'Gifted communicator with artistic talent and infectious optimism.',
+                'remedy': 'Focus energy on fewer projects. Develop depth alongside breadth.',
+            },
+            4: {
+                'trait': 'Structure & Discipline',
+                'overemphasis': 'May become rigid, stubborn, or overly cautious. Resistant to change.',
+                'balanced': 'Reliable builder with strong work ethic and organizational skills.',
+                'remedy': 'Embrace flexibility. Try new approaches and welcome unexpected changes.',
+            },
+            5: {
+                'trait': 'Freedom & Adaptability',
+                'overemphasis': 'May become restless, irresponsible, or addicted to stimulation.',
+                'balanced': 'Versatile adventurer with magnetic charm and progressive thinking.',
+                'remedy': 'Build commitment muscle. Follow through on obligations before seeking new experiences.',
+            },
+            6: {
+                'trait': 'Responsibility & Nurturing',
+                'overemphasis': 'May become controlling, self-sacrificing, or overly interfering in others\' lives.',
+                'balanced': 'Loving caretaker with strong sense of duty and harmonious nature.',
+                'remedy': 'Set healthy boundaries. Allow others to solve their own problems.',
+            },
+            7: {
+                'trait': 'Analysis & Spirituality',
+                'overemphasis': 'May become isolated, overly skeptical, or lost in abstract thought.',
+                'balanced': 'Deep thinker with spiritual wisdom and analytical brilliance.',
+                'remedy': 'Engage socially. Balance intellectual pursuits with emotional connections.',
+            },
+            8: {
+                'trait': 'Power & Material Success',
+                'overemphasis': 'May become materialistic, power-hungry, or neglect personal relationships.',
+                'balanced': 'Effective leader with business acumen and ability to manifest abundance.',
+                'remedy': 'Cultivate generosity. Balance material goals with spiritual growth.',
+            },
+            9: {
+                'trait': 'Humanitarianism & Wisdom',
+                'overemphasis': 'May become self-righteous, impractical, or emotionally distant.',
+                'balanced': 'Wise humanitarian with universal compassion and artistic talent.',
+                'remedy': 'Focus on immediate circle first. Balance idealism with practical action.',
+            },
+        }
+
+        all_numbers = self.calculate_all(full_name, birth_date)
+        
+        number_occurrences: Dict[int, List[str]] = collections.defaultdict(list)
+        core_fields = {
+            'life_path_number': 'Life Path',
+            'destiny_number': 'Destiny',
+            'soul_urge_number': 'Soul Urge',
+            'personality_number': 'Personality',
+            'attitude_number': 'Attitude',
+            'birthday_number': 'Birthday',
+            'maturity_number': 'Maturity',
+            'balance_number': 'Balance',
+            'hidden_passion_number': 'Hidden Passion',
+            'personal_year_number': 'Personal Year',
+        }
+        for field, label in core_fields.items():
+            val = all_numbers.get(field)
+            if val and isinstance(val, int):
+                reduced = self._reduce_to_single_digit(val, preserve_master=False)
+                number_occurrences[reduced].append(label)
+
+        analysis = []
+        for num in range(1, 10):
+            sources = number_occurrences.get(num, [])
+            count = len(sources)
+            meaning = repeated_meanings.get(num, {})
+            intensity = 'absent' if count == 0 else 'normal' if count == 1 else 'strong' if count == 2 else 'dominant'
+            analysis.append({
+                'number': num,
+                'count': count,
+                'intensity': intensity,
+                'sources': sources,
+                'trait': meaning.get('trait', ''),
+                'interpretation': meaning.get('overemphasis', '') if count >= 3 else meaning.get('balanced', ''),
+                'remedy': meaning.get('remedy', '') if count >= 3 else '',
+            })
+
+        dominant = [a for a in analysis if a['count'] >= 3]
+        absent = [a for a in analysis if a['count'] == 0]
+        
+        return {
+            'number_analysis': analysis,
+            'dominant_numbers': dominant,
+            'absent_numbers': absent,
+            'balance_score': max(0, 100 - (len(dominant) * 15 + len(absent) * 10)),
+        }
+
+    def calculate_life_cycles(self, birth_date: date) -> List[Dict[str, Any]]:
+        """
+        Calculate the 3 Life Cycles (also called Period Cycles).
+        
+        Life Cycles divide life into three major periods:
+        - First Cycle (Formative): From birth to approx age 28-35 (36 - Life Path)
+        - Second Cycle (Productive): From end of first to approx age 55-62 (27 years)
+        - Third Cycle (Harvest): From end of second to end of life
+        
+        Each cycle number comes from:
+        - First Cycle: Birth Month reduced
+        - Second Cycle: Birth Day reduced
+        - Third Cycle: Birth Year reduced
+        """
+        life_path = self.calculate_life_path_number(birth_date)
+        lp_single = self._reduce_to_single_digit(life_path, preserve_master=False)
+        
+        first_cycle_end = 36 - lp_single
+        second_cycle_end = first_cycle_end + 27
+        
+        first_number = self._reduce_to_single_digit(birth_date.month, preserve_master=True)
+        second_number = self._reduce_to_single_digit(birth_date.day, preserve_master=True)
+        third_number = self._reduce_to_single_digit(birth_date.year, preserve_master=True)
+        
+        cycle_themes = {
+            1: 'Independence, self-discovery, building individuality',
+            2: 'Partnerships, cooperation, emotional growth',
+            3: 'Creative expression, communication, social expansion',
+            4: 'Hard work, building foundations, discipline',
+            5: 'Change, adventure, freedom, exploration',
+            6: 'Family, responsibility, love, domestic harmony',
+            7: 'Spiritual growth, introspection, wisdom',
+            8: 'Material achievement, power, career success',
+            9: 'Humanitarianism, completion, universal service',
+            11: 'Spiritual illumination, intuition, inspiration',
+            22: 'Master building, large-scale achievement, legacy',
+            33: 'Master teaching, compassion, spiritual healing',
+        }
+        
+        current_age = (date.today() - birth_date).days // 365
+        
+        cycles = [
+            {
+                'cycle': 1,
+                'name': 'Formative Cycle',
+                'number': first_number,
+                'start_age': 0,
+                'end_age': first_cycle_end,
+                'theme': cycle_themes.get(first_number, ''),
+                'description': f'This cycle shapes your early development and foundational experiences from birth to age {first_cycle_end}.',
+                'is_active': current_age <= first_cycle_end,
+            },
+            {
+                'cycle': 2,
+                'name': 'Productive Cycle',
+                'number': second_number,
+                'start_age': first_cycle_end + 1,
+                'end_age': second_cycle_end,
+                'theme': cycle_themes.get(second_number, ''),
+                'description': f'This cycle governs your productive years from age {first_cycle_end + 1} to {second_cycle_end}.',
+                'is_active': first_cycle_end < current_age <= second_cycle_end,
+            },
+            {
+                'cycle': 3,
+                'name': 'Harvest Cycle',
+                'number': third_number,
+                'start_age': second_cycle_end + 1,
+                'end_age': None,
+                'theme': cycle_themes.get(third_number, ''),
+                'description': f'This cycle represents the wisdom and harvest period from age {second_cycle_end + 1} onward.',
+                'is_active': current_age > second_cycle_end,
+            },
+        ]
+        
+        return cycles
+
     def calculate_all(self, full_name: str, birth_date: date) -> Dict[str, Any]:
         """
         Calculate all numerology numbers at once.
@@ -1085,10 +1531,13 @@ class NumerologyCalculator:
             'personal_day_number': self.calculate_personal_day_number(birth_date),
             'hidden_passion_number': self.calculate_hidden_passion_number(full_name),
             'subconscious_self_number': self.calculate_subconscious_self_number(full_name),
+            'rational_thought_number': self.calculate_rational_thought_number(full_name, birth_date),
             'karmic_debt_numbers': self.calculate_karmic_debt_numbers(birth_date, full_name),
             'karmic_lessons': self.calculate_karmic_lessons(full_name),
             'pinnacles': self.calculate_pinnacles(birth_date),
             'challenges': self.calculate_challenges(birth_date),
+            'bridge_numbers': self.calculate_bridge_numbers(full_name, birth_date),
+            'life_cycles': self.calculate_life_cycles(birth_date),
             # Chaldean-specific numbers
             'driver_number': self.calculate_driver_number(birth_date),
             'conductor_number': self.calculate_conductor_number(birth_date),

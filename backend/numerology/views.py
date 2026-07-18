@@ -7973,3 +7973,738 @@ def compare_name_variations(request):
         'message': 'Feature not yet implemented',
         'error': 'This endpoint is under development'
     }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+# ==========================================
+# Phase B: Advanced Numerology Systems
+# ==========================================
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def analyze_angel_numbers(request):
+    """Analyze angel number sequences."""
+    number_sequence = request.data.get('number_sequence', '')
+    if not number_sequence:
+        return Response({'error': 'number_sequence is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    calculator = NumerologyCalculator()
+    result = calculator.analyze_angel_numbers(number_sequence)
+    log_user_activity(request.user, 'angel_numbers_analyzed', {'sequence': number_sequence})
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_rational_thought_number(request):
+    """Get the Rational Thought Number."""
+    user = request.user
+    try:
+        profile = get_numerology_profile(user)
+    except NumerologyProfile.DoesNotExist:
+        return Response({'error': 'Numerology profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    from accounts.models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user=user)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    calculator = NumerologyCalculator(system=profile.calculation_system or 'pythagorean')
+    rational_thought = calculator.calculate_rational_thought_number(user.full_name, user_profile.date_of_birth)
+    
+    interpretations = {
+        1: 'You think independently and logically. You process information through your own filter, preferring original analysis.',
+        2: 'You think diplomatically, always considering others\' perspectives. Your thinking is intuitive and cooperative.',
+        3: 'You think creatively and expressively. Your mind works through imagination and artistic channels.',
+        4: 'You think methodically and systematically. You prefer structured, step-by-step reasoning.',
+        5: 'You think progressively and unconventionally. Your mind seeks variety and new perspectives.',
+        6: 'You think responsibly with concern for others. Your reasoning is guided by love and duty.',
+        7: 'You think analytically and philosophically. Your mind naturally probes deeper meanings.',
+        8: 'You think in terms of achievement and efficiency. Your mind is business-oriented and strategic.',
+        9: 'You think broadly with humanitarian concerns. Your reasoning considers the greater good.',
+        11: 'You think with spiritual illumination. Your mind receives intuitive insights and inspiration.',
+        22: 'You think in large-scale practical terms. Your mind sees how to manifest grand visions.',
+        33: 'You think with compassionate wisdom. Your mind combines creativity with universal love.',
+    }
+    
+    return Response({
+        'rational_thought_number': rational_thought,
+        'interpretation': interpretations.get(rational_thought, ''),
+        'first_name': user.full_name.strip().split()[0] if user.full_name else '',
+        'birth_day': user_profile.date_of_birth.day,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_bridge_numbers(request):
+    """Get Bridge Numbers analysis."""
+    user = request.user
+    try:
+        profile = get_numerology_profile(user)
+    except NumerologyProfile.DoesNotExist:
+        return Response({'error': 'Numerology profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    from accounts.models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user=user)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    calculator = NumerologyCalculator(system=profile.calculation_system or 'pythagorean')
+    bridges = calculator.calculate_bridge_numbers(user.full_name, user_profile.date_of_birth)
+    
+    return Response({
+        'bridge_numbers': bridges,
+        'summary': 'Bridge Numbers reveal what you need to do to harmonize the different aspects of your numerology chart.',
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_transit_letters(request):
+    """Get Transit Letters for a given year."""
+    user = request.user
+    target_year = request.query_params.get('year')
+    if target_year:
+        try:
+            target_year = int(target_year)
+        except ValueError:
+            return Response({'error': 'Invalid year'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        profile = get_numerology_profile(user)
+    except NumerologyProfile.DoesNotExist:
+        return Response({'error': 'Numerology profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    from accounts.models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user=user)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    calculator = NumerologyCalculator(system=profile.calculation_system or 'pythagorean')
+    transits = calculator.calculate_transit_letters(user.full_name, user_profile.date_of_birth, target_year)
+    
+    return Response({
+        'transit_letters': transits,
+        'summary': 'Transit Letters reveal the influences active during specific years of your life.',
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_repeated_numbers_analysis(request):
+    """Get analysis of repeated/intensified numbers across the profile."""
+    user = request.user
+    try:
+        profile = get_numerology_profile(user)
+    except NumerologyProfile.DoesNotExist:
+        return Response({'error': 'Numerology profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    from accounts.models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user=user)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    calculator = NumerologyCalculator(system=profile.calculation_system or 'pythagorean')
+    analysis = calculator.analyze_repeated_numbers(user.full_name, user_profile.date_of_birth)
+    
+    return Response(analysis)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_life_cycles(request):
+    """Get the 3 Life Cycles (Period Cycles) analysis."""
+    user = request.user
+    try:
+        profile = get_numerology_profile(user)
+    except NumerologyProfile.DoesNotExist:
+        return Response({'error': 'Numerology profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    from accounts.models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user=user)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    calculator = NumerologyCalculator(system=profile.calculation_system or 'pythagorean')
+    cycles = calculator.calculate_life_cycles(user_profile.date_of_birth)
+    
+    return Response({
+        'life_cycles': cycles,
+        'life_path_number': profile.life_path_number,
+        'summary': 'Life Cycles divide your life into three major periods, each governed by a different number and theme.',
+    })
+
+
+# ==========================================
+# Phase C: Monthly Report Generator
+# ==========================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_monthly_report(request, month=None, year=None, person_id=None):
+    """Generate a detailed monthly numerology report."""
+    user = request.user
+    
+    from accounts.models import UserProfile
+    
+    if person_id:
+        try:
+            person = Person.objects.get(id=person_id, user=user)
+            full_name = person.full_name
+            birth_date_val = person.birth_date
+        except Person.DoesNotExist:
+            return Response({'error': 'Person not found'}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        try:
+            user_profile = UserProfile.objects.get(user=user)
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        full_name = user.full_name
+        birth_date_val = user_profile.date_of_birth
+    
+    if not birth_date_val or not full_name:
+        return Response({'error': 'Full name and date of birth are required.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    now = datetime.now()
+    target_month = month or int(request.query_params.get('month', now.month))
+    target_year = year or int(request.query_params.get('year', now.year))
+    
+    try:
+        target_month = int(target_month)
+        target_year = int(target_year)
+        if not 1 <= target_month <= 12:
+            return Response({'error': 'Month must be between 1 and 12'}, status=status.HTTP_400_BAD_REQUEST)
+    except (ValueError, TypeError):
+        return Response({'error': 'Invalid month or year'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    import calendar
+    calculator = NumerologyCalculator()
+    
+    personal_month = calculator.calculate_personal_month_number(birth_date_val, target_year, target_month)
+    personal_year = calculator.calculate_personal_year_number(birth_date_val, target_year)
+    
+    month_name = calendar.month_name[target_month]
+    days_in_month = calendar.monthrange(target_year, target_month)[1]
+    
+    month_themes = {
+        1: {'theme': 'New Beginnings', 'focus': 'Initiative, independence, starting fresh', 'energy': 'Dynamic',
+            'opportunities': ['Launch new projects', 'Take leadership roles', 'Assert your individuality'],
+            'challenges': ['Impatience', 'Being overly assertive', 'Ignoring others\' needs']},
+        2: {'theme': 'Partnership', 'focus': 'Cooperation, patience, diplomacy', 'energy': 'Receptive',
+            'opportunities': ['Strengthen relationships', 'Mediate conflicts', 'Develop patience'],
+            'challenges': ['Indecisiveness', 'Over-sensitivity', 'Losing yourself in others']},
+        3: {'theme': 'Expression', 'focus': 'Creativity, communication, joy', 'energy': 'Creative',
+            'opportunities': ['Creative projects', 'Social events', 'Public speaking'],
+            'challenges': ['Scattered energy', 'Superficiality', 'Procrastination']},
+        4: {'theme': 'Foundation', 'focus': 'Hard work, organization, stability', 'energy': 'Grounded',
+            'opportunities': ['Build solid foundations', 'Organize finances', 'Physical health focus'],
+            'challenges': ['Rigidity', 'Overwork', 'Resistance to change']},
+        5: {'theme': 'Change', 'focus': 'Freedom, adventure, transformation', 'energy': 'Dynamic',
+            'opportunities': ['Travel', 'Try new experiences', 'Break free from routines'],
+            'challenges': ['Restlessness', 'Impulsiveness', 'Instability']},
+        6: {'theme': 'Responsibility', 'focus': 'Home, family, service', 'energy': 'Nurturing',
+            'opportunities': ['Home improvements', 'Family bonding', 'Community service'],
+            'challenges': ['Over-giving', 'Perfectionism', 'Meddling in others\' affairs']},
+        7: {'theme': 'Reflection', 'focus': 'Introspection, spirituality, analysis', 'energy': 'Contemplative',
+            'opportunities': ['Spiritual growth', 'Research and study', 'Solitude and meditation'],
+            'challenges': ['Isolation', 'Over-analysis', 'Emotional detachment']},
+        8: {'theme': 'Achievement', 'focus': 'Power, finance, manifestation', 'energy': 'Ambitious',
+            'opportunities': ['Financial decisions', 'Career advancement', 'Material goals'],
+            'challenges': ['Workaholism', 'Power struggles', 'Neglecting relationships']},
+        9: {'theme': 'Completion', 'focus': 'Endings, release, humanitarianism', 'energy': 'Transformative',
+            'opportunities': ['Let go of what no longer serves', 'Charitable work', 'Wrap up projects'],
+            'challenges': ['Emotional heaviness', 'Difficulty letting go', 'Burnout']},
+    }
+    
+    theme_data = month_themes.get(personal_month, month_themes[1])
+    
+    daily_insights = []
+    key_dates = {'best_days': [], 'challenging_days': [], 'opportunity_days': []}
+    
+    for day_num in range(1, days_in_month + 1):
+        try:
+            day_date = date(target_year, target_month, day_num)
+        except ValueError:
+            continue
+        personal_day = calculator.calculate_personal_day_number(birth_date_val, day_date)
+        
+        score = 50
+        if personal_day == personal_month:
+            score += 20
+        if personal_day in [1, 3, 5, 9]:
+            score += 10
+        if personal_day in [4, 7]:
+            score -= 10
+        if personal_day == calculator._reduce_to_single_digit(
+            calculator.calculate_life_path_number(birth_date_val), preserve_master=False):
+            score += 15
+        
+        day_energy = {
+            1: 'Start new things', 2: 'Collaborate', 3: 'Express creativity',
+            4: 'Build foundations', 5: 'Embrace change', 6: 'Focus on family',
+            7: 'Reflect and study', 8: 'Focus on goals', 9: 'Give and release',
+        }
+        
+        daily_insights.append({
+            'day': day_num,
+            'date': day_date.isoformat(),
+            'day_of_week': day_date.strftime('%A'),
+            'personal_day': personal_day,
+            'energy': day_energy.get(personal_day, 'Neutral'),
+            'score': min(100, max(0, score)),
+        })
+        
+        if score >= 75:
+            key_dates['best_days'].append({'day': day_num, 'date': day_date.isoformat(), 'score': score})
+        elif score <= 35:
+            key_dates['challenging_days'].append({'day': day_num, 'date': day_date.isoformat(), 'score': score})
+        elif 65 <= score < 75:
+            key_dates['opportunity_days'].append({'day': day_num, 'date': day_date.isoformat(), 'score': score})
+    
+    weekly_overview = []
+    for week_start in range(0, days_in_month, 7):
+        week_days = daily_insights[week_start:week_start + 7]
+        if week_days:
+            avg_score = sum(d['score'] for d in week_days) / len(week_days)
+            weekly_overview.append({
+                'week': len(weekly_overview) + 1,
+                'start_day': week_days[0]['day'],
+                'end_day': week_days[-1]['day'],
+                'average_score': round(avg_score, 1),
+                'dominant_energy': max(set(d['personal_day'] for d in week_days), key=lambda x: sum(1 for d in week_days if d['personal_day'] == x)),
+            })
+    
+    log_user_activity(user, 'monthly_report_viewed', {'month': target_month, 'year': target_year})
+    
+    return Response({
+        'month': target_month,
+        'month_name': month_name,
+        'year': target_year,
+        'personal_month': personal_month,
+        'personal_year': personal_year,
+        'theme': theme_data['theme'],
+        'focus': theme_data['focus'],
+        'energy': theme_data['energy'],
+        'opportunities': theme_data['opportunities'],
+        'challenges': theme_data['challenges'],
+        'daily_insights': daily_insights,
+        'key_dates': key_dates,
+        'weekly_overview': weekly_overview,
+        'days_in_month': days_in_month,
+        'full_name': full_name,
+    })
+
+
+# ==========================================
+# Phase C: Unified Timing Functions
+# ==========================================
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_career_timing(request):
+    """Calculate optimal career timing based on numerology."""
+    user = request.user
+    from accounts.models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user=user)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    birth_date_val = user_profile.date_of_birth
+    if not birth_date_val:
+        return Response({'error': 'Birth date is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    start_date = request.data.get('start_date')
+    end_date = request.data.get('end_date')
+    
+    if not start_date or not end_date:
+        now = datetime.now()
+        start_date = now.date().isoformat()
+        end_date = (now + timedelta(days=90)).date().isoformat()
+    
+    try:
+        start = date.fromisoformat(start_date)
+        end = date.fromisoformat(end_date)
+    except (ValueError, TypeError):
+        return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    calculator = NumerologyCalculator()
+    personal_year = calculator.calculate_personal_year_number(birth_date_val)
+    
+    career_favorable_numbers = {1, 3, 5, 8}
+    career_timing = []
+    
+    current = start
+    while current <= end:
+        personal_day = calculator.calculate_personal_day_number(birth_date_val, current)
+        personal_month = calculator.calculate_personal_month_number(birth_date_val, current.year, current.month)
+        
+        score = 50
+        if personal_day in career_favorable_numbers:
+            score += 20
+        if personal_month in career_favorable_numbers:
+            score += 15
+        if personal_year in career_favorable_numbers:
+            score += 10
+        if personal_day == 8:
+            score += 10
+        
+        activities = []
+        if personal_day == 1:
+            activities = ['Start new projects', 'Job interviews', 'Leadership decisions']
+        elif personal_day == 3:
+            activities = ['Networking events', 'Presentations', 'Creative pitches']
+        elif personal_day == 5:
+            activities = ['Career changes', 'Negotiations', 'Contract signings']
+        elif personal_day == 8:
+            activities = ['Financial discussions', 'Promotions', 'Business deals']
+        
+        if score >= 70:
+            career_timing.append({
+                'date': current.isoformat(),
+                'day_of_week': current.strftime('%A'),
+                'personal_day': personal_day,
+                'score': min(100, score),
+                'recommended_activities': activities,
+            })
+        
+        current += timedelta(days=1)
+    
+    career_timing.sort(key=lambda x: x['score'], reverse=True)
+    
+    return Response({
+        'career_timing': career_timing[:20],
+        'personal_year': personal_year,
+        'career_year_energy': 'Excellent for career growth' if personal_year in career_favorable_numbers else 'Focus on building foundations',
+        'total_favorable_days': len(career_timing),
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_financial_timing(request):
+    """Calculate optimal financial timing based on numerology."""
+    user = request.user
+    from accounts.models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user=user)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    birth_date_val = user_profile.date_of_birth
+    if not birth_date_val:
+        return Response({'error': 'Birth date is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    start_date = request.data.get('start_date')
+    end_date = request.data.get('end_date')
+    
+    if not start_date or not end_date:
+        now = datetime.now()
+        start_date = now.date().isoformat()
+        end_date = (now + timedelta(days=90)).date().isoformat()
+    
+    try:
+        start = date.fromisoformat(start_date)
+        end = date.fromisoformat(end_date)
+    except (ValueError, TypeError):
+        return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    calculator = NumerologyCalculator()
+    
+    financial_favorable = {2, 6, 8}
+    investment_dates = []
+    savings_dates = []
+    avoid_dates = []
+    
+    current = start
+    while current <= end:
+        personal_day = calculator.calculate_personal_day_number(birth_date_val, current)
+        
+        if personal_day in financial_favorable:
+            if personal_day == 8:
+                investment_dates.append({
+                    'date': current.isoformat(),
+                    'day_of_week': current.strftime('%A'),
+                    'personal_day': personal_day,
+                    'action': 'Invest, make major purchases, negotiate deals',
+                })
+            elif personal_day == 6:
+                savings_dates.append({
+                    'date': current.isoformat(),
+                    'day_of_week': current.strftime('%A'),
+                    'personal_day': personal_day,
+                    'action': 'Save, budget planning, real estate matters',
+                })
+            else:
+                investment_dates.append({
+                    'date': current.isoformat(),
+                    'day_of_week': current.strftime('%A'),
+                    'personal_day': personal_day,
+                    'action': 'Partnership finances, joint investments',
+                })
+        elif personal_day in {4, 7}:
+            avoid_dates.append({
+                'date': current.isoformat(),
+                'day_of_week': current.strftime('%A'),
+                'personal_day': personal_day,
+                'reason': 'Energy not aligned for financial decisions. Focus on planning instead.',
+            })
+        
+        current += timedelta(days=1)
+    
+    return Response({
+        'investment_dates': investment_dates[:15],
+        'savings_dates': savings_dates[:15],
+        'avoid_dates': avoid_dates[:10],
+        'financial_year_energy': calculator.calculate_personal_year_number(birth_date_val),
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_decision_timing(request):
+    """Calculate optimal timing for important decisions."""
+    user = request.user
+    from accounts.models import UserProfile
+    try:
+        user_profile = UserProfile.objects.get(user=user)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    birth_date_val = user_profile.date_of_birth
+    if not birth_date_val:
+        return Response({'error': 'Birth date is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    decision_type = request.data.get('decision_type', 'general')
+    start_date = request.data.get('start_date')
+    end_date = request.data.get('end_date')
+    
+    if not start_date or not end_date:
+        now = datetime.now()
+        start_date = now.date().isoformat()
+        end_date = (now + timedelta(days=30)).date().isoformat()
+    
+    try:
+        start = date.fromisoformat(start_date)
+        end = date.fromisoformat(end_date)
+    except (ValueError, TypeError):
+        return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    decision_favorable = {
+        'general': {1, 3, 5, 8, 9},
+        'relationship': {2, 3, 6, 9},
+        'career': {1, 3, 5, 8},
+        'financial': {2, 6, 8},
+        'health': {3, 6, 7},
+        'spiritual': {7, 9, 2},
+        'travel': {3, 5, 9},
+    }
+    
+    favorable_numbers = decision_favorable.get(decision_type, decision_favorable['general'])
+    calculator = NumerologyCalculator()
+    
+    optimal_dates = []
+    current = start
+    while current <= end:
+        personal_day = calculator.calculate_personal_day_number(birth_date_val, current)
+        personal_month = calculator.calculate_personal_month_number(birth_date_val, current.year, current.month)
+        
+        score = 40
+        if personal_day in favorable_numbers:
+            score += 25
+        if personal_month in favorable_numbers:
+            score += 15
+        
+        life_path = calculator.calculate_life_path_number(birth_date_val)
+        lp_reduced = calculator._reduce_to_single_digit(life_path, preserve_master=False)
+        if personal_day == lp_reduced:
+            score += 15
+        
+        if score >= 65:
+            optimal_dates.append({
+                'date': current.isoformat(),
+                'day_of_week': current.strftime('%A'),
+                'personal_day': personal_day,
+                'score': min(100, score),
+                'confidence': 'high' if score >= 80 else 'medium',
+            })
+        
+        current += timedelta(days=1)
+    
+    optimal_dates.sort(key=lambda x: x['score'], reverse=True)
+    
+    return Response({
+        'decision_type': decision_type,
+        'optimal_dates': optimal_dates[:10],
+        'best_date': optimal_dates[0] if optimal_dates else None,
+        'total_favorable_days': len(optimal_dates),
+    })
+
+
+# ==========================================
+# Phase D: Enhanced Remedy Engine
+# ==========================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_comprehensive_remedies(request):
+    """Get comprehensive personalized remedies including yantras, fasting, and all recommendation types."""
+    user = request.user
+    try:
+        profile = get_numerology_profile(user)
+    except NumerologyProfile.DoesNotExist:
+        return Response({'error': 'Numerology profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    life_path = profile.life_path_number
+    lp = profile.life_path_number if profile.life_path_number <= 9 else (profile.life_path_number % 10 or 9)
+    
+    yantra_recommendations = {
+        1: {'name': 'Surya Yantra', 'planet': 'Sun', 'material': 'Gold or Copper', 'day': 'Sunday',
+            'description': 'Enhances leadership, confidence, and vitality. Place facing East.'},
+        2: {'name': 'Chandra Yantra', 'planet': 'Moon', 'material': 'Silver', 'day': 'Monday',
+            'description': 'Enhances intuition, emotional balance, and creativity. Place facing Northwest.'},
+        3: {'name': 'Guru Yantra', 'planet': 'Jupiter', 'material': 'Gold', 'day': 'Thursday',
+            'description': 'Enhances wisdom, prosperity, and spiritual growth. Place facing Northeast.'},
+        4: {'name': 'Rahu Yantra', 'planet': 'Rahu', 'material': 'Lead or Iron', 'day': 'Saturday',
+            'description': 'Overcomes obstacles and karmic challenges. Place facing Southwest.'},
+        5: {'name': 'Budh Yantra', 'planet': 'Mercury', 'material': 'Brass', 'day': 'Wednesday',
+            'description': 'Enhances communication, intelligence, and business success. Place facing North.'},
+        6: {'name': 'Shukra Yantra', 'planet': 'Venus', 'material': 'Silver', 'day': 'Friday',
+            'description': 'Enhances love, beauty, and material comforts. Place facing Southeast.'},
+        7: {'name': 'Ketu Yantra', 'planet': 'Ketu', 'material': 'Iron', 'day': 'Tuesday',
+            'description': 'Enhances spiritual wisdom and liberation. Place facing South.'},
+        8: {'name': 'Shani Yantra', 'planet': 'Saturn', 'material': 'Iron or Steel', 'day': 'Saturday',
+            'description': 'Brings discipline, structure, and karma resolution. Place facing West.'},
+        9: {'name': 'Mangal Yantra', 'planet': 'Mars', 'material': 'Copper', 'day': 'Tuesday',
+            'description': 'Enhances courage, energy, and protection. Place facing South.'},
+    }
+    
+    fasting_recommendations = {
+        1: {'day': 'Sunday', 'food_to_avoid': 'Salt, wheat', 'food_to_eat': 'Fruits, jaggery, saffron milk',
+            'duration': 'Sunrise to sunset', 'benefit': 'Strengthens Sun energy, boosts confidence'},
+        2: {'day': 'Monday', 'food_to_avoid': 'Non-vegetarian food, salt', 'food_to_eat': 'Milk, white foods, rice',
+            'duration': 'Sunrise to moonrise', 'benefit': 'Calms emotions, enhances intuition'},
+        3: {'day': 'Thursday', 'food_to_avoid': 'Salt, sour foods', 'food_to_eat': 'Yellow foods, turmeric, banana',
+            'duration': 'Sunrise to sunset', 'benefit': 'Attracts prosperity and wisdom'},
+        4: {'day': 'Saturday', 'food_to_avoid': 'Oil, wheat', 'food_to_eat': 'Black sesame, urad dal',
+            'duration': 'Full day', 'benefit': 'Overcomes karmic obstacles and delays'},
+        5: {'day': 'Wednesday', 'food_to_avoid': 'Green vegetables', 'food_to_eat': 'Moong dal, green gram',
+            'duration': 'Sunrise to sunset', 'benefit': 'Sharpens intellect and communication'},
+        6: {'day': 'Friday', 'food_to_avoid': 'Sour foods, vinegar', 'food_to_eat': 'Sweets, white foods, kheer',
+            'duration': 'Sunrise to sunset', 'benefit': 'Attracts love, harmony, and beauty'},
+        7: {'day': 'Tuesday', 'food_to_avoid': 'Salt, wheat', 'food_to_eat': 'Jaggery, red lentils',
+            'duration': 'Full day', 'benefit': 'Enhances spiritual awareness'},
+        8: {'day': 'Saturday', 'food_to_avoid': 'Oil, fried food', 'food_to_eat': 'Black sesame, iron-rich food',
+            'duration': 'Full day', 'benefit': 'Resolves karmic debts, brings discipline'},
+        9: {'day': 'Tuesday', 'food_to_avoid': 'Salt, non-veg', 'food_to_eat': 'Red foods, red lentils, jaggery',
+            'duration': 'Sunrise to sunset', 'benefit': 'Boosts courage and energy'},
+    }
+    
+    direction_recommendations = {
+        1: {'favorable': ['East', 'Northeast'], 'avoid': ['West'], 'sleep_head': 'East'},
+        2: {'favorable': ['Northwest', 'North'], 'avoid': ['South'], 'sleep_head': 'North'},
+        3: {'favorable': ['Northeast', 'South'], 'avoid': ['Southwest'], 'sleep_head': 'East'},
+        4: {'favorable': ['Southwest', 'West'], 'avoid': ['Northeast'], 'sleep_head': 'South'},
+        5: {'favorable': ['North', 'Center'], 'avoid': ['Southeast'], 'sleep_head': 'North'},
+        6: {'favorable': ['Southeast', 'East'], 'avoid': ['Northwest'], 'sleep_head': 'East'},
+        7: {'favorable': ['South', 'Southwest'], 'avoid': ['North'], 'sleep_head': 'South'},
+        8: {'favorable': ['West', 'Northwest'], 'avoid': ['East'], 'sleep_head': 'West'},
+        9: {'favorable': ['South', 'East'], 'avoid': ['Northwest'], 'sleep_head': 'South'},
+    }
+    
+    lifestyle_suggestions = {
+        1: ['Practice morning meditation', 'Wear warm colors like gold and orange', 'Engage in individual sports'],
+        2: ['Practice yoga and tai chi', 'Spend time near water', 'Wear white and cream colors'],
+        3: ['Journal daily', 'Take up creative hobbies', 'Wear yellow and bright colors'],
+        4: ['Maintain strict routine', 'Garden or work with earth', 'Wear blue and grey colors'],
+        5: ['Travel frequently', 'Try new cuisines', 'Wear mixed vibrant colors'],
+        6: {'suggestions': ['Create a beautiful home space', 'Volunteer in community', 'Wear pastels and pink']},
+        7: ['Read philosophical books', 'Practice deep meditation', 'Wear green and violet'],
+        8: ['Set financial goals', 'Practice martial arts', 'Wear dark blue and black'],
+        9: ['Practice charity regularly', 'Learn about world cultures', 'Wear red and maroon'],
+    }
+    
+    suggestions = lifestyle_suggestions.get(lp, [])
+    if isinstance(suggestions, dict):
+        suggestions = suggestions.get('suggestions', [])
+    
+    return Response({
+        'life_path_number': life_path,
+        'yantra': yantra_recommendations.get(lp, {}),
+        'fasting': fasting_recommendations.get(lp, {}),
+        'directions': direction_recommendations.get(lp, {}),
+        'lifestyle_suggestions': suggestions,
+        'career_suggestions': _get_career_suggestions(lp),
+        'relationship_suggestions': _get_relationship_suggestions(lp),
+        'health_suggestions': _get_health_suggestions(lp),
+        'financial_suggestions': _get_financial_suggestions(lp),
+    })
+
+
+def _get_career_suggestions(lp: int) -> list:
+    """Get career suggestions based on life path number."""
+    suggestions = {
+        1: ['Entrepreneurship', 'Leadership roles', 'Innovation and technology', 'Self-employment'],
+        2: ['Counseling', 'Diplomacy', 'Team management', 'Healing arts'],
+        3: ['Writing', 'Acting', 'Marketing', 'Teaching', 'Entertainment'],
+        4: ['Engineering', 'Architecture', 'Accounting', 'Project management'],
+        5: ['Sales', 'Travel industry', 'Media', 'Public relations'],
+        6: ['Healthcare', 'Interior design', 'Social work', 'Hospitality'],
+        7: ['Research', 'Technology', 'Philosophy', 'Psychology', 'Data science'],
+        8: ['Finance', 'Real estate', 'Corporate leadership', 'Law'],
+        9: ['Philanthropy', 'International relations', 'Arts', 'Humanitarian work'],
+    }
+    return suggestions.get(lp, [])
+
+
+def _get_relationship_suggestions(lp: int) -> list:
+    """Get relationship suggestions based on life path number."""
+    suggestions = {
+        1: ['Give partner space to shine too', 'Balance independence with togetherness', 'Practice active listening'],
+        2: ['Don\'t lose yourself in relationships', 'Express your needs clearly', 'Set healthy boundaries'],
+        3: ['Be present instead of entertaining', 'Have deeper conversations', 'Show vulnerability'],
+        4: ['Be more spontaneous', 'Express emotions freely', 'Plan surprise dates'],
+        5: ['Make commitment gradually', 'Choose a partner who values freedom', 'Communicate openly about needs'],
+        6: ['Avoid being controlling', 'Let partner make mistakes', 'Don\'t sacrifice all for others'],
+        7: ['Open up emotionally', 'Share your inner world', 'Don\'t retreat into isolation'],
+        8: ['Balance work and love', 'Be vulnerable with partner', 'Don\'t try to control everything'],
+        9: ['Be present in the moment', 'Focus on individual relationships', 'Ground your idealism'],
+    }
+    return suggestions.get(lp, [])
+
+
+def _get_health_suggestions(lp: int) -> list:
+    """Get health suggestions based on life path number."""
+    suggestions = {
+        1: ['Watch for headaches and eye strain', 'Cardio exercise recommended', 'Sun exposure for vitamin D'],
+        2: ['Manage stress and anxiety', 'Gentle exercise like swimming', 'Adequate sleep is crucial'],
+        3: ['Watch for throat and respiratory issues', 'Creative expression reduces stress', 'Regular social interaction'],
+        4: ['Watch for joint and bone issues', 'Regular structured exercise', 'Avoid overwork and burnout'],
+        5: ['Watch for nervous system issues', 'Varied exercise routine', 'Avoid addictive substances'],
+        6: ['Watch for heart and circulation', 'Balanced diet is key', 'Regular health checkups'],
+        7: ['Watch for digestive issues', 'Meditation for mental health', 'Nature walks reduce stress'],
+        8: ['Watch for blood pressure', 'Power exercises recommended', 'Regular dental care'],
+        9: ['Watch for inflammation', 'Yoga and stretching', 'Anti-inflammatory diet'],
+    }
+    return suggestions.get(lp, [])
+
+
+def _get_financial_suggestions(lp: int) -> list:
+    """Get financial suggestions based on life path number."""
+    suggestions = {
+        1: ['Invest in your own ventures', 'Take calculated risks', 'Build personal brand'],
+        2: ['Joint investments work well', 'Save consistently', 'Avoid impulsive spending'],
+        3: ['Invest in creative industries', 'Multiple income streams', 'Budget for entertainment'],
+        4: ['Real estate investments', 'Conservative portfolio', 'Build emergency fund first'],
+        5: ['Diversify investments', 'International markets', 'Avoid get-rich-quick schemes'],
+        6: ['Invest in home and family', 'Community-based investments', 'Insurance is important'],
+        7: ['Technology investments', 'Research before investing', 'Passive income streams'],
+        8: ['Stock market and business', 'Large-scale investments', 'Power of compound interest'],
+        9: ['Socially responsible investing', 'Charitable giving brings returns', 'Don\'t hoard wealth'],
+    }
+    return suggestions.get(lp, [])

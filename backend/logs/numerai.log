@@ -31824,3 +31824,1378 @@ DEBUG 2026-03-11 22:03:38,486 apps Notifications table verified
 DEBUG 2026-03-11 22:03:38,486 apps Notifications table verified
 INFO 2026-03-11 22:03:39,543 autoreload Watching for file changes with StatReloader
 INFO 2026-03-11 22:03:39,543 autoreload Watching for file changes with StatReloader
+ERROR 2026-07-17 15:41:01,377 exceptions Exception in create_subscription_view: NotAuthenticated
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 333, in check_permissions
+    self.permission_denied(
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 174, in permission_denied
+    raise exceptions.NotAuthenticated()
+rest_framework.exceptions.NotAuthenticated: Authentication credentials were not provided.
+WARNING 2026-07-17 15:41:01,392 log Unauthorized: /api/v1/payments/create-subscription/
+WARNING 2026-07-17 15:41:01,392 log Unauthorized: /api/v1/payments/create-subscription/
+ERROR 2026-07-17 15:41:02,099 exceptions Exception in create_subscription_view: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:02,244 log Internal Server Error: /api/v1/payments/create-subscription/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:02,244 log Internal Server Error: /api/v1/payments/create-subscription/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:03,857 exceptions Exception in subscription_status: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:03,859 log Internal Server Error: /api/v1/payments/subscription-status/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:03,859 log Internal Server Error: /api/v1/payments/subscription-status/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:05,182 exceptions Exception in subscription_status: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:05,183 log Internal Server Error: /api/v1/payments/subscription-status/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:05,183 log Internal Server Error: /api/v1/payments/subscription-status/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:06,713 exceptions Exception in billing_history: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:06,715 log Internal Server Error: /api/v1/payments/billing-history/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:06,715 log Internal Server Error: /api/v1/payments/billing-history/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:07,572 exceptions Exception in register: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:07,573 log Internal Server Error: /api/v1/auth/register/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:07,573 log Internal Server Error: /api/v1/auth/register/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:08,243 exceptions Exception in register: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:08,244 log Internal Server Error: /api/v1/auth/register/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:08,244 log Internal Server Error: /api/v1/auth/register/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:09,854 exceptions Exception in login: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:09,857 log Internal Server Error: /api/v1/auth/login/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:09,857 log Internal Server Error: /api/v1/auth/login/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+WARNING 2026-07-17 15:41:11,917 log Not Found: /api/v1/numerology/calculate-profile/
+WARNING 2026-07-17 15:41:11,917 log Not Found: /api/v1/numerology/calculate-profile/
+ERROR 2026-07-17 15:41:14,930 exceptions Exception in create_subscription_view: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:14,932 log Internal Server Error: /api/v1/payments/create-subscription/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:14,932 log Internal Server Error: /api/v1/payments/create-subscription/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:16,292 exceptions Exception in subscription_status: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:16,295 log Internal Server Error: /api/v1/payments/subscription-status/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:16,295 log Internal Server Error: /api/v1/payments/subscription-status/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:17,809 exceptions Exception in billing_history: ConnectionError
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:17,811 log Internal Server Error: /api/v1/payments/billing-history/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+ERROR 2026-07-17 15:41:17,811 log Internal Server Error: /api/v1/payments/billing-history/
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 29, in _decorator
+    return method(self, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 99, in _get
+    return self.client.get(key, default=default, version=version, client=client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 300, in get
+    raise ConnectionInterrupted(connection=client) from e
+django_redis.exceptions.ConnectionInterrupted: Redis ConnectionError: Error 61 connecting to localhost:6379. Connection refused.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 416, in initial
+    self.check_throttles(request)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/views.py", line 359, in check_throttles
+    if not throttle.allow_request(request, self):
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/rest_framework/throttling.py", line 123, in allow_request
+    self.history = self.cache.get(self.key, [])
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 92, in get
+    value = self._get(key, default, version, client)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/cache.py", line 36, in _decorator
+    raise e.__cause__  # noqa: B904
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/django_redis/client/default.py", line 298, in get
+    value = client.get(key)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/commands/core.py", line 1829, in get
+    return self.execute_command("GET", name)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/client.py", line 533, in execute_command
+    conn = self.connection or pool.get_connection(command_name, **options)
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 1086, in get_connection
+    connection.connect()
+  File "/Users/burhanahmed/Library/Python/3.9/lib/python/site-packages/redis/connection.py", line 270, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 61 connecting to localhost:6379. Connection refused.

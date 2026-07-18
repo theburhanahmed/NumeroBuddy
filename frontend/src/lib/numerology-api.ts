@@ -226,5 +226,68 @@ export const numerologyAPI = {
     const response = await apiClient.get('/api/v1/experts/');
     return response.data;
   },
+
+  // Phase B: Advanced Numerology Systems
+  async analyzeAngelNumbers(numberSequence: string) {
+    const response = await apiClient.post('/api/v1/numerology/angel-numbers/', { number_sequence: numberSequence });
+    return response.data;
+  },
+
+  async getRationalThoughtNumber() {
+    const response = await apiClient.get('/api/v1/numerology/rational-thought/');
+    return response.data;
+  },
+
+  async getBridgeNumbers() {
+    const response = await apiClient.get('/api/v1/numerology/bridge-numbers/');
+    return response.data;
+  },
+
+  async getTransitLetters(year?: number) {
+    const response = await apiClient.get('/api/v1/numerology/transit-letters/', { params: year ? { year } : {} });
+    return response.data;
+  },
+
+  async getRepeatedNumbers() {
+    const response = await apiClient.get('/api/v1/numerology/repeated-numbers/');
+    return response.data;
+  },
+
+  async getLifeCycles() {
+    const response = await apiClient.get('/api/v1/numerology/life-cycles/');
+    return response.data;
+  },
+
+  // Phase C: Monthly Reports & Timing
+  async getMonthlyReport(params?: { month?: number; year?: number }) {
+    const response = await apiClient.get('/api/v1/numerology/monthly-report/', { params });
+    return response.data;
+  },
+
+  async getCareerTiming(data?: { start_date?: string; end_date?: string }) {
+    const response = await apiClient.post('/api/v1/numerology/timing/career/', data || {});
+    return response.data;
+  },
+
+  async getFinancialTiming(data?: { start_date?: string; end_date?: string }) {
+    const response = await apiClient.post('/api/v1/numerology/timing/financial/', data || {});
+    return response.data;
+  },
+
+  async getDecisionTiming(data: { decision_type?: string; start_date?: string; end_date?: string }) {
+    const response = await apiClient.post('/api/v1/numerology/timing/decision/', data);
+    return response.data;
+  },
+
+  // Phase D: Comprehensive Remedies
+  async getComprehensiveRemedies() {
+    const response = await apiClient.get('/api/v1/numerology/remedies/comprehensive/');
+    return response.data;
+  },
+
+  async getWeeklyReport() {
+    const response = await apiClient.get('/api/v1/numerology/weekly-report/');
+    return response.data;
+  },
 };
 

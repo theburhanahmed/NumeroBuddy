@@ -221,4 +221,25 @@ urlpatterns = [
     path('numerology/dashboard/quick-actions/', views.get_dashboard_quick_actions, name='dashboard-quick-actions'),
     path('numerology/dashboard/activity/', views.get_dashboard_activity, name='dashboard-activity'),
     path('numerology/dashboard/recommendations/', views.get_dashboard_recommendations, name='dashboard-recommendations'),
+    
+    # Phase B: Advanced Numerology Systems
+    path('numerology/angel-numbers/', views.analyze_angel_numbers, name='angel-numbers'),
+    path('numerology/rational-thought/', views.get_rational_thought_number, name='rational-thought-number'),
+    path('numerology/bridge-numbers/', views.get_bridge_numbers, name='bridge-numbers'),
+    path('numerology/transit-letters/', views.get_transit_letters, name='transit-letters'),
+    path('numerology/repeated-numbers/', views.get_repeated_numbers_analysis, name='repeated-numbers'),
+    path('numerology/life-cycles/', views.get_life_cycles, name='life-cycles'),
+    
+    # Phase C: Monthly Report
+    path('numerology/monthly-report/', views.get_monthly_report, name='monthly-report'),
+    path('numerology/monthly-report/<int:month>/<int:year>/', views.get_monthly_report, name='monthly-report-date'),
+    path('numerology/monthly-report/<uuid:person_id>/', views.get_monthly_report, name='person-monthly-report'),
+    
+    # Phase C: Unified Timing
+    path('numerology/timing/career/', views.get_career_timing, name='career-timing'),
+    path('numerology/timing/financial/', views.get_financial_timing, name='financial-timing'),
+    path('numerology/timing/decision/', views.get_decision_timing, name='decision-timing'),
+    
+    # Phase D: Comprehensive Remedies
+    path('numerology/remedies/comprehensive/', views.get_comprehensive_remedies, name='comprehensive-remedies'),
 ]

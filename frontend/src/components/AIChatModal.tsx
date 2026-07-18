@@ -14,6 +14,7 @@ import { GlassCard } from './GlassCard';
 import { GlassButton } from './GlassButton';
 import { MagneticCard } from './MagneticCard';
 import { useAIChat } from '../contexts/AIChatContext';
+import { aiChatAPI } from '../lib/api-client';
 import { toast } from 'sonner';
 export function AIChatModal() {
   const { messages, isOpen, isTyping, addMessage, setIsTyping, closeChat } =
@@ -29,7 +30,7 @@ export function AIChatModal() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
     const userMessage = {
@@ -41,17 +42,36 @@ export function AIChatModal() {
     addMessage(userMessage);
     setInputMessage('');
     setIsTyping(true);
-    setTimeout(() => {
+    try {
+      const response = await aiChatAPI.sendMessage(inputMessage);
+      const data = response.data;
       const aiMessage = {
         id: (Date.now() + 1).toString(),
-        content:
-        'Based on your Life Path Number 7, you have a natural inclination towards introspection and spiritual growth. This is a great time to trust your intuition and seek deeper understanding.',
+        content: data.response || data.message || 'I apologize, I could not generate a response. Please try again.',
         sender: 'ai' as const,
         timestamp: new Date()
       };
       addMessage(aiMessage);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      let errorContent = 'I\'m having trouble connecting right now. Please try again in a moment.';
+      if (status === 429) {
+        errorContent = 'You\'ve reached the message limit. Upgrade to Premium for unlimited AI chat access.';
+      } else if (status === 400) {
+        errorContent = error?.response?.data?.error || 'Please complete your numerology profile first to get personalized insights.';
+      } else if (status === 503) {
+        errorContent = 'The AI service is temporarily unavailable. Please try again later.';
+      }
+      const aiMessage = {
+        id: (Date.now() + 1).toString(),
+        content: errorContent,
+        sender: 'ai' as const,
+        timestamp: new Date()
+      };
+      addMessage(aiMessage);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
   const handleSuggestedQuestion = (question: string) => {
     setInputMessage(question);
