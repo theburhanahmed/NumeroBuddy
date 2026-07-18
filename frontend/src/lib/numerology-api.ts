@@ -135,6 +135,46 @@ export const numerologyAPI = {
     return response.data;
   },
 
+  async analyzeBusiness(data: {
+    business_name: string;
+    registration_number?: string;
+    launch_date?: string;
+  }) {
+    const response = await apiClient.post('/api/v1/numerology/business/', data);
+    return response.data;
+  },
+
+  async analyzePhoneAsset(phone_number: string) {
+    const response = await apiClient.post('/api/v1/numerology/phone-asset/', { phone_number });
+    return response.data;
+  },
+
+  async analyzeVehicle(license_plate: string) {
+    const response = await apiClient.post('/api/v1/numerology/vehicle/', { license_plate });
+    return response.data;
+  },
+
+  async previewNameNumerology(data: {
+    name: string;
+    name_type?: string;
+    system?: 'pythagorean' | 'chaldean';
+    transliterate?: boolean;
+  }) {
+    const response = await apiClient.post('/api/v1/name-numerology/preview/', data);
+    return response.data;
+  },
+
+  async findBestDates(data: {
+    birth_date: string;
+    event_type: string;
+    start_date: string;
+    end_date: string;
+    limit?: number;
+  }) {
+    const response = await apiClient.post('/api/v1/numerology/timing/best-dates/', data);
+    return response.data;
+  },
+
   async getDashboardInsights(): Promise<{ insights: DashboardInsight[]; count: number }> {
     const response = await apiClient.get('/api/v1/numerology/dashboard/insights/');
     return response.data as { insights: DashboardInsight[]; count: number };

@@ -10,7 +10,10 @@ interface User {
   email: string;
   birthDate?: string;
   date_of_birth?: string;
-  profileImage?: string;
+  profile_picture_url?: string;
+  timezone?: string;
+  location?: string;
+  bio?: string;
   createdAt?: string;
   subscription?: 'free' | 'pro' | 'premium' | string;
   hasCompletedOnboarding?: boolean;
@@ -209,22 +212,22 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
     if (!user) return;
     setIsLoading(true);
     try {
-      const updatedUser = {
-        ...user,
-        ...data,
-      };
+      const response = await userAPI.updateProfile({
+        full_name: data.full_name,
+        date_of_birth: data.date_of_birth || data.birthDate,
+        timezone: data.timezone,
+        location: data.location,
+        bio: data.bio,
+        profile_picture_url: data.profile_picture_url,
+      });
+      const updatedUser = { ...user, ...response.data };
       setUser(updatedUser);
-      localStorage.setItem('numerobuddy_user', JSON.stringify(updatedUser));
-      localStorage.removeItem('numerai_user');
-
-      // If birth date changed or no profile yet, refresh numerology profile from API
-      if (data.birthDate || data.date_of_birth || !numerologyProfile) {
-        const apiProfile = await safeFetchNumerologyProfile();
-        if (apiProfile) {
-          setNumerologyProfile(apiProfile);
-          localStorage.setItem('numerobuddy_profile', JSON.stringify(apiProfile));
-          localStorage.removeItem('numerai_profile');
-        }
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      const apiProfile = await safeFetchNumerologyProfile();
+      if (apiProfile) {
+        setNumerologyProfile(apiProfile);
+        localStorage.setItem('numerobuddy_profile', JSON.stringify(apiProfile));
+        localStorage.removeItem('numerai_profile');
       }
     } finally {
       setIsLoading(false);

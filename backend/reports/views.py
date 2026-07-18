@@ -9,10 +9,11 @@ from django.utils import timezone
 from django.http import HttpResponse
 from django.db.models import Q
 from datetime import timedelta, date, datetime
-from .models import ReportTemplate, GeneratedReport, ScheduledReport, ReportComparison
+from .models import ReportTemplate, GeneratedReport, UniversalReport, ScheduledReport, ReportComparison
 from .serializers import (
-    ReportTemplateSerializer, GeneratedReportSerializer, ScheduledReportSerializer, ReportComparisonSerializer
+    ReportTemplateSerializer, GeneratedReportSerializer, UniversalReportSerializer, ScheduledReportSerializer, ReportComparisonSerializer
 )
+from .services.universal_reports import duplicate_report, persist_report
 from numerology.models import (
     Person,
     PersonNumerologyProfile,
@@ -54,6 +55,51 @@ def report_templates_list(request):
         'page_size': page_size,
         'results': serializer.data
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def universal_reports(request):
+    """List, search, filter, or persist any report type through one contract."""
+    if request.method == 'POST':
+        serializer = UniversalReportSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        report = persist_report(request.user, serializer.validated_data)
+        return Response(UniversalReportSerializer(report).data, status=status.HTTP_201_CREATED)
+
+    reports = UniversalReport.objects.filter(user=request.user)
+    report_type = request.query_params.get('type')
+    search = request.query_params.get('search')
+    saved = request.query_params.get('saved')
+    if report_type:
+        reports = reports.filter(report_type=report_type)
+    if search:
+        reports = reports.filter(title__icontains=search)
+    if saved in ('true', 'false'):
+        reports = reports.filter(is_saved=saved == 'true')
+    return Response({'count': reports.count(), 'results': UniversalReportSerializer(reports, many=True).data})
+
+
+@api_view(['GET', 'PATCH', 'DELETE', 'POST'])
+@permission_classes([IsAuthenticated])
+def universal_report_detail(request, report_id):
+    """Retrieve, update, delete, or duplicate a universal report."""
+    try:
+        report = UniversalReport.objects.get(id=report_id, user=request.user)
+    except UniversalReport.DoesNotExist:
+        return Response({'error': 'Report not found'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'GET':
+        return Response(UniversalReportSerializer(report).data)
+    if request.method == 'DELETE':
+        report.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    if request.method == 'POST':
+        report = duplicate_report(report)
+        return Response(UniversalReportSerializer(report).data, status=status.HTTP_201_CREATED)
+    serializer = UniversalReportSerializer(report, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save(report_version=report.report_version + 1)
+    return Response(serializer.data)
 
 
 @api_view(['POST'])

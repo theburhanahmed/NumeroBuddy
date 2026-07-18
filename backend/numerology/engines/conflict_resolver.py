@@ -5,7 +5,7 @@ Implements strict priority rules from conflict_resolution.md.
 All engines must use this module to validate conflicts and emit warnings.
 """
 import json
-import os
+from pathlib import Path
 from typing import Dict, List, Optional, Set, Any
 
 
@@ -26,19 +26,19 @@ class ConflictResolver:
     
     def __init__(self):
         """Initialize conflict resolver with rule files."""
-        rules_path = os.path.join(os.getcwd(), 'rules')
+        rules_path = Path(__file__).resolve().parents[3] / 'rules'
         self.rules_path = rules_path
         
         # Load conflict resolution rules
         try:
-            with open(os.path.join(rules_path, 'conflict_resolution.md'), 'r') as f:
+            with (rules_path / 'conflict_resolution.md').open() as f:
                 self.conflict_rules = f.read()
         except FileNotFoundError:
             self.conflict_rules = ""
         
         # Load compatibility rules for enemy number checks
         try:
-            with open(os.path.join(rules_path, 'compatibility_81.rules.json'), 'r') as f:
+            with (rules_path / 'compatibility_81.rules.json').open() as f:
                 compat_rules = json.load(f)
                 self.opposite_numbers = compat_rules.get('warnings', [{}])[0].get('list', {})
         except (FileNotFoundError, KeyError, IndexError):
@@ -46,7 +46,7 @@ class ConflictResolver:
         
         # Load lucky/unlucky table for enemy checks
         try:
-            with open(os.path.join(rules_path, 'eklavya_brahmastra.rules.json'), 'r') as f:
+            with (rules_path / 'eklavya_brahmastra.rules.json').open() as f:
                 eklavya_rules = json.load(f)
                 self.lucky_table = {}
                 for item in eklavya_rules.get('outputs', [{}])[1].get('table', []):

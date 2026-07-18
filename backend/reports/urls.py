@@ -9,6 +9,8 @@ app_name = 'reports'
 urlpatterns = [
     # Report endpoints
     path('report-templates/', views.report_templates_list, name='report-templates-list'),
+    path('reports/universal/', views.universal_reports, name='universal-reports'),
+    path('reports/universal/<uuid:report_id>/', views.universal_report_detail, name='universal-report-detail'),
     path('reports/generate/', views.generate_report, name='generate-report'),
     path('reports/bulk-generate/', views.bulk_generate_reports, name='bulk-generate-reports'),
     path('reports/unified/', views.unified_report_list, name='unified-report-list'),

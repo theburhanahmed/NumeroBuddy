@@ -76,6 +76,42 @@ class GeneratedReport(models.Model):
         return f"Report for {self.person.name} - {self.template.name}"
 
 
+class UniversalReport(models.Model):
+    """Canonical persisted report for every Numerobuddy report domain."""
+
+    REPORT_TYPES = [
+        ('personal', 'Personal'), ('business', 'Business'), ('phone', 'Phone'),
+        ('vehicle', 'Vehicle'), ('name', 'Name'), ('compatibility', 'Compatibility'),
+        ('future', 'Future'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='universal_reports')
+    report_type = models.CharField(max_length=32, choices=REPORT_TYPES, db_index=True)
+    title = models.CharField(max_length=200)
+    input_data = models.JSONField(default=dict, blank=True)
+    calculated_results = models.JSONField(default=dict, blank=True)
+    ai_insights = models.JSONField(default=list, blank=True)
+    recommendations = models.JSONField(default=list, blank=True)
+    remedies = models.JSONField(default=list, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    is_saved = models.BooleanField(default=True, db_index=True)
+    is_pinned = models.BooleanField(default=False, db_index=True)
+    pdf_status = models.CharField(max_length=20, default='not_requested')
+    share_token = models.UUIDField(null=True, blank=True, unique=True)
+    report_version = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'universal_reports'
+        ordering = ['-updated_at']
+        indexes = [models.Index(fields=['user', 'report_type', 'updated_at']), models.Index(fields=['user', 'is_saved', 'updated_at'])]
+
+    def __str__(self):
+        return f'{self.get_report_type_display()} — {self.title}'
+
+
 class ScheduledReport(models.Model):
     """Scheduled report generation."""
     

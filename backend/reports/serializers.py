@@ -2,7 +2,7 @@
 Serializers for NumerAI reports application.
 """
 from rest_framework import serializers
-from .models import ReportTemplate, GeneratedReport, ScheduledReport, ReportComparison
+from .models import ReportTemplate, GeneratedReport, UniversalReport, ScheduledReport, ReportComparison
 from numerology.models import Person
 
 
@@ -31,6 +31,15 @@ class GeneratedReportSerializer(serializers.ModelSerializer):
             'title', 'content', 'generated_at', 'expires_at'
         ]
         read_only_fields = ['id', 'generated_at']
+
+
+class UniversalReportSerializer(serializers.ModelSerializer):
+    """Serializer for all persisted report types."""
+
+    class Meta:
+        model = UniversalReport
+        fields = ['id', 'report_type', 'title', 'input_data', 'calculated_results', 'ai_insights', 'recommendations', 'remedies', 'metadata', 'is_saved', 'is_pinned', 'pdf_status', 'share_token', 'report_version', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'share_token', 'report_version', 'created_at', 'updated_at']
 
 
 class NumerologyReportSerializer(serializers.Serializer):

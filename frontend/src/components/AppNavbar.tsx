@@ -59,6 +59,31 @@ export function AppNavbar() {
     label: 'Forecasts',
     path: '/forecasts',
     icon: <CalendarIcon className="w-4 h-4" />
+  },
+  {
+    label: 'Business Numerology',
+    path: '/business-numerology',
+    icon: <TrendingUpIcon className="w-4 h-4" />
+  },
+  {
+    label: 'Phone Numerology',
+    path: '/phone-numerology',
+    icon: <StarIcon className="w-4 h-4" />
+  },
+  {
+    label: 'Vehicle Numerology',
+    path: '/vehicle-numerology',
+    icon: <StarIcon className="w-4 h-4" />
+  },
+  {
+    label: 'Name Numerology',
+    path: '/name-numerology',
+    icon: <SparklesIcon className="w-4 h-4" />
+  },
+  {
+    label: 'Auspicious Dates',
+    path: '/auspicious-dates',
+    icon: <CalendarIcon className="w-4 h-4" />
   }];
 
   return (
@@ -108,7 +133,7 @@ export function AppNavbar() {
                   Dashboard
                 </motion.button>
                 <motion.button
-                  onClick={() => navigate('/report')}
+                  onClick={() => navigate('/reports')}
                   className="text-white/80 hover:text-cyan-400 font-medium transition-colors"
                   whileHover={{
                     y: -2

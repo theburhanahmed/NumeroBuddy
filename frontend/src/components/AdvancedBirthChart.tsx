@@ -72,7 +72,7 @@ export function AdvancedBirthChart() {
 
   const numbers = useMemo(() => Object.keys(numberDetails).map((k) => Number(k)), [numberDetails]);
 
-  const handleDownload = () => {};
+  const handleDownload = () => undefined;
   const handleZoomIn = () => setZoom(Math.min(zoom + 0.2, 2));
   const handleZoomOut = () => setZoom(Math.max(zoom - 0.2, 0.6));
   const handleRotate = () => setRotation((rotation + 60) % 360);

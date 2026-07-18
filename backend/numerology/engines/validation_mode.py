@@ -5,7 +5,7 @@ Tracks what was calculated, what was ignored, why recommendations were allowed/b
 and what risks were detected. Used by all engines for validation mode.
 """
 from typing import Dict, List, Optional, Any
-from .validation_checklist import ValidationChecklist, ValidationTracker
+from .validation_checklist import ValidationChecklist
 from .conflict_resolver import ConflictResolver
 
 
@@ -17,8 +17,7 @@ class ValidationMode:
     
     def __init__(self):
         """Initialize validation mode with tracker and conflict resolver."""
-        self.tracker = ValidationTracker()
-        self.checklist = self.tracker.checklist
+        self.checklist = ValidationChecklist()
         self.conflict_resolver = ConflictResolver()
     
     def validate_calculation(self, engine_name: str, calculation_type: str,

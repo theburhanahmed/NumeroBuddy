@@ -4,7 +4,6 @@ import { Toaster } from 'sonner';
 import { AppRouter } from './AppRouter';
 import { AuthProvider } from './contexts/AuthContext';
 import { OnboardingProvider } from './contexts/OnboardingContext';
-import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { AIChatProvider } from './contexts/AIChatContext';
 import { BackgroundProvider } from './contexts/BackgroundContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -20,9 +19,8 @@ function App() {
       <MemoryRouter>
         <AuthProvider>
           <OnboardingProvider>
-            <SubscriptionProvider>
-              <AIChatProvider>
-                <BackgroundProvider>
+            <AIChatProvider>
+              <BackgroundProvider>
                   {/* Global Accessibility Features */}
                   <SkipToContent />
                   <FocusVisibleStyles />
@@ -50,9 +48,8 @@ function App() {
                       }
                     }} />
 
-                </BackgroundProvider>
-              </AIChatProvider>
-            </SubscriptionProvider>
+              </BackgroundProvider>
+            </AIChatProvider>
           </OnboardingProvider>
         </AuthProvider>
       </MemoryRouter>

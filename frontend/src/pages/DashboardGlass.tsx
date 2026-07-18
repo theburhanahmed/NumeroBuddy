@@ -22,6 +22,7 @@ import { useIsMobile } from '../hooks/useMediaQuery';
 import { useAIChat } from '../contexts/AIChatContext';
 import { useAuth } from '../contexts/AuthContext';
 import { numerologyAPI, NumerologyProfile as ApiNumerologyProfile } from '../lib/numerology-api';
+import { dashboardAPI, paymentsAPI, reportsAPI } from '../lib/api-client';
 export function DashboardGlass() {
   const navigate = useNavigate();
   const { openChat } = useAIChat();
@@ -30,14 +31,25 @@ export function DashboardGlass() {
   const [profile, setProfile] = useState<ApiNumerologyProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [overview, setOverview] = useState<any | null>(null);
+  const [reports, setReports] = useState<any[]>([]);
+  const [subscription, setSubscription] = useState<any | null>(null);
 
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const p = await numerologyAPI.getNumerologyProfile();
+        const [p, overviewResponse, reportsResponse, subscriptionResponse] = await Promise.all([
+          numerologyAPI.getNumerologyProfile(),
+          dashboardAPI.getOverview(),
+          reportsAPI.listUniversal(),
+          paymentsAPI.getSubscriptionStatus(),
+        ]);
         setProfile(p);
+        setOverview(overviewResponse.data);
+        setReports(reportsResponse.data.results || []);
+        setSubscription(subscriptionResponse.data.subscription);
       } catch (err: any) {
         setError(err?.message || 'Unable to load numerology profile.');
         setProfile(null);
@@ -160,6 +172,33 @@ export function DashboardGlass() {
 
             <QuickStatsOverview />
           </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <div className="p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
+              <h2 className="text-xl font-serif text-white mb-3">Subscription Status</h2>
+              <p className="text-cyan-400 font-semibold">{subscription?.plan || 'Free'}</p>
+              <p className="text-sm text-white/60 mt-2">{subscription?.status || 'No active subscription'}</p>
+            </div>
+            <div className="p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
+              <h2 className="text-xl font-serif text-white mb-3">Daily Reading</h2>
+              <p className="text-white/80">{overview?.daily_reading?.interpretation || 'Your daily reading will appear when it is available.'}</p>
+            </div>
+            <div className="p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
+              <h2 className="text-xl font-serif text-white mb-3">Profile Summary</h2>
+              <p className="text-white/80">{overview?.stats?.profile_calculated ? 'Your numerology profile is complete.' : 'Complete your profile to unlock personalized insights.'}</p>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6 mb-12">
+            <div className="p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
+              <h2 className="text-xl font-serif text-white mb-4">Recent Reports</h2>
+              {reports.length ? reports.slice(0, 5).map((report) => <button key={report.id} onClick={() => navigate('/report')} className="block w-full text-left py-3 border-b border-cyan-500/10 text-white hover:text-cyan-400">{report.title}</button>) : <p className="text-white/60">No saved reports yet.</p>}
+            </div>
+            <div className="p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
+              <h2 className="text-xl font-serif text-white mb-4">Upcoming Lucky Dates</h2>
+              {overview?.upcoming_events?.length ? overview.upcoming_events.map((event: any) => <p key={event.id} className="py-3 border-b border-cyan-500/10 text-white">{event.title} · {event.date}</p>) : <p className="text-white/60">No upcoming dates saved yet.</p>}
+            </div>
+          </div>
 
           {/* Core Numbers - Enhanced Interactive Cards */}
           <motion.div

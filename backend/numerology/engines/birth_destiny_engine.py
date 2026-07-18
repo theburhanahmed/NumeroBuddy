@@ -1,14 +1,14 @@
 import json
-import os
+from pathlib import Path
 from .conflict_resolver import ConflictResolver
 
 class NumerologyBaseEngine:
     def __init__(self):
-        self.rules_path = os.path.join(os.getcwd(), 'rules')
+        self.rules_path = Path(__file__).resolve().parents[3] / 'rules'
         self.conflict_resolver = ConflictResolver()
 
     def load_rules(self, filename):
-        with open(os.path.join(self.rules_path, filename), 'r') as f:
+        with (self.rules_path / filename).open() as f:
             return json.load(f)
 
     def reduce_to_single_digit(self, n, exclude_master=False):
@@ -37,12 +37,11 @@ class BirthDestinyEngine(NumerologyBaseEngine):
         
         # Check for Master Numbers - preserve them
         master_numbers = []
-        day_sum = self.sum_digits(day)
-        if day_sum in [11, 22, 33]:
-            master_numbers.append(day_sum)
+        if day in [11, 22, 33]:
+            master_numbers.append(day)
             # Validate master number preservation
             master_warning = self.conflict_resolver.validate_master_number_preservation(
-                day_sum, "birth day calculation"
+                day, "birth day calculation"
             )
         
         # Reduction of full DOB for master check

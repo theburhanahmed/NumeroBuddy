@@ -115,6 +115,8 @@ def sanitize_and_validate_phone(
             elif char.isdigit() or char == '+':
                 converted.append(char)
         phone = ''.join(converted)
+        if phone.startswith('1') and len(phone) == 11:
+            phone = f'+{phone}'
     
     # Step 4: Normalize Unicode digits to ASCII
     phone = unicodedata.normalize('NFKD', phone)

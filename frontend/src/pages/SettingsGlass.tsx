@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import {
   SparklesIcon,
   UserIcon,
@@ -14,17 +13,20 @@ import {
 import { AppNavbar } from '../components/AppNavbar';
 import { GlassBackground } from '../components/GlassBackground';
 import { useAuth } from '../contexts/AuthContext';
+import { notificationsAPI } from '../lib/api-client';
+
+const notificationOptions = [
+  { notification_type: 'daily_reading', label: 'Daily Readings', description: 'Receive your daily numerology reading' },
+  { notification_type: 'weekly_forecast', label: 'Weekly Forecasts', description: 'Get weekly cycle updates' },
+  { notification_type: 'auspicious_dates', label: 'Special Dates', description: 'Alerts for auspicious dates' },
+  { notification_type: 'product_updates', label: 'Product Updates', description: 'News about new features' },
+];
+
 export function SettingsGlass() {
-  const navigate = useNavigate();
   const { user, updateProfile, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<
-    'profile' | 'notifications' | 'privacy' | 'billing'>(
-    'profile');
-  const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    birthDate: '',
-  });
+  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'privacy' | 'billing'>('profile');
+  const [profile, setProfile] = useState({ name: '', email: '', birthDate: '', timezone: '', location: '', bio: '', profilePictureUrl: '' });
+  const [preferences, setPreferences] = useState<Record<string, boolean>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -32,9 +34,19 @@ export function SettingsGlass() {
     setProfile({
       name: user?.full_name || '',
       email: user?.email || '',
-      birthDate: (user as any)?.date_of_birth || (user as any)?.birthDate || '',
+      birthDate: user?.date_of_birth || user?.birthDate || '',
+      timezone: user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      location: user?.location || '',
+      bio: user?.bio || '',
+      profilePictureUrl: user?.profile_picture_url || '',
     });
   }, [user]);
+
+  useEffect(() => {
+    notificationsAPI.getPreferences().then((response) => {
+      setPreferences(Object.fromEntries(response.data.filter((item: any) => item.channel === 'push').map((item: any) => [item.notification_type, item.enabled])));
+    }).catch(() => setSaveError('Unable to load notification preferences.'));
+  }, []);
   const tabs = [
   {
     id: 'profile' as const,
@@ -192,6 +204,26 @@ export function SettingsGlass() {
                       </p>
                     </div>
 
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">Avatar URL</label>
+                      <input type="url" value={profile.profilePictureUrl} onChange={(e) => setProfile({ ...profile, profilePictureUrl: e.target.value })} className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">Timezone</label>
+                      <input type="text" value={profile.timezone} onChange={(e) => setProfile({ ...profile, timezone: e.target.value })} className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">Location</label>
+                      <input type="text" value={profile.location} onChange={(e) => setProfile({ ...profile, location: e.target.value })} className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">Bio</label>
+                      <textarea value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors" rows={4} />
+                    </div>
+
                     {saveError && (
                       <p className="text-sm text-red-400">{saveError}</p>
                     )}
@@ -202,9 +234,12 @@ export function SettingsGlass() {
                         try {
                           await updateProfile({
                             full_name: profile.name,
-                            email: profile.email,
                             date_of_birth: profile.birthDate,
-                          } as any);
+                            timezone: profile.timezone,
+                            location: profile.location,
+                            bio: profile.bio,
+                            profile_picture_url: profile.profilePictureUrl,
+                          });
                         } catch (e: any) {
                           setSaveError(e?.message || 'Unable to save changes.');
                         } finally {
@@ -226,46 +261,31 @@ export function SettingsGlass() {
                       Notification Preferences
                     </h2>
 
-                    {[
-                  {
-                    label: 'Daily Readings',
-                    description: 'Receive your daily numerology reading'
-                  },
-                  {
-                    label: 'Weekly Forecasts',
-                    description: 'Get weekly cycle updates'
-                  },
-                  {
-                    label: 'Special Dates',
-                    description: 'Alerts for auspicious dates'
-                  },
-                  {
-                    label: 'Product Updates',
-                    description: 'News about new features'
-                  }].
-                  map((item, index) =>
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 rounded-xl bg-[#0a1628]/40 border border-cyan-500/10">
-
+                    {notificationOptions.map((item) =>
+                      <div key={item.notification_type} className="flex items-center justify-between p-4 rounded-xl bg-[#0a1628]/40 border border-cyan-500/10">
                         <div>
-                          <div className="text-white font-semibold">
-                            {item.label}
-                          </div>
-                          <div className="text-sm text-white/60">
-                            {item.description}
-                          </div>
+                          <div className="text-white font-semibold">{item.label}</div>
+                          <div className="text-sm text-white/60">{item.description}</div>
                         </div>
                         <label className="relative inline-block w-12 h-6">
                           <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        defaultChecked />
-
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={preferences[item.notification_type] ?? false}
+                            onChange={async (event) => {
+                              const enabled = event.target.checked;
+                              try {
+                                await notificationsAPI.updatePreference({ notification_type: item.notification_type, channel: 'push', enabled });
+                                setPreferences((current) => ({ ...current, [item.notification_type]: enabled }));
+                              } catch {
+                                setSaveError('Unable to save notification preferences.');
+                              }
+                            }}
+                          />
                           <div className="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:bg-cyan-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                         </label>
                       </div>
-                  )}
+                    )}
                   </div>
                 }
 

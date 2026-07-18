@@ -14,7 +14,7 @@ class BusinessEngine(NumerologyBaseEngine):
                 total += table[char]
         return total
 
-    def analyze_business(self, company_name, birth_number, destiny_number):
+    def analyze_business(self, company_name, birth_number, destiny_number=None):
         # Exclusions logic (simplified for logic engine)
         clean_name = company_name.upper()
         exclusions = ['PVT LTD', 'LTD', 'LLP', 'HUF', 'SENIOR SECONDARY']

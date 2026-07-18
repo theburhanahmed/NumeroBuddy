@@ -20,7 +20,12 @@ import { NumerologyReportGlass } from './pages/NumerologyReportGlass';
 import { RemediesGlass } from './pages/RemediesGlass';
 import { ConsultationsGlass } from './pages/ConsultationsGlass';
 import { Onboarding } from './pages/Onboarding';
-import { Forum } from './pages/Forum';
+import { BusinessNameNumerology } from './pages/BusinessNameNumerology';
+import { PhoneNumerology } from './pages/PhoneNumerology';
+import { NameNumerology } from './pages/NameNumerology';
+import { AuspiciousDates } from './pages/AuspiciousDates';
+import { VehicleNumerology } from './pages/VehicleNumerology';
+import { ReportHistory } from './pages/ReportHistory';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
 import { CookiePolicy } from './pages/CookiePolicy';
@@ -41,14 +46,6 @@ export function AppRouter() {
         <Route path="/contact" element={<ContactGlass />} />
         <Route path="/blog" element={<BlogGlass />} />
 
-        {/* Other Public Routes */}
-        <Route path="/community" element={<Forum />} />
-
-        {/* Alias routes */}
-        <Route path="/consultants" element={<ConsultationsGlass />} />
-        <Route path="/ai-numerologist" element={<FeaturesGlass />} />
-        <Route path="/birth-chart-demo" element={<FeaturesGlass />} />
-
         {/* Auth Routes - Glassmorphism Style (100% Complete) */}
         <Route path="/login" element={<LoginGlass />} />
         <Route path="/signup" element={<SignupGlass />} />
@@ -62,14 +59,6 @@ export function AppRouter() {
         {/* Protected App Routes - Glassmorphism Style (100% COMPLETE!) */}
         <Route
           path="/dashboard"
-          element={
-          <ProtectedRoute>
-              <DashboardGlass />
-            </ProtectedRoute>
-          } />
-
-        <Route
-          path="/chat"
           element={
           <ProtectedRoute>
               <DashboardGlass />
@@ -156,6 +145,12 @@ export function AppRouter() {
             </ProtectedRoute>
           } />
 
+        <Route path="/business-numerology" element={<ProtectedRoute><BusinessNameNumerology /></ProtectedRoute>} />
+        <Route path="/phone-numerology" element={<ProtectedRoute><PhoneNumerology /></ProtectedRoute>} />
+        <Route path="/name-numerology" element={<ProtectedRoute><NameNumerology /></ProtectedRoute>} />
+        <Route path="/auspicious-dates" element={<ProtectedRoute><AuspiciousDates /></ProtectedRoute>} />
+        <Route path="/vehicle-numerology" element={<ProtectedRoute><VehicleNumerology /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute><ReportHistory /></ProtectedRoute>} />
 
         {/* 404 - Catch all */}
         <Route path="*" element={<NotFoundPage />} />

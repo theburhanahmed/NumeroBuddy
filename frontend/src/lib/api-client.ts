@@ -27,7 +27,7 @@ apiClient.interceptors.request.use(
 
 // Simple toast helper using window.alert for now.
 // This can be upgraded later to use a dedicated toast component.
-function showErrorToast(message: string, title: string = 'Error') {
+function showErrorToast(message: string, title = 'Error') {
   if (typeof window !== 'undefined') {
     // eslint-disable-next-line no-alert
     window.alert(`${title}: ${message}`);
@@ -166,6 +166,32 @@ export const authAPI = {
     apiClient.post('/api/v1/auth/social/google/', { access_token: accessToken }),
 };
 
+export const paymentsAPI = {
+  getSubscriptionStatus: () => apiClient.get('/api/v1/payments/subscription-status/'),
+  getBillingHistory: () => apiClient.get('/api/v1/payments/billing-history/'),
+  createCheckoutSession: (plan: string) => apiClient.post('/api/v1/payments/create-checkout-session/', { plan }),
+};
+
+export const reportsAPI = {
+  list: () => apiClient.get('/api/v1/reports/'),
+  listUniversal: (params?: { type?: string; search?: string; saved?: boolean }) => apiClient.get('/api/v1/reports/universal/', { params }),
+  saveUniversal: (data: { report_type: string; title: string; input_data?: Record<string, unknown>; calculated_results?: Record<string, unknown>; ai_insights?: unknown[]; recommendations?: unknown[]; remedies?: unknown[]; metadata?: Record<string, unknown> }) => apiClient.post('/api/v1/reports/universal/', data),
+  updateUniversal: (reportId: string, data: Record<string, unknown>) => apiClient.patch(`/api/v1/reports/universal/${reportId}/`, data),
+  deleteUniversal: (reportId: string) => apiClient.delete(`/api/v1/reports/universal/${reportId}/`),
+  duplicateUniversal: (reportId: string) => apiClient.post(`/api/v1/reports/universal/${reportId}/`),
+  getPdfUrl: (reportId: string) => `/api/v1/reports/${reportId}/pdf/`,
+};
+
+export const dashboardAPI = {
+  getOverview: () => apiClient.get('/api/v1/dashboard/overview/'),
+};
+
+export const notificationsAPI = {
+  getPreferences: () => apiClient.get('/api/v1/notifications/preferences/'),
+  updatePreference: (data: { notification_type: string; channel: 'email' | 'push' | 'in_app'; enabled: boolean }) =>
+    apiClient.patch('/api/v1/notifications/preferences/', data),
+};
+
 export const userAPI = {
   getProfile: () =>
     cachedFetch(
@@ -192,6 +218,7 @@ export const userAPI = {
     timezone?: string;
     location?: string;
     bio?: string;
+    profile_picture_url?: string;
   }) => {
     const response = await apiClient.patch('/api/v1/users/profile/', data);
     cache.invalidate(cacheKeys.userProfile());
