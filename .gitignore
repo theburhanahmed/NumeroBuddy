@@ -63,3 +63,9 @@ frontend_backup_*/
 # Deployment configs with sensitive data
 deploy/digitalocean/deploy-config.env
 **/.env.production
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
