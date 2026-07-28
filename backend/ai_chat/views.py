@@ -5,6 +5,7 @@ from rest_framework import status, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.conf import settings
 from django.utils import timezone
 from django.http import HttpResponse
 from datetime import timedelta, date, datetime
@@ -32,6 +33,20 @@ def get_openai_client():
             raise ValueError('OPENAI_API_KEY environment variable is not set')
         _openai_client = OpenAI(api_key=api_key)
     return _openai_client
+
+
+def get_local_chat_response(message, life_path, destiny, soul_urge, personality, personal_year):
+    normalized_message = message.lower()
+    if any(term in normalized_message for term in ('career', 'work', 'purpose', 'destiny')):
+        guidance = f'Your Destiny Number {destiny} highlights the strengths you can apply to purposeful work, while Life Path {life_path} points to the broader direction that will feel sustainable.'
+    elif any(term in normalized_message for term in ('relationship', 'love', 'partner', 'communication')):
+        guidance = f'Your Soul Urge {soul_urge} describes what you need emotionally, while Personality {personality} affects how those needs are communicated to others.'
+    elif any(term in normalized_message for term in ('today', 'lucky', 'current', 'year')):
+        guidance = f'Personal Year {personal_year} is the most relevant current influence. Use it alongside Life Path {life_path} when choosing where to focus your energy.'
+    else:
+        guidance = f'Life Path {life_path} describes your central growth pattern, and Destiny {destiny} shows how your abilities can help you express it.'
+
+    return f'{guidance} Choose one practical action today that reflects these themes, then note whether it creates greater clarity or momentum. This is a local development response because an external AI provider is not configured.'
 
 
 @api_view(['POST'])
@@ -169,25 +184,28 @@ def ai_chat(request):
                 max_tokens=500,
                 temperature=0.7
             )
-        except ValueError as ve:
-            # API key not set
-            return Response({
-                'error': 'OpenAI API key is not configured. Please contact support.'
-            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            ai_response = response.choices[0].message.content or ""
+            tokens_used = response.usage.total_tokens if response.usage else 0
+        except ValueError:
+            if not settings.DEBUG:
+                return Response({
+                    'error': 'OpenAI API key is not configured. Please contact support.'
+                }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            ai_response = get_local_chat_response(
+                user_message,
+                life_path,
+                destiny,
+                soul_urge,
+                personality,
+                personal_year
+            )
+            tokens_used = 0
         except Exception as openai_error:
             logger.error(f'OpenAI API error: {str(openai_error)}')
             return Response({
                 'error': 'AI service is temporarily unavailable. Please try again later.',
-                'message': str(openai_error) if os.getenv('DEBUG', 'False').lower() == 'true' else None
+                'message': str(openai_error) if settings.DEBUG else None
             }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        
-        ai_response = response.choices[0].message.content
-        # Handle case where usage might be None
-        tokens_used = response.usage.total_tokens if response.usage else 0
-        
-        # Handle case where ai_response is None
-        if ai_response is None:
-            ai_response = ""
         
         # Create AI message
         ai_msg = AIMessage.objects.create(

@@ -90,83 +90,18 @@ class Command(BaseCommand):
         self.stdout.write(f'Current subscription_plan: {user.subscription_plan}')
         self.stdout.write(f'Current is_premium: {user.is_premium}')
 
-        # Update User model
-        user.subscription_plan = plan
-        user.is_premium = plan in ['basic', 'premium', 'elite']
+        from payments.subscription_management import SubscriptionManagementService
 
-        now = timezone.now()
-        period_end = now + timedelta(days=days)
-
-        if plan in ['basic', 'premium', 'elite'] and status in ('active', 'trialing'):
-            user.premium_expiry = period_end
-        elif plan == 'free':
-            user.premium_expiry = None
-
-        user.save(update_fields=['subscription_plan', 'is_premium', 'premium_expiry'])
-        self.stdout.write(
-            self.style.SUCCESS(
-                f'✓ Updated User: subscription_plan={plan}, is_premium={user.is_premium}'
-            )
+        change = SubscriptionManagementService.request_plan_change(
+            user=user,
+            target_plan=plan,
+            source='management_command',
         )
-
-        # Update or create Subscription model
-        if plan in ['basic', 'premium', 'elite']:
-            trial_start = now if trial_days else None
-            trial_end = (now + timedelta(days=trial_days)) if trial_days else None
-
-            defaults = {
-                'plan': plan,
-                'status': status,
-                'current_period_start': now,
-                'current_period_end': period_end,
-                'trial_start': trial_start,
-                'trial_end': trial_end,
-                'cancel_at_period_end': trailing,
-            }
-            subscription, created = Subscription.objects.get_or_create(
-                user=user,
-                defaults=defaults,
-            )
-
-            if not created:
-                subscription.plan = plan
-                subscription.status = status
-                subscription.current_period_start = now
-                subscription.current_period_end = period_end
-                subscription.cancel_at_period_end = trailing
-                if trial_days:
-                    subscription.trial_start = now
-                    subscription.trial_end = now + timedelta(days=trial_days)
-                elif status == 'active':
-                    subscription.trial_start = None
-                    subscription.trial_end = None
-                subscription.save()
-
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f'✓ Updated Subscription: plan={plan}, status={status}'
-                )
-            )
-            if trailing:
-                self.stdout.write(
-                    self.style.SUCCESS('  cancel_at_period_end=True (trailing period)')
-                )
-            if trial_days:
-                self.stdout.write(
-                    self.style.SUCCESS(f'  trial_end={subscription.trial_end}')
-                )
-        else:
-            # For free plan, cancel any existing subscription
-            if hasattr(user, 'subscription'):
-                user.subscription.status = 'canceled'
-                user.subscription.save(update_fields=['status'])
-                self.stdout.write(
-                    self.style.SUCCESS('✓ Canceled existing subscription')
-                )
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                f'\n✓ Successfully changed subscription to {plan.upper()} plan!'
-            )
-        )
-        self.stdout.write(f'User can now access features for {plan} tier.')
+        if not change:
+            self.stdout.write(self.style.SUCCESS('Subscription is already on the requested plan.'))
+            return
+        self.stdout.write(self.style.SUCCESS(f'Subscription change status: {change.status}'))
+        if change.checkout_url:
+            self.stdout.write(f'Checkout required: {change.checkout_url}')
+        if change.effective_at:
+            self.stdout.write(f'Effective at: {change.effective_at}')

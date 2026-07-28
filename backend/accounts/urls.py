@@ -53,8 +53,7 @@ urlpatterns = [
     path('notifications/<uuid:notification_id>/', views.delete_notification, name='delete-notification'),
     
     # Notification preferences endpoints
-    path('notifications/preferences/', views_notification_prefs.get_notification_preferences, name='get-notification-preferences'),
-    path('notifications/preferences/', views_notification_prefs.update_notification_preference, name='update-notification-preference'),
+    path('notifications/preferences/', views_notification_prefs.get_notification_preferences, name='notification-preferences'),
     path('notifications/preferences/bulk-update/', views_notification_prefs.bulk_update_notification_preferences, name='bulk-update-notification-preferences'),
     
     # Real-time notification stream (SSE)

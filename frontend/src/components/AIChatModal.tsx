@@ -47,7 +47,7 @@ export function AIChatModal() {
       const data = response.data;
       const aiMessage = {
         id: (Date.now() + 1).toString(),
-        content: data.response || data.message || 'I apologize, I could not generate a response. Please try again.',
+        content: data.content || data.response || data.message || 'I apologize, I could not generate a response. Please try again.',
         sender: 'ai' as const,
         timestamp: new Date()
       };

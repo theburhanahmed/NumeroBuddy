@@ -170,13 +170,15 @@ def calculate_numerology_profile(request):
         log_user_activity(user, 'profile_updated', {'action': 'calculate_numerology_profile', 'created': created})
         
         # Trigger async AI reading generation (if Celery is available)
-        try:
-            from .tasks import generate_detailed_readings_for_profile
-            generate_detailed_readings_for_profile.delay(str(user.id))
-            logger.info(f'Queued AI reading generation for user {user.id}')
-        except Exception as e:
-            logger.warning(f'Failed to queue AI reading generation: {str(e)}')
-            # Continue without AI generation - it's not critical
+        from django.conf import settings
+        if settings.DATABASES['default']['ENGINE'] != 'django.db.backends.sqlite3':
+            try:
+                from .tasks import generate_detailed_readings_for_profile
+                generate_detailed_readings_for_profile.delay(str(user.id))
+                logger.info(f'Queued AI reading generation for user {user.id}')
+            except Exception as e:
+                logger.warning(f'Failed to queue AI reading generation: {str(e)}')
+                # Continue without AI generation - it's not critical
         
         return Response({
             'message': 'Profile calculated successfully',

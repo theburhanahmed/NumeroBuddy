@@ -8,8 +8,10 @@ import { AboutUsGlass } from './pages/AboutUsGlass';
 import { ContactGlass } from './pages/ContactGlass';
 import { BlogGlass } from './pages/BlogGlass';
 import { DashboardGlass } from './pages/DashboardGlass';
+import { UniverseGlass } from './pages/UniverseGlass';
 import { LoginGlass } from './pages/LoginGlass';
 import { SignupGlass } from './pages/SignupGlass';
+import { VerifyOtpGlass } from './pages/VerifyOtpGlass';
 import { LifePathAnalysisGlass } from './pages/LifePathAnalysisGlass';
 import { CompatibilityCheckerGlass } from './pages/CompatibilityCheckerGlass';
 import { BirthChartGlass } from './pages/BirthChartGlass';
@@ -52,6 +54,7 @@ export function AppRouter() {
         {/* Auth Routes - Glassmorphism Style (100% Complete) */}
         <Route path="/login" element={<LoginGlass />} />
         <Route path="/signup" element={<SignupGlass />} />
+        <Route path="/verify-otp" element={<VerifyOtpGlass />} />
 
         {/* Legal Pages */}
         <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -65,6 +68,14 @@ export function AppRouter() {
           element={
           <ProtectedRoute>
               <DashboardGlass />
+            </ProtectedRoute>
+          } />
+
+        <Route
+          path="/universe"
+          element={
+          <ProtectedRoute>
+              <UniverseGlass />
             </ProtectedRoute>
           } />
 

@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Any
 from datetime import date, datetime
 from django.utils import timezone
 from meus.models import EntityProfile
-from accounts.models import User
+from accounts.models import User, UserProfile
 from numerology.models import NumerologyProfile
 
 
@@ -31,10 +31,11 @@ class CycleSynchronizationService:
             target_date = timezone.now().date()
         
         user_profile = getattr(user, 'numerology_profile', None)
-        if not user_profile:
+        user_birth_date = UserProfile.objects.filter(user=user).values_list('date_of_birth', flat=True).first()
+        if not user_profile or not user_birth_date:
             return {
                 "synchronized": False,
-                "error": "User has no numerology profile"
+                "error": "User has no complete numerology profile"
             }
         
         entities = EntityProfile.objects.filter(user=user, is_active=True)
@@ -47,11 +48,10 @@ class CycleSynchronizationService:
         challenge_periods = []
         
         for entity in entities:
-            entity_profile = entity.numerology_profile
-            if not entity_profile:
+            if not entity.numerology_data:
                 continue
             
-            entity_cycles = self._get_entity_cycles(entity_profile, target_date)
+            entity_cycles = self._get_entity_cycles(entity, target_date)
             alignment = self._calculate_alignment(user_cycles, entity_cycles)
             
             entity_data = {
@@ -116,9 +116,7 @@ class CycleSynchronizationService:
             List of optimal dates with scores
         """
         user_profile = getattr(user, 'numerology_profile', None)
-        entity_profile = entity.numerology_profile
-        
-        if not user_profile or not entity_profile:
+        if not user_profile or not entity.numerology_data:
             return []
         
         optimal_dates = []
@@ -126,7 +124,7 @@ class CycleSynchronizationService:
         
         while current_date <= end_date:
             user_cycles = self._get_user_cycles(user_profile, current_date)
-            entity_cycles = self._get_entity_cycles(entity_profile, current_date)
+            entity_cycles = self._get_entity_cycles(entity, current_date)
             alignment = self._calculate_alignment(user_cycles, entity_cycles)
             
             if alignment['score'] >= 70:
@@ -158,21 +156,22 @@ class CycleSynchronizationService:
         calculator = NumerologyCalculator()
         
         # Personal Year
+        birth_date = UserProfile.objects.filter(user=profile.user).values_list('date_of_birth', flat=True).first()
         personal_year = calculator.calculate_personal_year_number(
-            profile.user.date_of_birth,
+            birth_date,
             target_date.year
         )
         
         # Personal Month
         personal_month = calculator.calculate_personal_month_number(
-            profile.user.date_of_birth,
+            birth_date,
             target_date.year,
             target_date.month
         )
         
         # Personal Day
         personal_day = calculator.calculate_personal_day_number(
-            profile.user.date_of_birth,
+            birth_date,
             target_date
         )
         
@@ -186,37 +185,32 @@ class CycleSynchronizationService:
     
     def _get_entity_cycles(
         self,
-        profile: NumerologyProfile,
+        entity: EntityProfile,
         target_date: date
     ) -> Dict[str, int]:
         """Get entity's cycles for a specific date."""
         from numerology.numerology import NumerologyCalculator
         calculator = NumerologyCalculator()
-        
-        # Get entity's birth date from profile's user
-        user = getattr(profile, 'user', None)
-        if user and hasattr(user, 'date_of_birth') and user.date_of_birth:
-            dob = user.date_of_birth
-        else:
-            # Fallback - use stored cycles if available
+        numbers = entity.numerology_data
+        if not entity.date_of_birth:
             return {
-                'personal_year': getattr(profile, 'personal_year_number', 1),
-                'personal_month': getattr(profile, 'personal_month_number', 1),
-                'personal_day': 1,  # Would need to calculate daily
-                'life_path': profile.life_path_number,
-                'destiny': profile.destiny_number
+                'personal_year': numbers.get('personal_year_number', 1),
+                'personal_month': numbers.get('personal_month_number', 1),
+                'personal_day': numbers.get('personal_day_number', 1),
+                'life_path': numbers.get('life_path_number', 1),
+                'destiny': numbers.get('destiny_number', 1)
             }
         
-        personal_year = calculator.calculate_personal_year_number(dob, target_date.year)
-        personal_month = calculator.calculate_personal_month_number(dob, target_date.year, target_date.month)
-        personal_day = calculator.calculate_personal_day_number(dob, target_date)
+        personal_year = calculator.calculate_personal_year_number(entity.date_of_birth, target_date.year)
+        personal_month = calculator.calculate_personal_month_number(entity.date_of_birth, target_date.year, target_date.month)
+        personal_day = calculator.calculate_personal_day_number(entity.date_of_birth, target_date)
         
         return {
             'personal_year': personal_year,
             'personal_month': personal_month,
             'personal_day': personal_day,
-            'life_path': profile.life_path_number,
-            'destiny': profile.destiny_number
+            'life_path': numbers.get('life_path_number', 1),
+            'destiny': numbers.get('destiny_number', 1)
         }
     
     def _calculate_alignment(

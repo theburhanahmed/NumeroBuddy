@@ -8,6 +8,12 @@ from .models import FeatureFlag, SubscriptionFeatureAccess
 from .services import FeatureFlagManager
 
 
+class SubscriptionFeatureAccessInline(admin.TabularInline):
+    model = SubscriptionFeatureAccess
+    extra = 0
+    fields = ['subscription_tier', 'is_enabled', 'limits']
+
+
 @admin.register(FeatureFlag)
 class FeatureFlagAdmin(admin.ModelAdmin):
     """Admin interface for FeatureFlag model."""
@@ -16,7 +22,8 @@ class FeatureFlagAdmin(admin.ModelAdmin):
     list_filter = ['category', 'is_active', 'default_tier', 'created_at']
     search_fields = ['name', 'display_name', 'description']
     readonly_fields = ['id', 'created_at', 'updated_at']
-    
+    inlines = [SubscriptionFeatureAccessInline]
+
     fieldsets = (
         ('Basic Information', {
             'fields': ('id', 'name', 'display_name', 'description', 'category')

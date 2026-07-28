@@ -15,7 +15,7 @@ from .serializers_notification_prefs import (
 logger = logging.getLogger(__name__)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def get_notification_preferences(request):
     """
@@ -24,6 +24,22 @@ def get_notification_preferences(request):
     GET /api/v1/notifications/preferences/
     """
     try:
+        if request.method in ('PUT', 'PATCH'):
+            serializer = UpdateNotificationPreferenceSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            preference, _ = NotificationPreference.objects.update_or_create(
+                user=request.user,
+                notification_type=serializer.validated_data['notification_type'],
+                channel=serializer.validated_data['channel'],
+                defaults={'enabled': serializer.validated_data['enabled']}
+            )
+            return Response(
+                NotificationPreferenceSerializer(preference).data,
+                status=status.HTTP_200_OK
+            )
+
         preferences = NotificationPreference.objects.filter(user=request.user)
         serializer = NotificationPreferenceSerializer(preferences, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

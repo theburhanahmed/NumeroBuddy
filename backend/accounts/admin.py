@@ -2,6 +2,7 @@
 Django admin configuration for accounts models.
 """
 from datetime import timedelta
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils import timezone
@@ -15,12 +16,31 @@ from .models_api_key import APIKey
 from .models_notification_prefs import NotificationPreference
 from .models_privacy import PrivacySettings
 from .email_service import render_email_template
+from subscription_plans import PlanTier
+
+
+class UserAdminForm(forms.ModelForm):
+    requested_subscription_plan = forms.ChoiceField(choices=PlanTier.choices, required=False)
+    confirm_subscription_change = forms.BooleanField(
+        required=False,
+        help_text='Confirm that this change may create a prorated Stripe charge or schedule a billing change.',
+    )
+
+    class Meta:
+        model = User
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['requested_subscription_plan'].initial = self.instance.subscription_plan
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     """Admin interface for User model."""
-    
+
+    form = UserAdminForm
     list_display = ['email', 'phone', 'full_name', 'is_verified', 'is_premium', 'subscription_plan', 'is_active', 'created_at']
     list_filter = ['is_verified', 'is_premium', 'is_active', 'subscription_plan', 'created_at']
     search_fields = ['email', 'phone', 'full_name']
@@ -30,17 +50,17 @@ class UserAdmin(BaseUserAdmin):
         (None, {'fields': ('email', 'phone', 'password')}),
         ('Personal Info', {'fields': ('full_name',)}),
         ('Subscription & Status', {
-            'fields': ('is_active', 'is_verified', 'is_premium', 'subscription_plan', 'premium_expiry'),
-            'description': 'Change subscription_plan here to test feature availability. This will sync with the user\'s Subscription model if it exists.'
+            'fields': ('is_active', 'is_verified', 'subscription_plan', 'is_premium', 'premium_expiry', 'requested_subscription_plan', 'confirm_subscription_change'),
+            'description': 'Select a requested plan to synchronize billing through Stripe. Upgrades are immediate; downgrades apply at renewal.'
         }),
         ('Security', {'fields': ('failed_login_attempts', 'locked_until', 'last_login')}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('created_at', 'updated_at')}),
     )
     
-    readonly_fields = ['created_at', 'updated_at', 'last_login']
-    
-    actions = ['set_plan_free', 'set_plan_basic', 'set_plan_premium', 'set_plan_elite']
+    readonly_fields = ['created_at', 'updated_at', 'last_login', 'subscription_plan', 'is_premium', 'premium_expiry']
+
+    actions = []
     
     def set_plan_free(self, request, queryset):
         """Set selected users to Free plan."""
@@ -109,30 +129,46 @@ class UserAdmin(BaseUserAdmin):
     set_plan_elite.short_description = "Set selected users to Elite plan"
     
     def save_model(self, request, obj, form, change):
-        """Override save to sync with subscription model. Creates Subscription if missing when setting paid plan."""
+        """Persist user changes and route requested plan changes through Stripe."""
         super().save_model(request, obj, form, change)
-        from payments.models import Subscription
+        if not change:
+            return
 
-        if obj.subscription_plan in ['basic', 'premium', 'elite']:
-            now = timezone.now()
-            subscription, created = Subscription.objects.get_or_create(
+        requested_plan = form.cleaned_data.get('requested_subscription_plan')
+        if not requested_plan or requested_plan == obj.subscription_plan:
+            return
+        if not form.cleaned_data.get('confirm_subscription_change'):
+            self.message_user(request, 'Confirm the subscription change before saving.', messages.ERROR)
+            return
+
+        from payments.subscription_management import SubscriptionManagementService
+
+        try:
+            subscription_change = SubscriptionManagementService.request_plan_change(
                 user=obj,
-                defaults={
-                    'plan': obj.subscription_plan,
-                    'status': 'active',
-                    'current_period_start': now,
-                    'current_period_end': now + timedelta(days=30),
-                },
+                target_plan=requested_plan,
+                actor=request.user,
+                source='admin',
             )
-            if not created:
-                subscription.plan = obj.subscription_plan
-                if obj.is_premium and subscription.status != 'active':
-                    subscription.status = 'active'
-                subscription.save(update_fields=['plan', 'status'])
-        elif obj.subscription_plan == 'free':
-            if hasattr(obj, 'subscription'):
-                obj.subscription.status = 'canceled'
-                obj.subscription.save(update_fields=['status'])
+            if subscription_change and subscription_change.status == 'pending_checkout':
+                self.message_user(
+                    request,
+                    format_html(
+                        'Plan remains Free until checkout is completed: <a href="{}" target="_blank">Open Stripe Checkout</a>',
+                        subscription_change.checkout_url,
+                    ),
+                    messages.WARNING,
+                )
+            elif subscription_change and subscription_change.status == 'pending_period_end':
+                self.message_user(
+                    request,
+                    f'{requested_plan.title()} is scheduled for {subscription_change.effective_at}.',
+                    messages.SUCCESS,
+                )
+            else:
+                self.message_user(request, f'Plan changed to {requested_plan.title()}.', messages.SUCCESS)
+        except Exception as exc:
+            self.message_user(request, f'Plan change failed: {exc}', messages.ERROR)
     
     add_fieldsets = (
         (None, {

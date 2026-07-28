@@ -23,11 +23,14 @@ import { useAIChat } from '../contexts/AIChatContext';
 import { useAuth } from '../contexts/AuthContext';
 import { numerologyAPI, NumerologyProfile as ApiNumerologyProfile } from '../lib/numerology-api';
 import { dashboardAPI, paymentsAPI, reportsAPI } from '../lib/api-client';
+
+const formatPlan = (plan?: string | null) => plan ? `${plan.charAt(0).toUpperCase()}${plan.slice(1)}` : null;
+
 export function DashboardGlass() {
   const navigate = useNavigate();
   const { openChat } = useAIChat();
   const isMobile = useIsMobile();
-  const { user } = useAuth();
+  const { entitlements, user } = useAuth();
   const [profile, setProfile] = useState<ApiNumerologyProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,25 +43,33 @@ export function DashboardGlass() {
       setIsLoading(true);
       setError(null);
       try {
-        const [p, overviewResponse, reportsResponse, subscriptionResponse] = await Promise.all([
+        const [profileResult, overviewResult, reportsResult, subscriptionResult] = await Promise.allSettled([
           numerologyAPI.getNumerologyProfile(),
           dashboardAPI.getOverview(),
           reportsAPI.listUniversal(),
           paymentsAPI.getSubscriptionStatus(),
         ]);
-        setProfile(p);
-        setOverview(overviewResponse.data);
-        setReports(reportsResponse.data.results || []);
-        setSubscription(subscriptionResponse.data.subscription);
-      } catch (err: any) {
-        setError(err?.message || 'Unable to load numerology profile.');
-        setProfile(null);
+
+        const dashboardOverview = overviewResult.status === 'fulfilled' ? overviewResult.value.data : null;
+        const numerologyProfile = profileResult.status === 'fulfilled' ? profileResult.value : dashboardOverview?.numerology_profile || null;
+
+        setProfile(numerologyProfile);
+        setOverview(dashboardOverview);
+        setReports(reportsResult.status === 'fulfilled' ? reportsResult.value.data.results || [] : []);
+        setSubscription(subscriptionResult.status === 'fulfilled' ? subscriptionResult.value.data.subscription : null);
+
+        if (!numerologyProfile && !dashboardOverview) {
+          setError('We could not load your dashboard. Please refresh and try again.');
+        }
       } finally {
         setIsLoading(false);
       }
     };
     load();
   }, []);
+
+  const effectivePlan = formatPlan(entitlements?.effective_plan || subscription?.plan) || 'Free';
+  const pendingPlan = formatPlan(entitlements?.pending_plan);
 
   const coreNumbers = [
     {
@@ -155,6 +166,14 @@ export function DashboardGlass() {
             </p>
           </motion.div>
 
+          {!isLoading && !profile && (
+            <div className="mb-12 rounded-3xl border border-cyan-400/30 bg-cyan-500/10 p-6 md:p-8">
+              <h2 className="text-2xl font-serif text-white mb-2">Create your numerology profile</h2>
+              <p className="text-white/70 mb-5">Add your full name and birth date to unlock your core numbers, personalized readings, recommendations, and forecasts.</p>
+              <button onClick={() => navigate('/onboarding')} className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 font-semibold text-white transition-opacity hover:opacity-90">Complete Profile</button>
+            </div>
+          )}
+
           {/* Quick Stats */}
           <motion.div
             initial={{
@@ -170,13 +189,14 @@ export function DashboardGlass() {
             }}
             className="mb-12">
 
-            <QuickStatsOverview />
+            {profile && <QuickStatsOverview />}
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <div className="p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
               <h2 className="text-xl font-serif text-white mb-3">Subscription Status</h2>
-              <p className="text-cyan-400 font-semibold">{subscription?.plan || 'Free'}</p>
+              <p className="text-cyan-400 font-semibold">{effectivePlan}</p>
+              {pendingPlan && pendingPlan !== effectivePlan && <p className="text-sm text-purple-300 mt-2">Pending: {pendingPlan}</p>}
               <p className="text-sm text-white/60 mt-2">{subscription?.status || 'No active subscription'}</p>
             </div>
             <div className="p-6 rounded-3xl bg-[#1a2942]/40 backdrop-blur-xl border border-cyan-500/20">
@@ -235,7 +255,7 @@ export function DashboardGlass() {
               {error && !isLoading && (
                 <div className="lg:col-span-4 text-red-400">{error}</div>
               )}
-              {coreNumbers.map((item, index) =>
+              {profile && coreNumbers.map((item, index) =>
               <Suspense key={item.label} fallback={<LoadingSpinner />}>
                   <motion.button
                   initial={{
@@ -337,7 +357,7 @@ export function DashboardGlass() {
             }}
             className="mb-12">
 
-            <PersonalizedRecommendations />
+            {profile && <PersonalizedRecommendations />}
           </motion.div>
 
           {/* Two Column Layout */}
@@ -356,7 +376,7 @@ export function DashboardGlass() {
                 delay: 0.5
               }}>
 
-              <RecentActivityFeed />
+              {profile && <RecentActivityFeed />}
             </motion.div>
 
             {/* Achievements */}
