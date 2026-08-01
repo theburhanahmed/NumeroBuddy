@@ -14,7 +14,8 @@ import {
   GemIcon,
   UsersIcon,
   CalendarIcon,
-  StarIcon } from
+  StarIcon,
+  OrbitIcon } from
 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAIChat } from '../contexts/AIChatContext';
@@ -30,6 +31,11 @@ export function AppNavbar() {
     navigate('/login');
   };
   const moreTools = [
+  {
+    label: 'My Universe',
+    path: '/universe',
+    icon: <OrbitIcon className="w-4 h-4" />
+  },
   {
     label: 'Life Path Analysis',
     path: '/life-path',
@@ -84,6 +90,21 @@ export function AppNavbar() {
     label: 'Auspicious Dates',
     path: '/auspicious-dates',
     icon: <CalendarIcon className="w-4 h-4" />
+  },
+  {
+    label: 'Monthly Report',
+    path: '/monthly-report',
+    icon: <CalendarIcon className="w-4 h-4" />
+  },
+  {
+    label: 'Advanced Numerology',
+    path: '/advanced-numerology',
+    icon: <TrendingUpIcon className="w-4 h-4" />
+  },
+  {
+    label: 'Angel Numbers',
+    path: '/angel-numbers',
+    icon: <SparklesIcon className="w-4 h-4" />
   }];
 
   return (

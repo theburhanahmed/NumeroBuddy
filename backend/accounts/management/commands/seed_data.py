@@ -1127,7 +1127,14 @@ class Command(BaseCommand):
                 name=f'Entity for {user.full_name}',
                 date_of_birth=date(1990, 5, 15),
                 relationship_type='family',
-                numerology_profile=numerology_profile,
+                numerology_data={
+                    'life_path_number': numerology_profile.life_path_number,
+                    'destiny_number': numerology_profile.destiny_number,
+                    'soul_urge_number': numerology_profile.soul_urge_number,
+                    'personality_number': numerology_profile.personality_number,
+                    'personal_year_number': numerology_profile.personal_year_number,
+                    'personal_month_number': numerology_profile.personal_month_number,
+                },
             )
             
             # Create entity relationships if we have multiple entities

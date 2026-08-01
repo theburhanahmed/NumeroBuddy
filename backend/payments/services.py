@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
 from accounts.models import User
+from subscription_plans import PAID_PLAN_TIERS
 from .models import Subscription, Payment, BillingHistory, WebhookEvent
 
 logger = logging.getLogger(__name__)
@@ -93,23 +94,16 @@ def create_payment_intent(user: User, amount: Decimal, currency: str = 'usd', de
         raise
 
 
-def create_checkout_session(user: User, plan: str, success_url: str, cancel_url: str) -> dict:
+def create_checkout_session(user: User, plan: str, success_url: str, cancel_url: str, idempotency_key: str = None) -> dict:
     """
     Create a Stripe Checkout Session for subscription (redirect to Stripe-hosted page).
     On success, Stripe redirects to success_url; webhook checkout.session.completed syncs DB.
     """
-    if plan not in ('basic', 'premium', 'elite'):
+    if plan not in PAID_PLAN_TIERS:
         raise ValueError(f"Invalid plan: {plan}")
     price_id = settings.STRIPE_PRICE_IDS.get(plan)
     if not price_id:
-        plan_prices = {'basic': 999, 'premium': 1999, 'elite': 2999}
-        price = stripe.Price.create(
-            unit_amount=plan_prices[plan],
-            currency='usd',
-            recurring={'interval': 'month'},
-            product_data={'name': f'NumerAI {plan.capitalize()} Plan', 'metadata': {'plan': plan}},
-        )
-        price_id = price.id
+        raise ValueError(f"Stripe price ID is not configured for plan: {plan}")
     customer_id = get_or_create_stripe_customer(user)
     session = stripe.checkout.Session.create(
         customer=customer_id,
@@ -119,6 +113,7 @@ def create_checkout_session(user: User, plan: str, success_url: str, cancel_url:
         success_url=success_url,
         cancel_url=cancel_url,
         subscription_data={'metadata': {'plan': plan, 'user_id': str(user.id)}},
+        idempotency_key=idempotency_key,
     )
     return {'url': session.url, 'session_id': session.id}
 
@@ -129,7 +124,7 @@ def create_subscription(user: User, plan: str, payment_method_id: str = None) ->
     
     Args:
         user: User instance
-        plan: Subscription plan ('basic', 'premium', 'elite')
+        plan: Subscription plan PAID_PLAN_TIERS
         payment_method_id: Stripe payment method ID (optional, can be attached later)
         
     Returns:
@@ -153,16 +148,7 @@ def create_subscription(user: User, plan: str, payment_method_id: str = None) ->
         price_id = settings.STRIPE_PRICE_IDS.get(plan)
         
         if not price_id:
-            # Create price on the fly (not recommended for production)
-            price = stripe.Price.create(
-                unit_amount=plan_prices[plan],
-                currency='usd',
-                recurring={'interval': 'month'},
-                product_data={
-                    'name': f'NumerAI {plan.capitalize()} Plan',
-                },
-            )
-            price_id = price.id
+            raise ValueError(f"Stripe price ID is not configured for plan: {plan}")
         
         # Create subscription
         subscription_data = {
@@ -399,7 +385,7 @@ def _handle_checkout_session_completed(data: dict):
     if not plan and stripe_sub.get('items', {}).get('data'):
         price = stripe_sub['items']['data'][0].get('price', {})
         plan = (price.get('metadata') or {}).get('plan') or 'premium'
-    if plan not in ('basic', 'premium', 'elite'):
+    if plan not in PAID_PLAN_TIERS:
         plan = 'premium'
     subscription, created = Subscription.objects.get_or_create(
         user=user,
@@ -420,10 +406,11 @@ def _handle_checkout_session_completed(data: dict):
         subscription.current_period_start = datetime.fromtimestamp(stripe_sub['current_period_start'], tz=timezone.utc) if stripe_sub.get('current_period_start') else None
         subscription.current_period_end = datetime.fromtimestamp(stripe_sub['current_period_end'], tz=timezone.utc) if stripe_sub.get('current_period_end') else None
         subscription.save()
-    user.subscription_plan = plan
-    user.is_premium = subscription.status == 'active'
-    user.premium_expiry = subscription.current_period_end
-    user.save(update_fields=['subscription_plan', 'is_premium', 'premium_expiry'])
+    from feature_flags.entitlements import EntitlementService
+    from .subscription_management import SubscriptionManagementService
+
+    EntitlementService.sync_user(user, subscription)
+    SubscriptionManagementService.complete_checkout_change(user, subscription, data.get('id'))
 
 
 def _handle_subscription_updated(data: dict):
@@ -436,7 +423,8 @@ def _handle_subscription_updated(data: dict):
         subscription = Subscription.objects.get(stripe_subscription_id=subscription_id)
         # Get plan from Stripe metadata if available (handles external Stripe Checkout)
         plan_from_metadata = (data.get('metadata') or {}).get('plan')
-        if plan_from_metadata and plan_from_metadata in ('free', 'basic', 'premium', 'elite'):
+        pending_change = subscription.changes.filter(status='pending_period_end').first()
+        if not pending_change and plan_from_metadata and plan_from_metadata in PAID_PLAN_TIERS:
             subscription.plan = plan_from_metadata
 
         subscription.status = status
@@ -452,16 +440,11 @@ def _handle_subscription_updated(data: dict):
         subscription.save()
         
         # Update user premium status and plan (keep User in sync with Subscription)
-        user = subscription.user
-        if status == 'active':
-            user.is_premium = True
-            user.subscription_plan = subscription.plan
-            user.premium_expiry = subscription.current_period_end
-        else:
-            user.is_premium = False
-            user.subscription_plan = 'free'
-            user.premium_expiry = None
-        user.save(update_fields=['is_premium', 'subscription_plan', 'premium_expiry'])
+        from feature_flags.entitlements import EntitlementService
+        from .subscription_management import SubscriptionManagementService
+
+        SubscriptionManagementService.complete_pending_change(subscription, data.get('id'))
+        EntitlementService.sync_user(subscription.user, subscription)
     except Subscription.DoesNotExist:
         logger.warning(f"Subscription not found: {subscription_id}")
     except Exception as e:
@@ -479,11 +462,11 @@ def _handle_subscription_deleted(data: dict):
         subscription.save()
         
         # Update user premium status
-        user = subscription.user
-        user.is_premium = False
-        user.subscription_plan = 'free'
-        user.premium_expiry = None
-        user.save(update_fields=['is_premium', 'subscription_plan', 'premium_expiry'])
+        from feature_flags.entitlements import EntitlementService
+        from .subscription_management import SubscriptionManagementService
+
+        SubscriptionManagementService.complete_pending_change(subscription, data.get('id'))
+        EntitlementService.sync_user(subscription.user, subscription)
     except Subscription.DoesNotExist:
         logger.warning(f"Subscription not found: {subscription_id}")
     except Exception as e:
@@ -512,11 +495,11 @@ def _handle_invoice_payment_succeeded(data: dict):
         user = subscription.user
 
         # Sync User from Subscription (handles race with subscription.updated)
-        if subscription.status == 'active':
-            user.is_premium = True
-            user.subscription_plan = subscription.plan
-            user.premium_expiry = subscription.current_period_end
-            user.save(update_fields=['is_premium', 'subscription_plan', 'premium_expiry'])
+        from feature_flags.entitlements import EntitlementService
+        from .subscription_management import SubscriptionManagementService
+
+        SubscriptionManagementService.complete_pending_change(subscription, data.get('id'))
+        EntitlementService.sync_user(user, subscription)
         
         # Create billing history entry
         BillingHistory.objects.create(
@@ -552,6 +535,8 @@ def _handle_invoice_payment_failed(data: dict):
         subscription = Subscription.objects.get(stripe_subscription_id=subscription_id)
         subscription.status = 'past_due'
         subscription.save(update_fields=['status'])
+        from feature_flags.entitlements import EntitlementService
+        EntitlementService.sync_user(subscription.user, subscription)
     except Subscription.DoesNotExist:
         logger.warning(f"Subscription not found for failed invoice: {subscription_id}")
     except Exception as e:

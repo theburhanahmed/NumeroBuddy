@@ -25,8 +25,13 @@ export function LoginGlass() {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch (err) {
-      setError('Invalid email or password');
+    } catch (err: any) {
+      const responseError = err?.response?.data?.error;
+      if (responseError?.code === 'ACCOUNT_NOT_VERIFIED') {
+        navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
+        return;
+      }
+      setError(responseError?.details || responseError?.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }

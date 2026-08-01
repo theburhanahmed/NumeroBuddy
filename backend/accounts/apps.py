@@ -29,13 +29,7 @@ class AccountsConfig(AppConfig):
         from django.core.management import call_command
         
         cursor = connection.cursor()
-        cursor.execute("""
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_name = 'notifications'
-            )
-        """)
-        table_exists = cursor.fetchone()[0]
+        table_exists = 'notifications' in connection.introspection.table_names()
         
         if not table_exists:
             logger.info("Notifications table not found, attempting to create it...")

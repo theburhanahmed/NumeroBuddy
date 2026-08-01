@@ -1,9 +1,7 @@
-import React from 'react';
-import { motion } from 'framer-motion';
 interface CrystalNumerologyCubeProps {
   number: number;
   size?: 'sm' | 'md' | 'lg';
-  color?: 'cyan' | 'purple' | 'blue' | 'pink';
+  color?: 'cyan' | 'purple' | 'blue' | 'pink' | 'green' | 'amber';
   className?: string;
 }
 export function CrystalNumerologyCube({
@@ -41,6 +39,18 @@ export function CrystalNumerologyCube({
       border: 'border-pink-400/30',
       shadow: 'shadow-pink-500/20',
       text: 'text-pink-400'
+    },
+    green: {
+      gradient: 'from-green-400 to-emerald-500',
+      border: 'border-green-400/30',
+      shadow: 'shadow-green-500/20',
+      text: 'text-green-400'
+    },
+    amber: {
+      gradient: 'from-amber-400 to-orange-500',
+      border: 'border-amber-400/30',
+      shadow: 'shadow-amber-500/20',
+      text: 'text-amber-400'
     }
   };
   const colors = colorMap[color];

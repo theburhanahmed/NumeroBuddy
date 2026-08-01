@@ -34,8 +34,8 @@ class CompatibilityEngine:
             Compatibility analysis dictionary
         """
         # Get numerology profiles
-        profile_1 = entity_1.numerology_profile
-        profile_2 = entity_2.numerology_profile
+        profile_1 = entity_1.numerology_data
+        profile_2 = entity_2.numerology_data
         
         if not profile_1 or not profile_2:
             return {
@@ -49,14 +49,14 @@ class CompatibilityEngine:
         
         # Calculate Life Path compatibility (40% weight)
         life_path_score = self._calculate_life_path_compatibility(
-            profile_1.life_path_number,
-            profile_2.life_path_number
+            profile_1['life_path_number'],
+            profile_2['life_path_number']
         )
         
         # Calculate Destiny compatibility (30% weight)
         destiny_score = self._calculate_destiny_compatibility(
-            profile_1.destiny_number,
-            profile_2.destiny_number
+            profile_1['destiny_number'],
+            profile_2['destiny_number']
         )
         
         # Calculate cycle alignment (20% weight)
@@ -91,6 +91,27 @@ class CompatibilityEngine:
                 profile_1, profile_2, life_path_score, destiny_score, cycle_alignment
             )
         }
+
+    def calculate_entity_to_user_compatibility(self, entity: EntityProfile, user: Any) -> Dict[str, Any]:
+        user_profile = getattr(user, 'numerology_profile', None)
+        if not user_profile:
+            return {"overall_score": 0, "error": "User has no numerology profile"}
+        user_numbers = {
+            key: getattr(user_profile, key, None)
+            for key in (
+                'life_path_number', 'destiny_number', 'soul_urge_number',
+                'personality_number', 'attitude_number', 'personal_year_number',
+                'personal_month_number'
+            )
+        }
+        user_entity = EntityProfile(
+            user=user,
+            entity_type='person',
+            name=user.full_name,
+            relationship_type=entity.relationship_type,
+            numerology_data=user_numbers,
+        )
+        return self.calculate_compatibility(entity, user_entity, user_profile)
     
     def calculate_compatibility_matrix(
         self,
@@ -125,24 +146,20 @@ class CompatibilityEngine:
     def _calculate_life_path_compatibility(self, lp1: int, lp2: int) -> float:
         """Calculate Life Path compatibility score (0-100)."""
         # Use existing compatibility analyzer
-        compatibility_data = self.analyzer.calculate_compatibility_scores(
+        score, _, _ = self.analyzer.calculate_compatibility_score(
             {'life_path_number': lp1},
-            {'life_path_number': lp2},
-            relationship_type='friendship'  # Default, can be customized
+            {'life_path_number': lp2}
         )
-        
-        return compatibility_data.get('life_path_score', 50)
+        return score
     
     def _calculate_destiny_compatibility(self, d1: int, d2: int) -> float:
         """Calculate Destiny compatibility score (0-100)."""
         # Use existing compatibility analyzer
-        compatibility_data = self.analyzer.calculate_compatibility_scores(
+        score, _, _ = self.analyzer.calculate_compatibility_score(
             {'destiny_number': d1},
-            {'destiny_number': d2},
-            relationship_type='friendship'
+            {'destiny_number': d2}
         )
-        
-        return compatibility_data.get('destiny_score', 50)
+        return score
     
     def _calculate_cycle_alignment(
         self,
@@ -151,12 +168,12 @@ class CompatibilityEngine:
     ) -> float:
         """Calculate cycle alignment score (0-100)."""
         # Check Personal Year alignment
-        py1 = getattr(profile_1, 'personal_year_number', 1)
-        py2 = getattr(profile_2, 'personal_year_number', 1)
+        py1 = profile_1.get('personal_year_number', 1)
+        py2 = profile_2.get('personal_year_number', 1)
         
         # Check Personal Month alignment
-        pm1 = getattr(profile_1, 'personal_month_number', 1)
-        pm2 = getattr(profile_2, 'personal_month_number', 1)
+        pm1 = profile_1.get('personal_month_number', 1)
+        pm2 = profile_2.get('personal_month_number', 1)
         
         # Calculate alignment
         year_alignment = 100 - abs(py1 - py2) * 10

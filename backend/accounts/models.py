@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils import timezone
 from datetime import timedelta
 from django.core.validators import RegexValidator
+from subscription_plans import PlanTier
 
 
 class UserManager(BaseUserManager):
@@ -42,12 +43,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """Custom user model supporting email and phone authentication."""
     
-    SUBSCRIPTION_CHOICES = [
-        ('free', 'Free'),
-        ('basic', 'Basic'),
-        ('premium', 'Premium'),
-        ('elite', 'Elite'),
-    ]
+    SUBSCRIPTION_CHOICES = PlanTier.choices
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True, null=True, blank=True, db_index=True)

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI, userAPI } from '../lib/api-client';
+import { authAPI, Entitlements, entitlementsAPI, userAPI } from '../lib/api-client';
 import { numerologyAPI, NumerologyProfile as ApiNumerologyProfile } from '../lib/numerology-api';
 
 interface User {
@@ -16,6 +16,7 @@ interface User {
   bio?: string;
   createdAt?: string;
   subscription?: 'free' | 'pro' | 'premium' | string;
+  subscription_plan?: 'free' | 'basic' | 'premium' | 'elite' | string;
   hasCompletedOnboarding?: boolean;
 }
 interface NumerologyProfile {
@@ -28,9 +29,12 @@ interface NumerologyProfile {
 interface AuthContextType {
   user: User | null;
   numerologyProfile: NumerologyProfile | null;
+  entitlements: Entitlements | null;
+  isEntitlementsLoading: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  verifyOTP: (email: string, otp: string) => Promise<void>;
   signup: (
   name: string,
   email: string,
@@ -40,14 +44,35 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
   completeOnboarding: () => void;
+  refreshEntitlements: () => Promise<void>;
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: {children: React.ReactNode;}) {
   const [user, setUser] = useState<User | null>(null);
   const [numerologyProfile, setNumerologyProfile] =
   useState<NumerologyProfile | null>(null);
+  const [entitlements, setEntitlements] = useState<Entitlements | null>(null);
+  const [isEntitlementsLoading, setIsEntitlementsLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+
+  const refreshEntitlements = async () => {
+    setIsEntitlementsLoading(true);
+    try {
+      const response = await entitlementsAPI.getMine();
+      setEntitlements(response.data);
+    } finally {
+      setIsEntitlementsLoading(false);
+    }
+  };
+
+  const safeRefreshEntitlements = async () => {
+    try {
+      await refreshEntitlements();
+    } catch {
+      setEntitlements(null);
+    }
+  };
 
   // Check for existing session on mount
   useEffect(() => {
@@ -82,6 +107,9 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
               localStorage.removeItem('numerai_profile');
             }
           }
+          if (accessToken) {
+            await safeRefreshEntitlements();
+          }
           setIsLoading(false);
           return;
         }
@@ -97,6 +125,7 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
             localStorage.setItem('numerobuddy_profile', JSON.stringify(apiProfile));
             localStorage.removeItem('numerai_profile');
           }
+          await safeRefreshEntitlements();
         }
       } catch (error) {
         // If token is invalid, clear any stale data
@@ -145,6 +174,7 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
       }
 
       setUser(authUser);
+      await safeRefreshEntitlements();
       const apiProfile = await safeFetchNumerologyProfile();
       if (apiProfile && typeof window !== 'undefined') {
         setNumerologyProfile(apiProfile);
@@ -158,6 +188,29 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
       setIsLoading(false);
     }
   };
+  const verifyOTP = async (email: string, otp: string) => {
+    setIsLoading(true);
+    try {
+      const response = await authAPI.verifyOTP({ email, otp });
+      const { access_token, refresh_token, user: authUser } = (response as any).data;
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('access_token', access_token);
+        localStorage.setItem('refresh_token', refresh_token);
+        localStorage.setItem('user', JSON.stringify(authUser));
+      }
+
+      setUser(authUser);
+      await safeRefreshEntitlements();
+      navigate('/dashboard');
+    } catch (error: any) {
+      const message = error?.response?.data?.error?.message || error?.response?.data?.detail || 'Verification failed';
+      throw new Error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signup = async (
     name: string,
     email: string,
@@ -173,8 +226,7 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
         full_name: name,
         date_of_birth: birthDate,
       });
-      // After successful registration, redirect to login for now
-      navigate('/login');
+      navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
       const message = error?.message || 'Registration failed';
       throw new Error(message);
@@ -197,6 +249,7 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
     } finally {
       setUser(null);
       setNumerologyProfile(null);
+      setEntitlements(null);
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -248,13 +301,17 @@ export function AuthProvider({ children }: {children: React.ReactNode;}) {
       value={{
         user,
         numerologyProfile,
+        entitlements,
+        isEntitlementsLoading,
         isAuthenticated: !!user,
         isLoading,
         login,
+        verifyOTP,
         signup,
         logout,
         updateProfile,
-        completeOnboarding
+        completeOnboarding,
+        refreshEntitlements
       }}>
 
       {children}

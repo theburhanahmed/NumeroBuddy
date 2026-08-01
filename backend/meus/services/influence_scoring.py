@@ -40,7 +40,7 @@ class InfluenceScoringService:
         
         # Get numerology profiles
         user_profile = getattr(user, 'numerology_profile', None)
-        entity_profile = entity.numerology_profile
+        entity_profile = entity.numerology_data
         
         if not user_profile or not entity_profile:
             return {
@@ -58,8 +58,9 @@ class InfluenceScoringService:
         # Cycle alignment (20% weight)
         cycle_alignment = self._check_cycle_alignment(entity, user_profile, current_period)
         
-        # Historical pattern (10% weight) - placeholder for future
-        historical_pattern = 50  # Default neutral
+        # Historical pattern (10% weight)
+        completed_events = entity.events.filter(is_completed=True).count()
+        historical_pattern = min(100, 50 + completed_events * 5)
         
         # Calculate influence strength
         influence_strength = (
@@ -149,18 +150,14 @@ class InfluenceScoringService:
         user_profile: NumerologyProfile
     ) -> float:
         """Get compatibility score between entity and user."""
-        entity_profile = entity.numerology_profile
+        entity_profile = entity.numerology_data
         if not entity_profile:
             return 50  # Neutral
         
         # Use compatibility engine
-        compatibility = self.compatibility_engine.calculate_compatibility(
+        compatibility = self.compatibility_engine.calculate_entity_to_user_compatibility(
             entity,
-            EntityProfile(
-                name=user_profile.user.full_name,
-                numerology_profile=user_profile
-            ),
-            user_profile
+            user_profile.user,
         )
         
         return compatibility.get('overall_score', 50)
@@ -186,7 +183,7 @@ class InfluenceScoringService:
         current_period: str
     ) -> float:
         """Check cycle alignment between entity and user."""
-        entity_profile = entity.numerology_profile
+        entity_profile = entity.numerology_data
         if not entity_profile:
             return 50  # Neutral
         
@@ -194,8 +191,8 @@ class InfluenceScoringService:
         user_py = getattr(user_profile, 'personal_year_number', 1)
         user_pm = getattr(user_profile, 'personal_month_number', 1)
         
-        entity_py = getattr(entity_profile, 'personal_year_number', 1)
-        entity_pm = getattr(entity_profile, 'personal_month_number', 1)
+        entity_py = entity_profile.get('personal_year_number', 1)
+        entity_pm = entity_profile.get('personal_month_number', 1)
         
         # Calculate alignment
         year_diff = abs(user_py - entity_py)
@@ -214,7 +211,7 @@ class InfluenceScoringService:
         compatibility: float
     ) -> Dict[str, int]:
         """Calculate impact on different life areas."""
-        entity_profile = entity.numerology_profile
+        entity_profile = entity.numerology_data
         if not entity_profile:
             return {
                 "health": 50,
@@ -229,7 +226,7 @@ class InfluenceScoringService:
         
         # Adjust based on Life Path numbers
         user_lp = getattr(user_profile, 'life_path_number', 1)
-        entity_lp = getattr(entity_profile, 'life_path_number', 1)
+        entity_lp = entity_profile.get('life_path_number', 1)
         
         # Different areas affected by different number combinations
         impact_areas = {

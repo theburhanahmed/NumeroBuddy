@@ -5,7 +5,6 @@ import uuid
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from accounts.models import User
-from numerology.models import NumerologyProfile
 
 
 class EntityProfile(models.Model):
@@ -35,13 +34,7 @@ class EntityProfile(models.Model):
     date_of_birth = models.DateField(null=True, blank=True, help_text="Required for person, optional for event")
     relationship_type = models.CharField(max_length=50, choices=RELATIONSHIP_TYPE_CHOICES, null=True, blank=True)
     metadata = models.JSONField(default=dict, blank=True, help_text="Flexible storage for entity-specific data")
-    numerology_profile = models.ForeignKey(
-        NumerologyProfile,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='entity_profiles'
-    )
+    numerology_data = models.JSONField(default=dict, blank=True, help_text="Independent calculated numerology data for this entity")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

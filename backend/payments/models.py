@@ -5,6 +5,7 @@ import uuid
 from django.db import models
 from django.utils import timezone
 from accounts.models import User
+from subscription_plans import PlanTier
 
 
 class Subscription(models.Model):
@@ -20,11 +21,7 @@ class Subscription(models.Model):
         ('incomplete_expired', 'Incomplete Expired'),
     ]
     
-    PLAN_CHOICES = [
-        ('basic', 'Basic'),
-        ('premium', 'Premium'),
-        ('elite', 'Elite'),
-    ]
+    PLAN_CHOICES = [choice for choice in PlanTier.choices if choice[0] != PlanTier.FREE]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')
@@ -57,9 +54,56 @@ class Subscription(models.Model):
     
     def is_active(self):
         """Check if subscription is currently active."""
-        return self.status == 'active' and (
+        return self.status in ('active', 'trialing') and (
             not self.current_period_end or self.current_period_end > timezone.now()
         )
+
+
+class SubscriptionChange(models.Model):
+    STATUS_CHOICES = [
+        ('pending_checkout', 'Pending Checkout'),
+        ('pending_period_end', 'Pending Period End'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('canceled', 'Canceled'),
+    ]
+    CHANGE_TYPE_CHOICES = [
+        ('checkout', 'Checkout'),
+        ('upgrade', 'Upgrade'),
+        ('downgrade', 'Downgrade'),
+        ('cancel', 'Cancel'),
+        ('sync', 'Synchronization'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscription_changes')
+    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True, blank=True, related_name='changes')
+    from_plan = models.CharField(max_length=20, choices=PlanTier.choices)
+    to_plan = models.CharField(max_length=20, choices=PlanTier.choices)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES)
+    change_type = models.CharField(max_length=20, choices=CHANGE_TYPE_CHOICES)
+    effective_at = models.DateTimeField(null=True, blank=True)
+    requested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='requested_subscription_changes')
+    source = models.CharField(max_length=30, default='admin')
+    stripe_checkout_session_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    stripe_schedule_id = models.CharField(max_length=255, null=True, blank=True)
+    checkout_url = models.URLField(max_length=1000, null=True, blank=True)
+    failure_reason = models.TextField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'subscription_changes'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['status', 'effective_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.from_plan} to {self.to_plan} ({self.status})"
 
 
 class Payment(models.Model):

@@ -1,5 +1,4 @@
-import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AppRouter } from './AppRouter';
 import { AuthProvider } from './contexts/AuthContext';
@@ -15,8 +14,8 @@ import { FloatingChatButton } from './components/FloatingChatButton';
 import { AIChatModal } from './components/AIChatModal';
 function App() {
   return (
-    <ErrorBoundary>
-      <MemoryRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ErrorBoundary>
         <AuthProvider>
           <OnboardingProvider>
             <AIChatProvider>
@@ -52,8 +51,8 @@ function App() {
             </AIChatProvider>
           </OnboardingProvider>
         </AuthProvider>
-      </MemoryRouter>
-    </ErrorBoundary>);
+      </ErrorBoundary>
+    </BrowserRouter>);
 
 }
 export { App };

@@ -8,6 +8,7 @@ app_name = 'feature_flags'
 
 urlpatterns = [
     # Public API endpoints
+    path('entitlements/me/', views.CurrentEntitlementsView.as_view(), name='current-entitlements'),
     path('feature-flags/', views.FeatureFlagListView.as_view(), name='feature-flag-list'),
     path('feature-flags/<str:name>/', views.FeatureFlagDetailView.as_view(), name='feature-flag-detail'),
     path('feature-flags/check/', views.FeatureCheckView.as_view(), name='feature-check'),

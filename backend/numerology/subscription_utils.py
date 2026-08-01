@@ -2,6 +2,7 @@
 Subscription utility functions for numerology application.
 """
 from accounts.models import User
+from feature_flags.entitlements import EntitlementService
 
 
 def get_user_subscription_tier(user: User) -> str:
@@ -14,19 +15,7 @@ def get_user_subscription_tier(user: User) -> str:
     Returns:
         Subscription tier: 'free', 'basic', 'premium', or 'elite'
     """
-    # First check if user has an active subscription
-    if hasattr(user, 'subscription') and user.subscription:
-        subscription = user.subscription
-        # Check if subscription is active or trialing (trial = access before first payment)
-        if subscription.status in ('active', 'trialing'):
-            return subscription.plan
-    
-    # Fall back to user's subscription_plan field
-    subscription_plan = getattr(user, 'subscription_plan', 'free')
-    if subscription_plan in ['free', 'basic', 'premium', 'elite']:
-        return subscription_plan
-    
-    return 'free'
+    return EntitlementService.get_effective_plan(user)
 
 
 def can_access_feature(user: User, feature_name: str) -> bool:
@@ -40,12 +29,7 @@ def can_access_feature(user: User, feature_name: str) -> bool:
     Returns:
         True if user can access the feature, False otherwise
     """
-    from .constants import SUBSCRIPTION_FEATURES
-    
-    tier = get_user_subscription_tier(user)
-    features = SUBSCRIPTION_FEATURES.get(tier, SUBSCRIPTION_FEATURES['free'])
-    
-    return features.get(feature_name, False)
+    return EntitlementService.can_access(user, feature_name)
 
 
 def get_available_features(user: User) -> dict:
@@ -58,10 +42,10 @@ def get_available_features(user: User) -> dict:
     Returns:
         Dictionary of feature names and their access status
     """
-    from .constants import SUBSCRIPTION_FEATURES
-    
-    tier = get_user_subscription_tier(user)
-    return SUBSCRIPTION_FEATURES.get(tier, SUBSCRIPTION_FEATURES['free'])
+    return {
+        name: feature['enabled']
+        for name, feature in EntitlementService.get_user_features(user).items()
+    }
 
 
 

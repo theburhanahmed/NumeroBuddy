@@ -101,7 +101,9 @@ apiClient.interceptors.response.use(
       if (status !== 401) {
         let message = 'An unexpected error occurred.';
 
-        if (data?.detail) {
+        if (typeof data?.error === 'string') {
+          message = data.error;
+        } else if (data?.detail) {
           message = data.detail;
         } else if (data?.message) {
           message = data.message;
@@ -166,10 +168,35 @@ export const authAPI = {
     apiClient.post('/api/v1/auth/social/google/', { access_token: accessToken }),
 };
 
+export type PlanKey = 'free' | 'basic' | 'premium' | 'elite';
+
+export interface FeatureEntitlement {
+  enabled: boolean;
+  limits: Record<string, unknown>;
+  display_name: string;
+  category: string;
+  required_plan: PlanKey | null;
+}
+
+export interface Entitlements {
+  effective_plan: PlanKey;
+  billing_plan: PlanKey;
+  subscription_status: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  pending_plan: PlanKey | null;
+  pending_change_status: string | null;
+  features: Record<string, FeatureEntitlement>;
+}
+
+export const entitlementsAPI = {
+  getMine: () => apiClient.get<Entitlements>('/api/v1/entitlements/me/'),
+};
+
 export const paymentsAPI = {
   getSubscriptionStatus: () => apiClient.get('/api/v1/payments/subscription-status/'),
   getBillingHistory: () => apiClient.get('/api/v1/payments/billing-history/'),
-  createCheckoutSession: (plan: string) => apiClient.post('/api/v1/payments/create-checkout-session/', { plan }),
+  createCheckoutSession: (plan: PlanKey) => apiClient.post('/api/v1/payments/create-checkout-session/', { plan }),
 };
 
 export const reportsAPI = {
