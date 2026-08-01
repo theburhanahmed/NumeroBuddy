@@ -18,7 +18,7 @@ django-celery-beat==2.8.1
 django-celery-results==2.5.1
 
 # Authentication
-django-allauth==0.63.3
+django-allauth==65.18.0
 # Additional dependencies for social account providers
 google-auth==2.29.0
 google-auth-oauthlib==1.2.3
