@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from accounts.models import User
 from .models import FeatureFlag, SubscriptionFeatureAccess
+from .entitlements import EntitlementService
 from .services import FeatureFlagService, FeatureFlagManager
 from .serializers import (
     FeatureFlagSerializer,
@@ -16,6 +17,13 @@ from .serializers import (
     FeatureCheckSerializer,
     FeatureCheckResponseSerializer
 )
+
+
+class CurrentEntitlementsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return Response(EntitlementService.serialize(request.user))
 
 
 class FeatureFlagListView(APIView):

@@ -12,7 +12,7 @@ from .compatibility_engine import CompatibilityEngine
 
 
 class RecommendationEngine:
-    """Engine for generating AI-powered action recommendations."""
+    """Engine for generating numerology-based action recommendations."""
     
     def __init__(self):
         self.influence_service = InfluenceScoringService()
@@ -26,7 +26,7 @@ class RecommendationEngine:
         limit: int = 10
     ) -> List[Dict[str, Any]]:
         """
-        Generate AI-powered action recommendations.
+        Generate numerology-based action recommendations.
         
         Args:
             user: User instance
@@ -226,7 +226,7 @@ class RecommendationEngine:
         entity: EntityProfile,
         influence: Dict[str, Any]
     ) -> str:
-        """Generate AI reasoning for recommendation."""
+        """Generate reasoning for a recommendation."""
         compatibility = influence.get('compatibility_score', 0)
         strength = influence.get('influence_strength', 0)
         

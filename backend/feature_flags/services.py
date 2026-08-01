@@ -1,11 +1,10 @@
 """
 Feature flag services for checking access and managing flags.
 """
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict
 from django.core.cache import cache
-from django.db.models import Q
 from accounts.models import User
-from numerology.subscription_utils import get_user_subscription_tier
+from .entitlements import EntitlementService
 from .models import FeatureFlag, SubscriptionFeatureAccess
 
 
@@ -27,37 +26,7 @@ class FeatureFlagService:
         Returns:
             True if user can access, False otherwise
         """
-        # Check cache first
-        cache_key = f"{cls.CACHE_KEY_PREFIX}:{user.id}:{feature_name}"
-        cached_result = cache.get(cache_key)
-        if cached_result is not None:
-            return cached_result
-        
-        # Get user's subscription tier
-        tier = get_user_subscription_tier(user)
-        
-        # Check feature flag
-        try:
-            feature_flag = FeatureFlag.objects.get(name=feature_name, is_active=True)
-        except FeatureFlag.DoesNotExist:
-            # Feature doesn't exist or is inactive
-            cache.set(cache_key, False, cls.CACHE_TIMEOUT)
-            return False
-        
-        # Check tier access
-        try:
-            access = SubscriptionFeatureAccess.objects.get(
-                feature_flag=feature_flag,
-                subscription_tier=tier,
-                is_enabled=True
-            )
-            result = True
-        except SubscriptionFeatureAccess.DoesNotExist:
-            result = False
-        
-        # Cache result
-        cache.set(cache_key, result, cls.CACHE_TIMEOUT)
-        return result
+        return EntitlementService.can_access(user, feature_name)
     
     @classmethod
     def get_user_features(cls, user: User) -> Dict[str, bool]:
@@ -70,26 +39,10 @@ class FeatureFlagService:
         Returns:
             Dictionary mapping feature names to access status
         """
-        tier = get_user_subscription_tier(user)
-        
-        # Get all active feature flags with access for this tier
-        access_list = SubscriptionFeatureAccess.objects.filter(
-            subscription_tier=tier,
-            is_enabled=True,
-            feature_flag__is_active=True
-        ).select_related('feature_flag')
-        
-        features = {}
-        for access in access_list:
-            features[access.feature_flag.name] = True
-        
-        # Add all feature flags (with False for those not accessible)
-        all_flags = FeatureFlag.objects.filter(is_active=True)
-        for flag in all_flags:
-            if flag.name not in features:
-                features[flag.name] = False
-        
-        return features
+        return {
+            name: feature['enabled']
+            for name, feature in EntitlementService.get_user_features(user).items()
+        }
     
     @classmethod
     def get_feature_limits(cls, user: User, feature_name: str) -> Dict[str, Any]:
@@ -103,19 +56,7 @@ class FeatureFlagService:
         Returns:
             Dictionary of limits (empty if no limits or no access)
         """
-        if not cls.can_access(user, feature_name):
-            return {}
-        
-        tier = get_user_subscription_tier(user)
-        try:
-            feature_flag = FeatureFlag.objects.get(name=feature_name)
-            access = SubscriptionFeatureAccess.objects.get(
-                feature_flag=feature_flag,
-                subscription_tier=tier
-            )
-            return access.limits or {}
-        except (FeatureFlag.DoesNotExist, SubscriptionFeatureAccess.DoesNotExist):
-            return {}
+        return EntitlementService.get_feature_limits(user, feature_name)
     
     @classmethod
     def invalidate_cache(cls, user: User = None, feature_name: str = None):

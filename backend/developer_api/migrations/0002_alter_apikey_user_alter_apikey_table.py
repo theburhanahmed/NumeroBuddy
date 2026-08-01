@@ -7,6 +7,8 @@ import django.db.models.deletion
 
 def alter_table_if_needed(apps, schema_editor):
     """Conditionally rename table only if old table name exists."""
+    if schema_editor.connection.vendor != 'postgresql':
+        return
     db_alias = schema_editor.connection.alias
     with schema_editor.connection.cursor() as cursor:
         # Check if old table exists (for environments where 0001 created it with wrong name)
@@ -42,6 +44,8 @@ def alter_table_if_needed(apps, schema_editor):
 
 def reverse_alter_table(apps, schema_editor):
     """Reverse operation - rename back if needed."""
+    if schema_editor.connection.vendor != 'postgresql':
+        return
     with schema_editor.connection.cursor() as cursor:
         cursor.execute("""
             SELECT EXISTS (

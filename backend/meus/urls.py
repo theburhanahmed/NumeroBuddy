@@ -15,6 +15,7 @@ urlpatterns = [
     # Universe dashboard
     path('universe/dashboard/', views.UniverseDashboardView.as_view(), name='universe-dashboard'),
     path('universe/influence-map/', views.InfluenceMapView.as_view(), name='influence-map'),
+    path('universe/cycles/', views.CycleSynchronizationView.as_view(), name='cycle-synchronization'),
     
     # Analysis
     path('analysis/cross-entity/', views.CrossEntityAnalysisView.as_view(), name='cross-entity-analysis'),
@@ -25,5 +26,14 @@ urlpatterns = [
     # Events
     path('universe/events/', views.UniverseEventListCreateView.as_view(), name='event-list-create'),
     path('universe/events/<uuid:pk>/', views.UniverseEventDetailView.as_view(), name='event-detail'),
+
+    # Assets
+    path('universe/assets/', views.AssetProfileListCreateView.as_view(), name='asset-list-create'),
+    path('universe/assets/<uuid:pk>/', views.AssetProfileDetailView.as_view(), name='asset-detail'),
+
+    # Relationships and reports
+    path('universe/relationships/', views.EntityRelationshipListCreateView.as_view(), name='relationship-list-create'),
+    path('universe/relationships/<uuid:pk>/', views.EntityRelationshipDetailView.as_view(), name='relationship-detail'),
+    path('universe/report/', views.UniverseReportView.as_view(), name='universe-report'),
 ]
 

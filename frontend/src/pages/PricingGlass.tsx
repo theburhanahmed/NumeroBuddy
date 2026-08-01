@@ -12,15 +12,15 @@ import { useNavigate } from 'react-router-dom';
 import { GlassNav } from '../components/GlassNav';
 import { LandingFooter } from '../components/LandingFooter';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { paymentsAPI } from '../lib/api-client';
+import { paymentsAPI, PlanKey } from '../lib/api-client';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 export function PricingGlass() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshEntitlements } = useAuth();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  const handleSelectPlan = async (planName: string, price: number) => {
+  const handleSelectPlan = async (planKey: PlanKey, price: number) => {
     if (price === 0) {
       navigate('/signup');
       return;
@@ -29,15 +29,20 @@ export function PricingGlass() {
       navigate('/signup');
       return;
     }
-    setLoadingPlan(planName);
+    setLoadingPlan(planKey);
     try {
-      const response = await paymentsAPI.createCheckoutSession(planName.toLowerCase());
-      const { checkout_url, url } = response.data;
+      const response = await paymentsAPI.createCheckoutSession(planKey);
+      const { checkout_url, url, change_status, effective_at } = response.data;
       const redirectUrl = checkout_url || url;
       if (redirectUrl) {
         window.location.href = redirectUrl;
       } else {
-        toast.error('Unable to create checkout session. Please try again.');
+        await refreshEntitlements();
+        toast.success(
+          change_status === 'pending_period_end'
+            ? `Plan change scheduled${effective_at ? ` for ${new Date(effective_at).toLocaleDateString()}` : ''}.`
+            : 'Subscription updated successfully.'
+        );
       }
     } catch (error: any) {
       const message = error?.response?.data?.error || error?.response?.data?.detail || 'Unable to start checkout. Please try again.';
@@ -47,7 +52,7 @@ export function PricingGlass() {
     }
   };
 
-  const plans = [
+  const plans: Array<{ name: string; key: PlanKey; price: number; period: string; icon: React.ReactNode; description: string; features: string[]; limitations: string[]; popular: boolean; color: string; glowColor: string; }> = [
   {
     name: 'Free',
     key: 'free',
@@ -58,11 +63,11 @@ export function PricingGlass() {
     features: [
     'Basic numerology readings',
     '3 daily insights',
+    'Limited AI numerologist chat',
     'Community forum access',
     'Life path number calculation'],
 
     limitations: [
-    'No AI chat access',
     'Limited report downloads',
     'No compatibility checks'],
 
@@ -71,9 +76,30 @@ export function PricingGlass() {
     glowColor: 'gray-500'
   },
   {
+    name: 'Basic',
+    key: 'basic',
+    price: 9.99,
+    period: 'month',
+    icon: <SparklesIcon className="w-6 h-6" />,
+    description: 'More tools for exploring your numerology',
+    features: [
+    'Unlimited daily readings',
+    'Name numerology tools',
+    'Lo Shu grid analysis',
+    'Personalized remedies',
+    'Basic saved reports'],
+
+    limitations: [
+    'No compatibility checker',
+    'No detailed PDF reports'],
+    popular: false,
+    color: 'from-blue-400 to-cyan-600',
+    glowColor: 'blue-500'
+  },
+  {
     name: 'Premium',
     key: 'premium',
-    price: 9.99,
+    price: 19.99,
     period: 'month',
     icon: <SparklesIcon className="w-6 h-6" />,
     description: 'Most popular for serious seekers',
@@ -191,7 +217,7 @@ export function PricingGlass() {
           </motion.div>
 
           {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mb-20">
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8 mb-20">
             {plans.map((plan, index) =>
             <motion.div
               key={plan.name}
@@ -331,7 +357,7 @@ export function PricingGlass() {
 
                 <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
                   Try NumeroBuddy risk-free. If you're not completely satisfied
-                  with your Premium or Enterprise plan within 30 days, we'll
+                  with your Basic, Premium, or Elite plan within 30 days, we'll
                   refund your payment—no questions asked.
                 </p>
 

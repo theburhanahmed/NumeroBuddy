@@ -4,8 +4,6 @@ Migrates existing SUBSCRIPTION_FEATURES and creates all PRD feature flags.
 """
 from django.core.management.base import BaseCommand
 from feature_flags.models import FeatureFlag, SubscriptionFeatureAccess
-from feature_flags.services import FeatureFlagManager
-from numerology.constants import SUBSCRIPTION_FEATURES
 
 
 class Command(BaseCommand):
@@ -97,36 +95,6 @@ class Command(BaseCommand):
         
         created_count = 0
         updated_count = 0
-        
-        # Migrate existing SUBSCRIPTION_FEATURES
-        self.stdout.write(self.style.SUCCESS('Migrating existing SUBSCRIPTION_FEATURES...'))
-        
-        for tier, features in SUBSCRIPTION_FEATURES.items():
-            for feature_name, is_enabled in features.items():
-                # Find or create feature flag
-                feature_flag, created = FeatureFlag.objects.get_or_create(
-                    name=feature_name,
-                    defaults={
-                        'display_name': feature_name.replace('_', ' ').title(),
-                        'category': 'core',
-                        'default_tier': tier if is_enabled else 'elite',
-                        'is_active': True,
-                    }
-                )
-                
-                if created:
-                    created_count += 1
-                    self.stdout.write(f'  Created: {feature_flag.name}')
-                else:
-                    updated_count += 1
-                
-                # Set tier access
-                if not dry_run:
-                    SubscriptionFeatureAccess.objects.update_or_create(
-                        feature_flag=feature_flag,
-                        subscription_tier=tier,
-                        defaults={'is_enabled': is_enabled}
-                    )
         
         # Create all PRD features
         self.stdout.write(self.style.SUCCESS('\nCreating PRD features...'))

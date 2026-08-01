@@ -2,6 +2,7 @@
 Serializers for payments application.
 """
 from rest_framework import serializers
+from subscription_plans import PAID_PLAN_TIERS
 from .models import Subscription, Payment, BillingHistory
 
 
@@ -24,7 +25,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 class CreateSubscriptionSerializer(serializers.Serializer):
     """Serializer for creating a subscription."""
-    plan = serializers.ChoiceField(choices=['basic', 'premium', 'elite'])
+    plan = serializers.ChoiceField(choices=PAID_PLAN_TIERS)
     payment_method_id = serializers.CharField(required=False, allow_blank=True)
 
 

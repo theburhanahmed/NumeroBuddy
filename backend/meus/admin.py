@@ -20,15 +20,16 @@ class EntityProfileAdmin(admin.ModelAdmin):
     list_display = ['name', 'user', 'entity_type', 'relationship_type', 'is_active', 'created_at']
     list_filter = ['entity_type', 'relationship_type', 'is_active', 'created_at']
     search_fields = ['name', 'user__email', 'user__full_name']
-    readonly_fields = ['id', 'created_at', 'updated_at']
-    raw_id_fields = ['user', 'numerology_profile']
+    readonly_fields = ['id', 'numerology_data', 'created_at', 'updated_at']
+    raw_id_fields = ['user']
     
     fieldsets = (
         ('Basic Information', {
             'fields': ('id', 'user', 'entity_type', 'name', 'date_of_birth', 'relationship_type')
         }),
         ('Numerology', {
-            'fields': ('numerology_profile',)
+            'fields': ('numerology_data',),
+            'classes': ('collapse',)
         }),
         ('Metadata', {
             'fields': ('metadata',),

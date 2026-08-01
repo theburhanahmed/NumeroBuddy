@@ -2,13 +2,13 @@
 Django==4.2.16
 django-jazzmin==3.0.3
 djangorestframework==3.15.2
-djangorestframework-simplejwt==5.3.1
-django-filter==25.2
+djangorestframework-simplejwt==5.5.1
+django-filter==24.3
 django-cors-headers==4.9.0
 
 # Database
 psycopg2-binary==2.9.9
-dj-database-url==2.1.0
+dj-database-url==3.1.2
 
 # Cache and Task Queue
 redis==5.0.1
@@ -18,7 +18,7 @@ django-celery-beat==2.8.1
 django-celery-results==2.5.1
 
 # Authentication
-django-allauth==0.63.3
+django-allauth==65.18.0
 # Additional dependencies for social account providers
 google-auth==2.29.0
 google-auth-oauthlib==1.2.3

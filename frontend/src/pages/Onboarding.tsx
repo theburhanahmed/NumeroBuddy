@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { AccessibleSpaceBackground } from '../components/AccessibleSpaceBackground';
 import { SpaceCard } from '../components/SpaceCard';
 import { TouchOptimizedButton } from '../components/TouchOptimizedButton';
+import { userAPI } from '../lib/api-client';
+import { numerologyAPI } from '../lib/numerology-api';
 export function Onboarding() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
@@ -13,6 +15,8 @@ export function Onboarding() {
     fullName: '',
     goals: [] as string[]
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const steps = [
   {
     title: 'Welcome to Numerobuddy',
@@ -115,11 +119,28 @@ export function Onboarding() {
 
   }];
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
-    } else {
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+    try {
+      await userAPI.updateProfile({
+        full_name: formData.fullName.trim(),
+        date_of_birth: formData.birthDate,
+      });
+      await numerologyAPI.calculateNumerologyProfile({
+        full_name: formData.fullName.trim(),
+        birth_date: formData.birthDate,
+      });
       navigate('/dashboard');
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err?.message || 'Unable to create your numerology profile. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
   const canProceed = () => {
@@ -181,6 +202,8 @@ export function Onboarding() {
             </motion.div>
           </AnimatePresence>
 
+          {error && <p className="mb-4 text-center text-sm text-red-400" role="alert">{error}</p>}
+
           {/* Navigation */}
           <div className="flex gap-4">
             {currentStep > 0 &&
@@ -198,7 +221,7 @@ export function Onboarding() {
               variant="primary"
               size="lg"
               onClick={handleNext}
-              disabled={!canProceed()}
+              disabled={!canProceed() || isSaving}
               icon={
               currentStep === steps.length - 1 ?
               <SparklesIcon className="w-5 h-5" /> :
@@ -211,7 +234,7 @@ export function Onboarding() {
               currentStep === steps.length - 1 ? 'Get started' : 'Continue'
               }>
 
-              {currentStep === steps.length - 1 ? 'Get Started' : 'Continue'}
+              {currentStep === steps.length - 1 ? (isSaving ? 'Creating Profile...' : 'Get Started') : 'Continue'}
             </TouchOptimizedButton>
           </div>
         </SpaceCard>

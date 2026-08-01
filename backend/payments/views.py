@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 import stripe
+from subscription_plans import PAID_PLAN_TIERS
 from .models import Subscription, Payment, BillingHistory
 from .serializers import (
     SubscriptionSerializer, CreateSubscriptionSerializer,
@@ -20,10 +21,10 @@ from .serializers import (
 )
 from django.conf import settings
 from .services import (
-    create_subscription, create_payment_intent, create_checkout_session,
+    create_subscription, create_payment_intent,
     handle_webhook_event, get_or_create_stripe_customer,
-    update_subscription, cancel_subscription,
 )
+from .subscription_management import SubscriptionManagementService
 
 logger = logging.getLogger(__name__)
 
@@ -91,22 +92,28 @@ def create_checkout_session_view(request):
     Body: { "plan": "basic|premium|elite", "success_url": "...", "cancel_url": "..." (optional) }
     """
     plan = request.data.get('plan', 'premium')
-    if plan not in ('basic', 'premium', 'elite'):
+    if plan not in PAID_PLAN_TIERS:
         return Response(
             {'error': 'Invalid plan. Must be basic, premium, or elite.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000').rstrip('/')
-    success_url = request.data.get('success_url') or f'{frontend_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}'
-    cancel_url = request.data.get('cancel_url') or f'{frontend_url}/subscription/checkout'
     try:
-        result = create_checkout_session(
+        change = SubscriptionManagementService.request_plan_change(
             user=request.user,
-            plan=plan,
-            success_url=success_url,
-            cancel_url=cancel_url,
+            target_plan=plan,
+            actor=request.user,
+            source='checkout',
         )
-        return Response({'url': result['url'], 'session_id': result['session_id']}, status=status.HTTP_200_OK)
+        if change and change.checkout_url:
+            return Response({
+                'url': change.checkout_url,
+                'session_id': change.stripe_checkout_session_id,
+                'change_status': change.status,
+            }, status=status.HTTP_200_OK)
+        return Response({
+            'change_status': change.status if change else 'unchanged',
+            'effective_at': change.effective_at if change else None,
+        }, status=status.HTTP_200_OK)
     except ValueError as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except stripe.error.StripeError as e:
@@ -167,22 +174,29 @@ def update_subscription_view(request):
     plan = request.data.get('plan')
     cancel_at_period_end = request.data.get('cancel_at_period_end')
     
-    if plan and plan not in ['basic', 'premium', 'elite']:
+    if plan and plan not in PAID_PLAN_TIERS:
         return Response(
             {'error': 'Invalid plan. Must be basic, premium, or elite.'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     try:
-        result = update_subscription(
+        if cancel_at_period_end is not None and not plan:
+            plan = 'free' if cancel_at_period_end else getattr(getattr(request.user, 'subscription', None), 'plan', 'free')
+        if not plan:
+            return Response({'error': 'A target plan is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        change = SubscriptionManagementService.request_plan_change(
             user=request.user,
-            plan=plan,
-            cancel_at_period_end=cancel_at_period_end,
+            target_plan=plan,
+            actor=request.user,
+            source='self_service',
         )
-        
+
         return Response({
-            'message': 'Subscription updated successfully',
-            'subscription': result,
+            'message': 'Subscription change requested successfully',
+            'change_status': change.status if change else 'unchanged',
+            'effective_at': change.effective_at if change else None,
+            'checkout_url': change.checkout_url if change else None,
         }, status=status.HTTP_200_OK)
     except ValueError as e:
         return Response(
@@ -212,11 +226,17 @@ def cancel_subscription_view(request):
     POST /api/v1/payments/cancel-subscription/
     """
     try:
-        result = cancel_subscription(user=request.user)
-        
+        change = SubscriptionManagementService.request_plan_change(
+            user=request.user,
+            target_plan='free',
+            actor=request.user,
+            source='self_service',
+        )
+
         return Response({
-            'message': 'Subscription canceled successfully',
-            'subscription': result,
+            'message': 'Subscription cancellation scheduled successfully',
+            'change_status': change.status if change else 'unchanged',
+            'effective_at': change.effective_at if change else None,
         }, status=status.HTTP_200_OK)
     except ValueError as e:
         return Response(

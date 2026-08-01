@@ -78,6 +78,11 @@ export const numerologyAPI = {
     return response.data as NumerologyProfile;
   },
 
+  async calculateNumerologyProfile(data: { full_name: string; birth_date: string; system?: string }) {
+    const response = await apiClient.post('/api/v1/numerology/calculate/', data);
+    return response.data;
+  },
+
   async getBirthChart() {
     const response = await apiClient.get('/api/v1/numerology/birth-chart/');
     return response.data;

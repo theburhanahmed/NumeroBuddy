@@ -30,7 +30,6 @@ def dashboard_overview(request):
         user=user,
         is_visible=True
     ).order_by('position')
-    widget_serializer = DashboardWidgetSerializer(widgets, many=True)
     
     # Get unread insights
     insights = QuickInsight.objects.filter(
@@ -39,13 +38,11 @@ def dashboard_overview(request):
     ).filter(
         models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=timezone.now())
     ).order_by('-priority', '-created_at')[:5]
-    insight_serializer = QuickInsightSerializer(insights, many=True)
     
     # Get recent activities (from consolidated analytics.UserActivityLog)
     recent_activities = UserActivityLog.objects.filter(
         user=user
     ).order_by('-created_at')[:10]
-    activity_serializer = UserActivitySerializer(recent_activities, many=True)
     
     # Get today's daily reading
     daily_reading_data = None
@@ -99,9 +96,9 @@ def dashboard_overview(request):
     
     # Build overview data
     overview_data = {
-        'widgets': widget_serializer.data,
-        'insights': insight_serializer.data,
-        'recent_activities': activity_serializer.data,
+        'widgets': widgets,
+        'insights': insights,
+        'recent_activities': recent_activities,
         'daily_reading': daily_reading_data,
         'numerology_profile': numerology_profile_data,
         'upcoming_events': upcoming_events,

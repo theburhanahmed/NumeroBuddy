@@ -4,6 +4,7 @@ Feature flag models for NumerAI application.
 import uuid
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from subscription_plans import PlanTier
 
 
 class FeatureFlag(models.Model):
@@ -19,12 +20,7 @@ class FeatureFlag(models.Model):
         ('premium', 'Premium Features'),
     ]
     
-    TIER_CHOICES = [
-        ('free', 'Free'),
-        ('basic', 'Basic'),
-        ('premium', 'Premium'),
-        ('elite', 'Elite'),
-    ]
+    TIER_CHOICES = PlanTier.choices
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, unique=True, db_index=True, help_text="Unique identifier for the feature flag")
@@ -49,12 +45,7 @@ class FeatureFlag(models.Model):
 class SubscriptionFeatureAccess(models.Model):
     """Subscription tier-based feature access control."""
     
-    TIER_CHOICES = [
-        ('free', 'Free'),
-        ('basic', 'Basic'),
-        ('premium', 'Premium'),
-        ('elite', 'Elite'),
-    ]
+    TIER_CHOICES = PlanTier.choices
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     subscription_tier = models.CharField(max_length=20, choices=TIER_CHOICES, db_index=True)

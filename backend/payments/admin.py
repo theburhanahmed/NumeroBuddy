@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
-from .models import Subscription, Payment, BillingHistory, WebhookEvent
+from .models import Subscription, SubscriptionChange, Payment, BillingHistory, WebhookEvent
 
 
 @admin.register(Subscription)
@@ -33,7 +33,15 @@ class SubscriptionAdmin(admin.ModelAdmin):
         }),
     )
     
-    actions = ['set_plan_free', 'set_plan_basic', 'set_plan_premium', 'set_plan_elite', 'activate_subscription', 'set_active_status']
+    actions = []
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ['user', 'plan', 'status', 'stripe_subscription_id', 'stripe_customer_id']
+        return self.readonly_fields
+
+    def has_add_permission(self, request):
+        return False
 
     def set_plan_free(self, request, queryset):
         """Set selected subscriptions to Free (cancel and sync user to free)."""
@@ -138,6 +146,20 @@ class SubscriptionAdmin(admin.ModelAdmin):
             if obj.status == 'active' and obj.current_period_end:
                 obj.user.premium_expiry = obj.current_period_end
             obj.user.save(update_fields=['subscription_plan', 'is_premium', 'premium_expiry'])
+
+
+@admin.register(SubscriptionChange)
+class SubscriptionChangeAdmin(admin.ModelAdmin):
+    list_display = ['user', 'from_plan', 'to_plan', 'status', 'change_type', 'effective_at', 'created_at']
+    list_filter = ['status', 'change_type', 'from_plan', 'to_plan', 'source']
+    search_fields = ['user__email', 'user__full_name', 'stripe_checkout_session_id']
+    readonly_fields = [field.name for field in SubscriptionChange._meta.fields]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Payment)

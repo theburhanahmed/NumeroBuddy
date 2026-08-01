@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { TypeIcon, SparklesIcon } from 'lucide-react';
 import { CosmicPageLayout } from '../components/CosmicPageLayout';
 import { SpaceCard } from '../components/SpaceCard';
@@ -8,12 +9,16 @@ import { CrystalNumerologyCube } from '../components/CrystalNumerologyCube';
 import { numerologyAPI } from '../lib/numerology-api';
 import { reportsAPI } from '../lib/api-client';
 import { ReportLayout } from '../components/ReportLayout';
+import { useAuth } from '../contexts/AuthContext';
 
 export function NameNumerology() {
+  const navigate = useNavigate();
+  const { entitlements } = useAuth();
   const [name, setName] = useState('');
   const [result, setResult] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const hasNameNumerologyAccess = entitlements?.features.name_numerology?.enabled === true;
 
   const previewNameNumerology = async () => {
     setIsLoading(true);
@@ -47,9 +52,18 @@ export function NameNumerology() {
       <SpaceCard variant="premium" className="p-6 md:p-8 mb-8">
         <label htmlFor="name" className="block text-sm font-medium text-white mb-2">Enter Your Full Name</label>
         <input id="name" type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="John Doe" className="w-full px-4 py-3 bg-[#0a1628]/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-cyan-500/50 transition-colors" />
-        <TouchOptimizedButton variant="primary" size="lg" onClick={previewNameNumerology} disabled={!name.trim() || isLoading} icon={<SparklesIcon className="w-5 h-5" />} className="w-full mt-6" ariaLabel="Calculate name number">
-          {isLoading ? 'Calculating...' : 'Calculate'}
-        </TouchOptimizedButton>
+        {hasNameNumerologyAccess ? (
+          <TouchOptimizedButton variant="primary" size="lg" onClick={previewNameNumerology} disabled={!name.trim() || isLoading} icon={<SparklesIcon className="w-5 h-5" />} className="w-full mt-6" ariaLabel="Calculate name number">
+            {isLoading ? 'Calculating...' : 'Calculate'}
+          </TouchOptimizedButton>
+        ) : (
+          <div className="mt-6 rounded-xl border border-purple-500/30 bg-purple-500/10 p-4 text-center">
+            <p className="mb-3 text-white/80">Name Numerology is available on the Basic plan and above.</p>
+            <TouchOptimizedButton variant="primary" size="lg" onClick={() => navigate('/pricing')} icon={<SparklesIcon className="w-5 h-5" />} className="w-full" ariaLabel="View subscription plans">
+              View Plans
+            </TouchOptimizedButton>
+          </div>
+        )}
         {error && <p className="text-red-400 mt-4" role="alert">{error}</p>}
       </SpaceCard>
 

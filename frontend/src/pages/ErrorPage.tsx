@@ -1,12 +1,23 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircleIcon, HomeIcon, ArrowLeftIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AccessibleSpaceBackground } from '../components/AccessibleSpaceBackground';
 import { SpaceCard } from '../components/SpaceCard';
 import { TouchOptimizedButton } from '../components/TouchOptimizedButton';
-export function ErrorPage() {
+interface ErrorPageProps {
+  error?: Error;
+  resetError?: () => void;
+}
+export function ErrorPage({ resetError }: ErrorPageProps) {
   const navigate = useNavigate();
+  const navigateAfterReset = (destination: number | string) => {
+    resetError?.();
+    if (typeof destination === 'number') {
+      navigate(destination);
+    } else {
+      navigate(destination);
+    }
+  };
   return (
     <div className="relative min-h-screen flex items-center justify-center">
       <AccessibleSpaceBackground />
@@ -43,7 +54,7 @@ export function ErrorPage() {
               <TouchOptimizedButton
                 variant="secondary"
                 size="lg"
-                onClick={() => navigate(-1)}
+                onClick={() => navigateAfterReset(-1)}
                 icon={<ArrowLeftIcon className="w-5 h-5" />}
                 ariaLabel="Go back">
 
@@ -52,7 +63,7 @@ export function ErrorPage() {
               <TouchOptimizedButton
                 variant="primary"
                 size="lg"
-                onClick={() => navigate('/')}
+                onClick={() => navigateAfterReset('/')}
                 icon={<HomeIcon className="w-5 h-5" />}
                 ariaLabel="Go to homepage">
 

@@ -29,7 +29,7 @@ class GraphGeneratorService:
         Returns:
             Graph data with nodes and edges
         """
-        entities = EntityProfile.objects.filter(user=user, is_active=True).select_related('numerology_profile')
+        entities = EntityProfile.objects.filter(user=user, is_active=True)
         
         # Build nodes
         nodes = []
@@ -44,13 +44,13 @@ class GraphGeneratorService:
             })
         
         for entity in entities:
-            profile = entity.numerology_profile
+            numbers = entity.numerology_data
             nodes.append({
                 'id': str(entity.id),
                 'type': entity.entity_type,
                 'label': entity.name,
-                'life_path': profile.life_path_number if profile else None,
-                'destiny': profile.destiny_number if profile else None,
+                'life_path': numbers.get('life_path_number'),
+                'destiny': numbers.get('destiny_number'),
                 'relationship': entity.relationship_type,
                 'entity_type': entity.entity_type,
             })
