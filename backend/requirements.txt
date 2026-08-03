@@ -32,7 +32,7 @@ openai==1.55.3
 reportlab==4.4.7
 
 # Push Notifications
-firebase-admin==6.5.0
+firebase-admin==7.5.0
 
 # API Documentation
 drf-spectacular==0.27.2
