@@ -1,5 +1,5 @@
 # Django and REST Framework
-Django==4.2.16
+Django==4.2.30
 django-jazzmin==3.0.3
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.5.1
