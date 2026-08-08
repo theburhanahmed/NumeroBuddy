@@ -1,5 +1,5 @@
 # Django and REST Framework
-Django==4.2.16
+Django==4.2.30
 django-jazzmin==3.0.3
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.5.1
@@ -15,7 +15,7 @@ redis==5.0.1
 django-redis==6.0.0
 celery==5.6.0
 django-celery-beat==2.8.1
-django-celery-results==2.5.1
+django-celery-results==2.6.0
 
 # Authentication
 django-allauth==65.18.0
@@ -32,7 +32,7 @@ openai==1.55.3
 reportlab==4.4.7
 
 # Push Notifications
-firebase-admin==6.5.0
+firebase-admin==7.5.0
 
 # API Documentation
 drf-spectacular==0.27.2
