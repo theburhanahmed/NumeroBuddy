@@ -7,7 +7,7 @@ django-filter==24.3
 django-cors-headers==4.9.0
 
 # Database
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.12
 dj-database-url==3.1.2
 
 # Cache and Task Queue
