@@ -64,7 +64,7 @@ requests==2.31.0
 stripe==10.1.0
 
 # Testing
-pytest==8.0.0
+pytest==9.1.1
 pytest-django==4.8.0
 pytest-cov==4.1.0
 
